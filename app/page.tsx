@@ -15,6 +15,8 @@ export default function Home() {
       color: 'from-blue-400 to-blue-600',
       href: '/simulado-portugues',
       difficulty: '⭐⭐⭐ 3º Ano',
+      questoes: 10,
+      pontos: 10,
     },
     {
       id: 2,
@@ -24,6 +26,8 @@ export default function Home() {
       color: 'from-green-400 to-green-600',
       href: '/simulado-matematica',
       difficulty: '⭐⭐⭐ 3º Ano',
+      questoes: 10,
+      pontos: 10,
     },
     {
       id: 3,
@@ -33,6 +37,8 @@ export default function Home() {
       color: 'from-purple-400 to-purple-600',
       href: '/simulado-ciencias',
       difficulty: '⭐⭐⭐ 3º Ano',
+      questoes: 10,
+      pontos: 10,
       comingSoon: true,
     },
     {
@@ -43,6 +49,8 @@ export default function Home() {
       color: 'from-orange-400 to-orange-600',
       href: '/simulado-historia',
       difficulty: '⭐⭐⭐ 3º Ano',
+      questoes: 30,
+      pontos: 30,
     },
   ];
 
@@ -115,9 +123,9 @@ export default function Home() {
                 {/* Stats */}
                 <div className="mt-6 p-4 bg-slate-50 rounded-2xl">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">📝 10 questões</span>
-                    <span className="text-slate-600">⏱️ ~15 min</span>
-                    <span className="text-slate-600">🎯 10 pontos</span>
+                    <span className="text-slate-600">📝 {simulado.questoes} questões</span>
+                    <span className="text-slate-600">⏱️ ~{Math.ceil(simulado.questoes / 10) * 15} min</span>
+                    <span className="text-slate-600">🎯 {simulado.pontos} pontos</span>
                   </div>
                 </div>
               </div>
