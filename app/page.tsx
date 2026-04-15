@@ -38,12 +38,11 @@ export default function Home() {
     {
       id: 4,
       title: '📖 História',
-      description: 'Viaje pela história com questões sobre fatos, datas e eventos importantes',
-      emoji: '🏛️',
+      description: 'Explore a história das cidades, culturas, tradições e as pessoas que as formam',
+      emoji: '📖',
       color: 'from-orange-400 to-orange-600',
       href: '/simulado-historia',
       difficulty: '⭐⭐⭐ 3º Ano',
-      comingSoon: true,
     },
   ];
 
