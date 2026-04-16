@@ -39,7 +39,6 @@ export default function Home() {
       difficulty: '⭐⭐⭐ 3º Ano',
       questoes: 10,
       pontos: 10,
-      comingSoon: true,
     },
     {
       id: 4,
