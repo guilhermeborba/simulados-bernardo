@@ -17,6 +17,7 @@ export default function Home() {
       difficulty: '⭐⭐⭐ 3º Ano',
       questoes: 10,
       pontos: 10,
+      comingSoon: false,
     },
     {
       id: 2,
@@ -28,6 +29,7 @@ export default function Home() {
       difficulty: '⭐⭐⭐ 3º Ano',
       questoes: 10,
       pontos: 10,
+      comingSoon: false,
     },
     {
       id: 3,
@@ -37,8 +39,9 @@ export default function Home() {
       color: 'from-purple-400 to-purple-600',
       href: '/simulado-ciencias',
       difficulty: '⭐⭐⭐ 3º Ano',
-      questoes: 10,
-      pontos: 10,
+      questoes: 30,
+      pontos: 30,
+      comingSoon: false,
     },
     {
       id: 4,
@@ -50,6 +53,7 @@ export default function Home() {
       difficulty: '⭐⭐⭐ 3º Ano',
       questoes: 30,
       pontos: 30,
+      comingSoon: false,
     },
   ];
 
