@@ -10,13 +10,13 @@ export default function Home() {
     {
       id: 1,
       title: '📚 Português',
-      description: 'Teste seus conhecimentos em Portuguese com 10 questões sobre fonética, gramática e ortografia',
+      description: 'Teste seus conhecimentos com 30 questões sobre fonética, gramática, ortografia, substantivos e verbos',
       emoji: '🔤',
       color: 'from-blue-400 to-blue-600',
       href: '/simulado-portugues',
       difficulty: '⭐⭐⭐ 3º Ano',
-      questoes: 10,
-      pontos: 10,
+      questoes: 30,
+      pontos: 30,
       comingSoon: false,
     },
     {
