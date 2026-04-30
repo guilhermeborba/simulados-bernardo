@@ -22,13 +22,13 @@ export default function Home() {
     {
       id: 2,
       title: '🔢 Matemática',
-      description: 'Resolva problemas de aritmética, geometria e lógica em 10 questões personalizadas',
+      description: 'Resolva problemas de aritmética, geometria e lógica em 30 questões personalizadas',
       emoji: '🧮',
       color: 'from-green-400 to-green-600',
       href: '/simulado-matematica',
       difficulty: '⭐⭐⭐ 3º Ano',
-      questoes: 10,
-      pontos: 10,
+      questoes: 30,
+      pontos: 30,
       comingSoon: false,
     },
     {
