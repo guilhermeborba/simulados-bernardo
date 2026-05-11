@@ -1,13 +1,16 @@
+'use client';
+
 import Link from 'next/link';
 import SimuladosDisplay from '@/components/SimuladosDisplay';
 import { Suspense } from 'react';
-
-export const metadata = {
-  title: 'Simulados Bernardo - Escolha um Simulado',
-  description: 'Escolha um simulado para começar',
-};
+import { useSearchParams } from 'next/navigation';
 
 export default function SimuladosPage() {
+  const searchParams = useSearchParams();
+  const year = searchParams.get('year');
+  const bimestre = searchParams.get('bimestre');
+  const assessment = searchParams.get('assessment');
+
   const simulados = [
     {
       id: 1,
@@ -15,11 +18,15 @@ export default function SimuladosPage() {
       description: 'Teste seus conhecimentos com 30 questões sobre fonética, gramática, ortografia, substantivos e verbos',
       emoji: '🔤',
       color: 'from-blue-400 to-blue-600',
-      href: '/simulado-portugues',
-      difficulty: '⭐⭐⭐ 3º Ano',
+      href: `/simulado-portugues?year=${year}&bimestre=${bimestre}&assessment=${assessment}`,
+      difficulty: `⭐⭐⭐ 3º Ano - ${bimestre}º Bimestre ${assessment}`,
       questoes: 30,
       pontos: 30,
       comingSoon: false,
+      availableFor: [
+        { bimestre: '1', assessment: 'AV2' },
+        { bimestre: '2', assessment: 'AV1' },
+      ],
     },
     {
       id: 2,
@@ -32,6 +39,9 @@ export default function SimuladosPage() {
       questoes: 30,
       pontos: 30,
       comingSoon: false,
+      availableFor: [
+        { bimestre: '1', assessment: 'AV2' },
+      ],
     },
     {
       id: 3,
@@ -44,6 +54,9 @@ export default function SimuladosPage() {
       questoes: 30,
       pontos: 30,
       comingSoon: false,
+      availableFor: [
+        { bimestre: '1', assessment: 'AV2' },
+      ],
     },
     {
       id: 4,
@@ -56,6 +69,9 @@ export default function SimuladosPage() {
       questoes: 30,
       pontos: 30,
       comingSoon: false,
+      availableFor: [
+        { bimestre: '1', assessment: 'AV2' },
+      ],
     },
     {
       id: 5,
@@ -68,8 +84,23 @@ export default function SimuladosPage() {
       questoes: 30,
       pontos: 30,
       comingSoon: false,
+      availableFor: [
+        { bimestre: '1', assessment: 'AV2' },
+      ],
     },
   ];
+
+  // Filtra simulados disponíveis para a AV selecionada
+  const simuladosDisponiveis = simulados.filter(sim => {
+    if (!bimestre || !assessment) return false;
+    
+    // Se tem availableFor, verifica se essa AV está na lista
+    if (sim.availableFor && sim.availableFor.length > 0) {
+      return sim.availableFor.some(av => av.bimestre === bimestre && av.assessment === assessment);
+    }
+    
+    return false;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
@@ -103,7 +134,7 @@ export default function SimuladosPage() {
 
         {/* Grid de Simulados */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
-          {simulados.map((simulado) => (
+          {simuladosDisponiveis.map((simulado) => (
             <Link key={simulado.id} href={simulado.comingSoon ? '#' : simulado.href}>
               <div
                 className={`bg-white rounded-3xl shadow-lg p-8 transition-all transform hover:scale-105 cursor-pointer group ${
