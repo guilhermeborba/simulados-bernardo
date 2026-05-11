@@ -1,23 +1,10 @@
-'use client';
-
-import SimuladoTemplate from '@/components/SimuladoTemplate';
-import { questoesPortugues } from '@/data/questoes-portugues';
-import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import SimuladoPortuguesPageClient from '@/components/SimuladoPortuguesPageClient';
 
 export default function Page() {
-  const searchParams = useSearchParams();
-  const year = searchParams.get('year') || 'terceiro';
-  const bimestre = searchParams.get('bimestre') || '1';
-  const assessment = searchParams.get('assessment') || 'AV2';
-
-  const questions = (questoesPortugues as any)[year]?.[bimestre]?.[assessment] || [];
-
   return (
-    <SimuladoTemplate
-      title={`Simulado de Português - ${bimestre}º Bimestre ${assessment}`}
-      subtitle="3º Ano"
-      emoji="📚"
-      questions={questions}
-    />
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center p-6">Carregando...</div>}>
+      <SimuladoPortuguesPageClient />
+    </Suspense>
   );
 }
