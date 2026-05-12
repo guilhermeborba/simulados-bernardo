@@ -41,6 +41,7 @@ export default function SimuladosPageClient() {
       comingSoon: false,
       availableFor: [
         { bimestre: '1', assessment: 'AV2' },
+        { bimestre: '2', assessment: 'AV1' },
       ],
     },
     {
@@ -90,6 +91,13 @@ export default function SimuladosPageClient() {
     },
   ];
 
+  const getFinalHref = (simulado: typeof simulados[number]) => {
+    if (simulado.id === 2 && bimestre === '2' && assessment === 'AV1') {
+      return `/simulado-matematica-av1?year=${year}&bimestre=${bimestre}&assessment=${assessment}`;
+    }
+    return simulado.href;
+  };
+
   const simuladosDisponiveis = simulados.filter((sim) => {
     if (!bimestre || !assessment) return false;
     return sim.availableFor.some((av) => av.bimestre === bimestre && av.assessment === assessment);
@@ -123,7 +131,7 @@ export default function SimuladosPageClient() {
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {simuladosDisponiveis.map((simulado) => (
-            <Link key={simulado.id} href={simulado.comingSoon ? '#' : simulado.href}>
+            <Link key={simulado.id} href={simulado.comingSoon ? '#' : getFinalHref(simulado)}>
               <div
                 className={`bg-white rounded-3xl shadow-lg p-8 transition-all transform hover:scale-105 cursor-pointer group ${
                   simulado.comingSoon ? 'opacity-70' : 'hover:shadow-2xl'
