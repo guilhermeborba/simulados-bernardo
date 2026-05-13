@@ -56,6 +56,7 @@ export default function SimuladosPageClient() {
       pontos: 30,
       comingSoon: false,
       availableFor: [
+        { bimestre: '2', assessment: 'AV1' },
         { bimestre: '1', assessment: 'AV2' },
       ],
     },
@@ -94,6 +95,9 @@ export default function SimuladosPageClient() {
   const getFinalHref = (simulado: typeof simulados[number]) => {
     if (simulado.id === 2 && bimestre === '2' && assessment === 'AV1') {
       return `/simulado-matematica-av1?year=${year}&bimestre=${bimestre}&assessment=${assessment}`;
+    }
+    if (simulado.id === 3 && bimestre === '2' && assessment === 'AV1') {
+      return `/simulado-ciencias-av1?year=${year}&bimestre=${bimestre}&assessment=${assessment}`;
     }
     return simulado.href;
   };
