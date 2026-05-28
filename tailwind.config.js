@@ -5,7 +5,12 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['var(--font-nunito)', 'Nunito', 'system-ui', 'sans-serif'],
+        display: ['var(--font-fredoka)', 'Fredoka', 'system-ui', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 }
