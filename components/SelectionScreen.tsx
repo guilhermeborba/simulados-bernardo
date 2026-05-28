@@ -87,16 +87,16 @@ export default function SelectionScreen() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-6">
+    <div className="page-shell flex items-center justify-center">
       <div className="max-w-2xl w-full">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-slate-800 mb-3">📚 Simulados Bernardo</h1>
-          <p className="text-xl text-slate-600">Vamos começar! Selecione seu ano e avaliação</p>
+          <h1 className="text-5xl font-bold mb-3">📚 Simulados Bernardo</h1>
+          <p className="text-xl text-muted">Vamos começar! Selecione seu ano e avaliação</p>
         </div>
 
         {/* Card principal */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12">
+        <div className="card shadow-hero md:p-12">
           {/* Select de Ano */}
           <div className="mb-8">
             <label className="block text-lg font-semibold text-slate-700 mb-4">
@@ -105,7 +105,7 @@ export default function SelectionScreen() {
             <select
               value={selectedYear}
               onChange={(e) => handleYearChange(e.target.value as Year)}
-              className="w-full px-6 py-3 text-lg border-2 border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 transition-colors bg-white cursor-pointer hover:border-slate-400"
+              className="input-field"
             >
               <option value="">-- Selecione um ano --</option>
               {years.map((year) => (
@@ -139,7 +139,7 @@ export default function SelectionScreen() {
               <select
                 value={selectedBimestre}
                 onChange={(e) => handleBimestreChange(e.target.value as Bimestre)}
-                className="w-full px-6 py-3 text-lg border-2 border-slate-300 rounded-xl focus:outline-none focus:border-blue-500 transition-colors bg-white cursor-pointer hover:border-slate-400"
+                className="input-field"
               >
                 <option value="">-- Selecione um bimestre --</option>
                 {bimestres.map((bimestre) => (
@@ -160,7 +160,7 @@ export default function SelectionScreen() {
               <select
                 value={selectedAssessment}
                 onChange={(e) => handleAssessmentChange(e.target.value as Assessment)}
-                className="w-full px-6 py-3 text-lg border-2 border-slate-300 rounded-xl focus:outline-none focus:border-green-500 transition-colors bg-white cursor-pointer hover:border-slate-400 mb-6"
+                className="input-field mb-6"
               >
                 <option value="">-- Selecione uma avaliação --</option>
                 {assessments.map((assessment) => (
@@ -188,7 +188,7 @@ export default function SelectionScreen() {
               {((selectedBimestre === '1' && selectedAssessment === 'AV2') || (selectedBimestre === '2' && selectedAssessment === 'AV1')) && (
                 <div className="animate-in fade-in duration-500">
                   <Link href={`/simulados?year=${selectedYear}&bimestre=${selectedBimestre}&assessment=${selectedAssessment}`}>
-                    <button className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg">
+                    <button className="btn btn--grass w-full">
                       ✨ Começar Simulado {selectedAssessment}
                     </button>
                   </Link>
