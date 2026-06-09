@@ -51,8 +51,8 @@ export default function SelectionScreen() {
     setSelectedAssessment(assessment);
     setShowUnavailableAssessmentMessage(false);
 
-    // Para bimestre 1, apenas AV2 disponível; para bimestre 2, AV1 disponível
-    if ((selectedBimestre === '1' && assessment === 'AV2') || (selectedBimestre === '2' && assessment === 'AV1')) {
+    // Para bimestre 1, apenas AV2 disponível; para bimestre 2, AV1 e AV2 disponíveis
+    if ((selectedBimestre === '1' && assessment === 'AV2') || (selectedBimestre === '2' && (assessment === 'AV1' || assessment === 'AV2'))) {
       // OK
     } else if (assessment) {
       setShowUnavailableAssessmentMessage(true);
@@ -178,14 +178,14 @@ export default function SelectionScreen() {
                   </p>
                   <p className="text-amber-700 mt-2">
                     Desculpe! O simulado da {selectedAssessment} do {selectedBimestre}º bimestre ainda está em desenvolvimento. 
-                    No momento, temos apenas o simulado da AV2 do 1º bimestre e AV1 do 2º bimestre disponíveis. 
+                    No momento, temos apenas o simulado da AV2 do 1º bimestre e AV1 e AV2 do 2º bimestre disponíveis. 
                     Volte em breve! 🚀
                   </p>
                 </div>
               )}
 
               {/* Botão para continuar */}
-              {((selectedBimestre === '1' && selectedAssessment === 'AV2') || (selectedBimestre === '2' && selectedAssessment === 'AV1')) && (
+              {((selectedBimestre === '1' && selectedAssessment === 'AV2') || (selectedBimestre === '2' && (selectedAssessment === 'AV1' || selectedAssessment === 'AV2'))) && (
                 <div className="animate-in fade-in duration-500">
                   <Link href={`/simulados?year=${selectedYear}&bimestre=${selectedBimestre}&assessment=${selectedAssessment}`}>
                     <button className="btn btn--grass w-full">
