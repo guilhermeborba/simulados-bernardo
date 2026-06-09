@@ -26,6 +26,7 @@ export default function SimuladosPageClient() {
       availableFor: [
         { bimestre: '1', assessment: 'AV2' },
         { bimestre: '2', assessment: 'AV1' },
+        { bimestre: '2', assessment: 'AV2' },
       ],
     },
     {
