@@ -76,6 +76,7 @@ export default function SimuladosPageClient() {
       availableFor: [
         { bimestre: '1', assessment: 'AV2' },
         { bimestre: '2', assessment: 'AV1' },
+        { bimestre: '2', assessment: 'AV2' },
       ],
     },
     {
@@ -108,6 +109,9 @@ export default function SimuladosPageClient() {
     }
     if (simulado.id === 4 && bimestre === '2' && assessment === 'AV1') {
       return `/simulado-historia-av1?year=${year}&bimestre=${bimestre}&assessment=${assessment}`;
+    }
+    if (simulado.id === 4 && bimestre === '2' && assessment === 'AV2') {
+      return `/simulado-historia-av2?year=${year}&bimestre=${bimestre}&assessment=${assessment}`;
     }
     if (simulado.id === 5 && bimestre === '2' && assessment === 'AV1') {
       return `/simulado-geografia-av1?year=${year}&bimestre=${bimestre}&assessment=${assessment}`;
