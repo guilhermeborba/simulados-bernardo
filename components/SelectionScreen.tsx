@@ -1,217 +1,72 @@
+// components/SelectionScreen.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState } from 'react';
+import HeroStep from './HeroStep';
+import SelectionStep from './SelectionStep';
+import DisciplineStep from './DisciplineStep';
+import type { Year, Bimestre, Assessment } from './SelectionStep';
 
-type Year = 'primeiro' | 'segundo' | 'terceiro' | 'quarto' | '';
-type Bimestre = '1' | '2' | '3' | '4' | '';
-type Assessment = 'AV1' | 'AV2' | '';
+type Step = 'hero' | 'selection' | 'discipline';
 
 export default function SelectionScreen() {
+  const [step, setStep] = useState<Step>('hero');
   const [selectedYear, setSelectedYear] = useState<Year>('');
   const [selectedBimestre, setSelectedBimestre] = useState<Bimestre>('');
   const [selectedAssessment, setSelectedAssessment] = useState<Assessment>('');
-  const [showBimestreSelect, setShowBimestreSelect] = useState(false);
-  const [showAssessmentSelect, setShowAssessmentSelect] = useState(false);
-  const [showUnavailableMessage, setShowUnavailableMessage] = useState(false);
-  const [showUnavailableAssessmentMessage, setShowUnavailableAssessmentMessage] = useState(false);
 
   const handleYearChange = (year: Year) => {
     setSelectedYear(year);
     setSelectedBimestre('');
     setSelectedAssessment('');
-    setShowUnavailableMessage(false);
-    setShowBimestreSelect(false);
-    setShowAssessmentSelect(false);
-
-    // Se for terceiro ano, mostra o select de bimestre
-    if (year === 'terceiro') {
-      setTimeout(() => setShowBimestreSelect(true), 300);
-    } else if (year) {
-      // Mostra mensagem de indisponibilidade
-      setShowUnavailableMessage(true);
-    }
   };
 
   const handleBimestreChange = (bimestre: Bimestre) => {
     setSelectedBimestre(bimestre);
     setSelectedAssessment('');
-    setShowUnavailableAssessmentMessage(false);
-    setShowAssessmentSelect(false);
-
-    // Para terceiro ano, mostra select de AV se bimestre for 1 ou 2
-    if (selectedYear === 'terceiro' && (bimestre === '1' || bimestre === '2')) {
-      setTimeout(() => setShowAssessmentSelect(true), 300);
-    } else if (bimestre) {
-      setShowUnavailableAssessmentMessage(true);
-    }
   };
 
   const handleAssessmentChange = (assessment: Assessment) => {
     setSelectedAssessment(assessment);
-    setShowUnavailableAssessmentMessage(false);
-
-    // Para bimestre 1, apenas AV2 disponível; para bimestre 2, AV1 e AV2 disponíveis
-    if ((selectedBimestre === '1' && assessment === 'AV2') || (selectedBimestre === '2' && (assessment === 'AV1' || assessment === 'AV2'))) {
-      // OK
-    } else if (assessment) {
-      setShowUnavailableAssessmentMessage(true);
-    }
+    setTimeout(() => setStep('discipline'), 300);
   };
 
-  const getSimuladoPath = () => {
-    if (selectedYear === 'terceiro' && selectedBimestre && selectedAssessment) {
-      // Mapeia para a página de simulados com query params
-      return `/simulados?year=${selectedYear}&bimestre=${selectedBimestre}&assessment=${selectedAssessment}`;
-    }
-    return '#';
+  const handleBackFromSelection = () => {
+    setStep('hero');
+    setSelectedYear('');
+    setSelectedBimestre('');
+    setSelectedAssessment('');
   };
 
-  const years = [
-    { value: 'primeiro', label: '1º Ano' },
-    { value: 'segundo', label: '2º Ano' },
-    { value: 'terceiro', label: '3º Ano' },
-    { value: 'quarto', label: '4º Ano' },
-  ];
+  const handleBackFromDiscipline = () => {
+    setStep('selection');
+    setSelectedAssessment('');
+  };
 
-  const assessments = [
-    { value: 'AV1', label: 'AV1 - Primeira Avaliação' },
-    { value: 'AV2', label: 'AV2 - Segunda Avaliação' },
-  ];
+  if (step === 'hero') {
+    return <HeroStep onStart={() => setStep('selection')} />;
+  }
 
-  const bimestres = [
-    { value: '1', label: '1º Bimestre' },
-    { value: '2', label: '2º Bimestre' },
-    { value: '3', label: '3º Bimestre' },
-    { value: '4', label: '4º Bimestre' },
-  ];
+  if (step === 'discipline' && selectedYear && selectedBimestre && selectedAssessment) {
+    return (
+      <DisciplineStep
+        year={selectedYear}
+        bimestre={selectedBimestre}
+        assessment={selectedAssessment}
+        onBack={handleBackFromDiscipline}
+      />
+    );
+  }
 
   return (
-    <div className="page-shell flex items-center justify-center">
-      <div className="max-w-2xl w-full">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-3">📚 Simulados Bernardo</h1>
-          <p className="text-xl text-muted">Vamos começar! Selecione seu ano e avaliação</p>
-        </div>
-
-        {/* Card principal */}
-        <div className="card shadow-hero md:p-12">
-          {/* Select de Ano */}
-          <div className="mb-8">
-            <label className="block text-lg font-semibold text-slate-700 mb-4">
-              📅 Qual ano você está cursando?
-            </label>
-            <select
-              value={selectedYear}
-              onChange={(e) => handleYearChange(e.target.value as Year)}
-              className="input-field"
-            >
-              <option value="">-- Selecione um ano --</option>
-              {years.map((year) => (
-                <option key={year.value} value={year.value}>
-                  {year.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Mensagem de Indisponibilidade */}
-          {showUnavailableMessage && (
-            <div className="mb-8 p-4 bg-amber-50 border-2 border-amber-200 rounded-xl animate-in fade-in duration-300">
-              <p className="text-lg text-amber-800 font-semibold">
-                ⚠️ Conteúdo em Construção
-              </p>
-              <p className="text-amber-700 mt-2">
-                Desculpe! O conteúdo do {selectedYear} ano ainda está sendo preparado. 
-                No momento, temos simulados disponíveis apenas para o 3º ano. 
-                Volte em breve! 🚀
-              </p>
-            </div>
-          )}
-
-          {/* Select de Bimestre (com fade-in) */}
-          {showBimestreSelect && (
-            <div className="animate-in fade-in duration-500 mb-8">
-              <label className="block text-lg font-semibold text-slate-700 mb-4">
-                📅 Qual bimestre você quer praticar?
-              </label>
-              <select
-                value={selectedBimestre}
-                onChange={(e) => handleBimestreChange(e.target.value as Bimestre)}
-                className="input-field"
-              >
-                <option value="">-- Selecione um bimestre --</option>
-                {bimestres.map((bimestre) => (
-                  <option key={bimestre.value} value={bimestre.value}>
-                    {bimestre.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Select de Avaliação (com fade-in) */}
-          {showAssessmentSelect && (
-            <div className="animate-in fade-in duration-500">
-              <label className="block text-lg font-semibold text-slate-700 mb-4">
-                📝 Qual avaliação você quer fazer?
-              </label>
-              <select
-                value={selectedAssessment}
-                onChange={(e) => handleAssessmentChange(e.target.value as Assessment)}
-                className="input-field mb-6"
-              >
-                <option value="">-- Selecione uma avaliação --</option>
-                {assessments.map((assessment) => (
-                  <option key={assessment.value} value={assessment.value}>
-                    {assessment.label}
-                  </option>
-                ))}
-              </select>
-
-              {/* Mensagem de Indisponibilidade para Avaliações */}
-              {showUnavailableAssessmentMessage && (
-                <div className="mb-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-xl animate-in fade-in duration-300">
-                  <p className="text-lg text-amber-800 font-semibold">
-                    ⚠️ Avaliação em Desenvolvimento
-                  </p>
-                  <p className="text-amber-700 mt-2">
-                    Desculpe! O simulado da {selectedAssessment} do {selectedBimestre}º bimestre ainda está em desenvolvimento. 
-                    No momento, temos apenas o simulado da AV2 do 1º bimestre e AV1 e AV2 do 2º bimestre disponíveis. 
-                    Volte em breve! 🚀
-                  </p>
-                </div>
-              )}
-
-              {/* Botão para continuar */}
-              {((selectedBimestre === '1' && selectedAssessment === 'AV2') || (selectedBimestre === '2' && (selectedAssessment === 'AV1' || selectedAssessment === 'AV2'))) && (
-                <div className="animate-in fade-in duration-500">
-                  <Link href={`/simulados?year=${selectedYear}&bimestre=${selectedBimestre}&assessment=${selectedAssessment}`}>
-                    <button className="btn btn--grass w-full">
-                      ✨ Começar Simulado {selectedAssessment}
-                    </button>
-                  </Link>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Informações auxiliares */}
-          {selectedYear && !showUnavailableMessage && (
-            <div className="mt-8 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
-              <p className="text-sm text-blue-700">
-                💡 <strong>Dica:</strong> Cada bimestre possui duas avaliações (AV1 e AV2) com conteúdos específicos.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Footer Info */}
-        <div className="text-center mt-8 text-slate-600 text-sm">
-          <p>Plataforma Interativa de Aprendizado para o Ensino Fundamental</p>
-        </div>
-      </div>
-    </div>
+    <SelectionStep
+      selectedYear={selectedYear}
+      selectedBimestre={selectedBimestre}
+      selectedAssessment={selectedAssessment}
+      onYearChange={handleYearChange}
+      onBimestreChange={handleBimestreChange}
+      onAssessmentChange={handleAssessmentChange}
+      onBack={handleBackFromSelection}
+    />
   );
 }
