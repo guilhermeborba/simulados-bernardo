@@ -176,35 +176,34 @@ export default function SimuladoTemplate({
 
   if (!hasStarted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-3xl shadow-lg p-8 text-center">
-            <div className="text-6xl mb-4">{emoji}</div>
-            <h1 className="text-4xl font-bold text-slate-800 mb-2">{title}</h1>
-            <p className="text-xl text-slate-600 mb-2">{subtitle}</p>
-            <p className="text-gray-500 mb-8">{questions.length} questões · {questions.length} pontos</p>
+      <div className="page-shell flex items-center justify-center">
+        <div className="max-w-xl w-full">
+          <div className="text-center mb-6">
+            <span className="text-6xl">{emoji}</span>
+          </div>
+          <div className="card card--hero text-center">
+            <h1 className="text-4xl mb-2">{title}</h1>
+            <p className="mb-1" style={{ color: 'var(--muted)' }}>{subtitle}</p>
+            <p className="text-sm mb-8" style={{ color: 'var(--muted)' }}>
+              {questions.length} questões · {questions.length} pontos
+            </p>
 
-            <div className="mb-6">
-              <label className="block text-lg font-semibold text-slate-700 mb-3">
-                💬 Qual é o seu nome?
-              </label>
-              <input
-                type="text"
-                value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
-                placeholder="Digite seu nome"
-                className="w-full px-4 py-3 border-2 border-slate-300 rounded-2xl focus:outline-none focus:border-blue-500 text-lg"
-              />
-            </div>
+            <label className="block text-left text-sm font-bold mb-2" style={{ color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+              💬 Qual é o seu nome?
+            </label>
+            <input
+              type="text"
+              value={studentName}
+              onChange={(e) => setStudentName(e.target.value)}
+              placeholder="Digite seu nome"
+              className="input-field mb-6"
+            />
 
             <button
               onClick={() => setHasStarted(true)}
               disabled={!studentName.trim()}
-              className={`w-full py-4 rounded-2xl text-white text-lg font-bold transition-all ${
-                studentName.trim()
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 cursor-pointer'
-                  : 'bg-gray-400 cursor-not-allowed'
-              }`}
+              className={`btn btn--lg w-full text-lg ${studentName.trim() ? 'btn--grass' : 'btn--ghost'}`}
+              style={!studentName.trim() ? { cursor: 'not-allowed', opacity: 0.5 } : {}}
             >
               ✨ Começar o Simulado
             </button>
@@ -215,90 +214,128 @@ export default function SimuladoTemplate({
   }
 
   if (isFinalized) {
+    const pct = Math.round((finalScore / questions.length) * 100);
+    const circumference = 2 * Math.PI * 44;
+    const strokeDash = (finalScore / questions.length) * circumference;
+
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      <div className="page-shell">
         <div className="max-w-4xl mx-auto">
-          {/* Resultado */}
-          <div
-            className={`bg-gradient-to-br ${motivationalData.color} rounded-3xl shadow-2xl p-8 mb-8 text-white text-center`}
-          >
-            <div className="text-7xl mb-4">{motivationalData.emoji}</div>
-            <h2 className="text-4xl font-bold mb-2">{motivationalData.title}</h2>
-            <p className="text-xl mb-6">{motivationalData.message}</p>
-            <div className="text-5xl font-bold">{finalScore}/{questions.length}</div>
-            <p className="text-lg mt-2">{((finalScore / questions.length) * 100).toFixed(0)}% de acerto</p>
+          {/* Navbar */}
+          <div className="flex justify-between items-center mb-8">
+            <span className="text-2xl font-bold" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
+              📚 {title}
+            </span>
+            <span className="badge">{subtitle} · Concluído</span>
           </div>
 
-          {/* Resumo por questão */}
-          <div className="bg-white rounded-3xl shadow-lg p-8 mb-8">
-            <h3 className="text-2xl font-bold text-slate-800 mb-6">📊 Análise Detalhada</h3>
-            <div className="space-y-4">
-              {questions.map((question) => {
-                const isCorrect = isAnswerCorrect(question.id);
-                return (
-                  <div
-                    key={question.id}
-                    className={`p-4 rounded-2xl border-2 ${
-                      isCorrect
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-red-500 bg-red-50'
-                    }`}
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Coluna principal */}
+            <div className="flex-1 flex flex-col gap-5">
+              {/* Hero resultado */}
+              <div className="card card--hero flex items-center gap-6">
+                {/* Anel de progresso SVG */}
+                <svg width="110" height="110" viewBox="0 0 100 100" style={{ flexShrink: 0, transform: 'rotate(-90deg)' }}>
+                  <circle cx="50" cy="50" r="44" fill="none" stroke="var(--line)" strokeWidth="10"/>
+                  <circle
+                    cx="50" cy="50" r="44" fill="none"
+                    stroke="var(--grass)"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                    strokeDasharray={`${strokeDash} ${circumference}`}
+                  />
+                  <text
+                    x="50" y="50"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    style={{ transform: 'rotate(90deg)', transformOrigin: '50px 50px', fontFamily: 'var(--font-fredoka)', fill: 'var(--ink)' }}
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <p className="font-semibold text-slate-800">
-                          Questão {question.id}
-                          {isCorrect ? ' ✅' : ' ❌'}
-                        </p>
-                      </div>
-                      <div className={`font-bold ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                        {isCorrect ? `+${question.points} pt` : '0.0 pt'}
-                      </div>
-                    </div>
+                    <tspan fontSize="24" fontWeight="800">{finalScore}</tspan>
+                    <tspan fontSize="13" fill="var(--muted)" dy="0"> /{questions.length}</tspan>
+                  </text>
+                </svg>
 
-                    {/* Dica */}
-                    <div
-                      className={`p-3 rounded-xl mt-3 ${
-                        isCorrect
-                          ? 'bg-green-100 border border-green-400'
-                          : 'bg-yellow-100 border border-yellow-400'
-                      }`}
-                    >
-                      <p className={`font-semibold ${isCorrect ? 'text-green-800' : 'text-yellow-800'}`}>
-                        {isCorrect ? '🌟 Curiosidade:' : '💡 Dica para aprender:'}
-                      </p>
-                      <p className={`text-sm mt-1 ${isCorrect ? 'text-green-700' : 'text-yellow-700'}`}>
-                        {question.tip}
-                      </p>
-                    </div>
+                <div>
+                  <h2 className="text-2xl mb-1" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
+                    {motivationalData.emoji} {motivationalData.title}, {studentName}!
+                  </h2>
+                  <p className="text-sm mb-3" style={{ color: 'var(--muted)', lineHeight: 1.5 }}>
+                    {motivationalData.message}
+                  </p>
+                  <div style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    background: 'rgba(237,255,245,.9)', borderRadius: 999,
+                    padding: '5px 14px', fontSize: 13, fontWeight: 700, color: 'var(--grass-deep)',
+                  }}>
+                    ✅ {pct}% de aproveitamento
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                </div>
+              </div>
 
-          {/* Botões */}
-          <div className="flex gap-4">
-            <button
-              onClick={() => {
-                setUserAnswers({});
-                setIsFinalized(false);
-              }}
-              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg transition-all"
-            >
-              🔄 Refazer Simulado
-            </button>
-            <button
-              onClick={() => {
-                setUserAnswers({});
-                setIsFinalized(false);
-                setHasStarted(false);
-                setStudentName('');
-              }}
-              className="flex-1 bg-slate-500 hover:bg-slate-600 text-white py-4 rounded-2xl font-bold text-lg transition-all"
-            >
-              🏠 Voltar ao Início
-            </button>
+              {/* Análise por questão */}
+              <div className="card">
+                <h3 className="text-lg mb-4" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
+                  📊 Análise detalhada
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {questions.map((question, idx) => {
+                    const correct = isAnswerCorrect(question.id);
+                    return (
+                      <div key={question.id}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0' }}>
+                          <div style={{
+                            width: 28, height: 28, borderRadius: 10, flexShrink: 0,
+                            background: correct ? 'rgba(237,255,245,.9)' : 'rgba(255,240,247,.9)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
+                          }}>
+                            {correct ? '✅' : '❌'}
+                          </div>
+                          <div style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--ink-soft)' }}>
+                            Questão {question.id}
+                          </div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: correct ? 'var(--grass-deep)' : 'var(--bubble-deep)' }}>
+                            {correct ? `+${question.points} pt` : '0 pt'}
+                          </div>
+                        </div>
+                        {!correct && (
+                          <div style={{ marginBottom: 8, padding: '10px 14px', background: '#FFF8D6', border: '1.5px solid var(--sun)', borderRadius: 'var(--radius-sm)', fontSize: 12, color: '#6B4A00', lineHeight: 1.5 }}>
+                            💡 {question.tip}
+                          </div>
+                        )}
+                        {idx < questions.length - 1 && <div style={{ height: 1, background: 'var(--line)' }} />}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar ações */}
+            <div style={{ width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <p className="text-xs font-bold" style={{ color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                  O que fazer agora?
+                </p>
+                <button
+                  className="btn btn--sky w-full"
+                  onClick={() => { setUserAnswers({}); setIsFinalized(false); }}
+                >
+                  🔄 Refazer simulado
+                </button>
+                <button
+                  className="btn btn--lilac w-full"
+                  onClick={() => { setUserAnswers({}); setIsFinalized(false); setHasStarted(false); setStudentName(''); window.location.href = '/'; }}
+                >
+                  📚 Outra disciplina
+                </button>
+                <button
+                  className="btn btn--ghost w-full"
+                  onClick={() => { setUserAnswers({}); setIsFinalized(false); setHasStarted(false); setStudentName(''); window.location.href = '/'; }}
+                >
+                  🏠 Voltar ao início
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -306,23 +343,26 @@ export default function SimuladoTemplate({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="page-shell">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-3xl shadow-lg p-6 mb-8">
-          <div className="flex justify-between items-center">
+        <div className="card mb-6 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">{emoji}</span>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800">{emoji} {title}</h1>
-              <p className="text-slate-600">
-                Aluno(a): <span className="font-semibold">{studentName}</span>
+              <h1 className="text-xl" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
+                {title}
+              </h1>
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>
+                Aluno(a): <strong style={{ color: 'var(--ink)' }}>{studentName}</strong>
               </p>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-slate-600">{subtitle}</p>
-              <p className="text-lg font-bold text-blue-600">
-                {Object.keys(userAnswers).length}/{questions.length} respondidas
-              </p>
-            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>{subtitle}</p>
+            <p className="text-lg font-bold" style={{ color: 'var(--sky-deep)', fontFamily: 'var(--font-fredoka)' }}>
+              {Object.keys(userAnswers).length}/{questions.length} respondidas
+            </p>
           </div>
         </div>
 
@@ -336,26 +376,46 @@ export default function SimuladoTemplate({
             return (
               <div
                 key={question.id}
-                className={`bg-white rounded-3xl shadow-lg p-6 border-4 transition-all ${
-                  isFinalized
-                    ? isCorrect
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-red-500 bg-red-50'
-                    : 'border-slate-200 hover:border-blue-300'
-                }`}
+                style={{
+                  background: isFinalized
+                    ? isCorrect ? 'rgba(237,255,245,.7)' : 'rgba(255,240,247,.7)'
+                    : 'var(--paper)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: 24,
+                  boxShadow: 'var(--shadow-2)',
+                  border: `2px solid ${
+                    isFinalized
+                      ? isCorrect ? 'var(--grass)' : 'var(--bubble)'
+                      : 'var(--line)'
+                  }`,
+                  transition: 'all .2s',
+                }}
               >
                 {/* Número e Pontos */}
-                <div className="flex justify-between items-start mb-4 gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-slate-800">
-                      Questão {question.id}
-                      {isFinalized && (isCorrect ? ' ✅' : ' ❌')}
-                    </h3>
-                    <p className="text-sm text-slate-600 font-semibold">{question.text}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <span style={{
+                      display: 'inline-block',
+                      background: '#FFE0EE',
+                      color: 'var(--bubble-deep)',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      borderRadius: 999,
+                      padding: '3px 12px',
+                      marginBottom: 8,
+                      fontFamily: 'var(--font-nunito)',
+                    }}>
+                      Questão {question.id}{isFinalized && (isCorrect ? ' ✅' : ' ❌')}
+                    </span>
+                    <p style={{ fontFamily: 'var(--font-nunito)', fontWeight: 700, color: 'var(--ink)', fontSize: 15, lineHeight: 1.5 }}>
+                      {question.text}
+                    </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-slate-600">Valor</p>
-                    <p className="text-xl font-bold text-blue-600">{question.points} pt</p>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <p style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600 }}>Valor</p>
+                    <p style={{ fontSize: 18, fontWeight: 800, color: 'var(--sky-deep)', fontFamily: 'var(--font-fredoka)' }}>
+                      {question.points} pt
+                    </p>
                   </div>
                 </div>
 
@@ -373,17 +433,40 @@ export default function SimuladoTemplate({
                           key={option.id}
                           onClick={() => handleAnswerChange(question.id, option.id)}
                           disabled={isFinalized}
-                          className={`w-full text-left p-4 rounded-2xl font-semibold transition-all border-2 ${
-                            showCorrectIndicator
-                              ? 'border-green-500 bg-green-100 text-green-800'
-                              : showIncorrectIndicator
-                                ? 'border-red-500 bg-red-100 text-red-800'
-                                : isOptionSelected && !isFinalized
-                                  ? 'border-blue-500 bg-blue-50 text-blue-800'
-                                  : 'border-slate-300 bg-white text-slate-800 hover:border-blue-400'
-                          }`}
+                          style={{
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: '12px 16px',
+                            borderRadius: 'var(--radius-md)',
+                            border: `2px solid ${
+                              showCorrectIndicator ? 'var(--grass-deep)'
+                              : showIncorrectIndicator ? 'var(--bubble-deep)'
+                              : isOptionSelected && !isFinalized ? 'var(--sky-deep)'
+                              : 'var(--line)'
+                            }`,
+                            background: showCorrectIndicator ? 'rgba(237,255,245,.8)'
+                              : showIncorrectIndicator ? 'rgba(255,240,247,.8)'
+                              : isOptionSelected && !isFinalized ? 'rgba(240,247,255,.8)'
+                              : 'var(--paper)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 12,
+                            fontFamily: 'var(--font-nunito)',
+                            fontWeight: 600,
+                            color: 'var(--ink)',
+                            fontSize: 14,
+                            cursor: isFinalized ? 'default' : 'pointer',
+                            transition: 'all .15s',
+                            boxShadow: 'var(--shadow-1)',
+                          }}
                         >
-                          <span className="inline-block w-8 h-8 rounded-full border-2 text-center leading-6 mr-3 font-bold">
+                          <span style={{
+                            width: 28, height: 28, borderRadius: 999, flexShrink: 0,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 12, fontWeight: 800,
+                            background: showCorrectIndicator ? 'var(--grass)' : showIncorrectIndicator ? 'var(--bubble)' : isOptionSelected && !isFinalized ? 'var(--sky-deep)' : 'var(--line)',
+                            color: (showCorrectIndicator || showIncorrectIndicator || (isOptionSelected && !isFinalized)) ? 'white' : 'var(--muted)',
+                          }}>
                             {option.id.toUpperCase()}
                           </span>
                           {option.text}
@@ -530,17 +613,17 @@ export default function SimuladoTemplate({
 
                 {/* Dica Pedagógica (mostrada após erro) */}
                 {isFinalized && !isCorrect && (
-                  <div className="mt-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-2xl">
-                    <p className="text-yellow-800 font-semibold">💡 Dica para aprender:</p>
-                    <p className="text-yellow-700 mt-2">{question.tip}</p>
+                  <div style={{ marginTop: 16, padding: 16, background: '#FFF8D6', border: '1.5px solid var(--sun)', borderRadius: 'var(--radius-md)' }}>
+                    <p style={{ fontWeight: 700, color: '#8B6000', fontFamily: 'var(--font-nunito)' }}>💡 Dica para aprender:</p>
+                    <p style={{ fontSize: 13, color: '#6B4A00', marginTop: 6, lineHeight: 1.5 }}>{question.tip}</p>
                   </div>
                 )}
 
                 {/* Dica Pedagógica (mostrada após acerto também) */}
                 {isFinalized && isCorrect && (
-                  <div className="mt-4 p-4 bg-green-50 border-2 border-green-400 rounded-2xl">
-                    <p className="text-green-800 font-semibold">🌟 Curiosidade:</p>
-                    <p className="text-green-700 mt-2">{question.tip}</p>
+                  <div style={{ marginTop: 16, padding: 16, background: 'rgba(237,255,245,.8)', border: '1.5px solid var(--grass)', borderRadius: 'var(--radius-md)' }}>
+                    <p style={{ fontWeight: 700, color: 'var(--grass-deep)', fontFamily: 'var(--font-nunito)' }}>🌟 Curiosidade:</p>
+                    <p style={{ fontSize: 13, color: '#1A7A3F', marginTop: 6, lineHeight: 1.5 }}>{question.tip}</p>
                   </div>
                 )}
               </div>
@@ -552,19 +635,15 @@ export default function SimuladoTemplate({
         <button
           onClick={() => setIsFinalized(true)}
           disabled={Object.keys(userAnswers).length < questions.length}
-          className={`w-full mt-8 py-6 rounded-2xl text-white text-xl font-bold transition-all ${
-            Object.keys(userAnswers).length === questions.length
-              ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 cursor-pointer'
-              : 'bg-gray-400 cursor-not-allowed'
+          className={`btn btn--lg w-full mt-8 text-lg ${
+            Object.keys(userAnswers).length === questions.length ? 'btn--grass' : 'btn--ghost'
           }`}
+          style={Object.keys(userAnswers).length < questions.length ? { cursor: 'not-allowed', opacity: 0.5 } : {}}
         >
           {Object.keys(userAnswers).length === questions.length
             ? '✅ Finalizar e Ver Resultado'
             : `⏳ Responda todas (${Object.keys(userAnswers).length}/${questions.length})`}
         </button>
-
-        {/* Espaço em branco no fim */}
-        <div className="h-8"></div>
       </div>
     </div>
   );
