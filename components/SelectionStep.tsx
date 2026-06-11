@@ -73,7 +73,7 @@ export default function SelectionStep({
   onAssessmentChange,
   onBack,
 }: SelectionStepProps) {
-  const currentStep = !selectedYear ? 1 : !selectedBimestre ? 2 : !selectedAssessment ? 2 : 3;
+  const currentStep = !selectedYear ? 1 : !selectedBimestre ? 2 : !selectedAssessment ? 3 : 3;
 
   const availableAvs = selectedBimestre ? (AVAILABLE_ASSESSMENTS[selectedBimestre] ?? []) : [];
 
