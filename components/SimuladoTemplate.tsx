@@ -46,6 +46,11 @@ export default function SimuladoTemplate({
     }
   };
 
+  const handleFinalize = () => {
+    setIsFinalized(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const calculateScore = () => {
     let score = 0;
     questions.forEach((question) => {
@@ -633,7 +638,7 @@ export default function SimuladoTemplate({
 
         {/* Botão Finalizar */}
         <button
-          onClick={() => setIsFinalized(true)}
+          onClick={handleFinalize}
           disabled={Object.keys(userAnswers).length < questions.length}
           className={`btn btn--lg w-full mt-8 text-lg ${
             Object.keys(userAnswers).length === questions.length ? 'btn--grass' : 'btn--ghost'
