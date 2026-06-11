@@ -32,8 +32,7 @@ const DISCIPLINES: Discipline[] = [
     iconBg: '#FFE0EE',
     btnClass: 'btn--bubble',
     routes: {
-      '1-AV2': '/simulado-portugues-av2',
-      '2-AV1': '/simulado-portugues',
+      '1-AV2': '/simulado-portugues',
       '2-AV2': '/simulado-portugues-av2',
     },
   },
