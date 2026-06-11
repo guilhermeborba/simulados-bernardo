@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, ReactNode } from 'react';
+import { useState, useRef, ReactNode } from 'react';
 
 export interface Option {
   id: string;
@@ -36,6 +36,7 @@ export default function SimuladoTemplate({
   const [isFinalized, setIsFinalized] = useState(false);
   const [studentName, setStudentName] = useState('');
   const [hasStarted, setHasStarted] = useState(false);
+  const questionRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
   const handleAnswerChange = (questionId: number, answer: any) => {
     if (!isFinalized) {
@@ -43,6 +44,15 @@ export default function SimuladoTemplate({
         ...prev,
         [questionId]: answer,
       }));
+
+      // Rola para a próxima questão após um pequeno delay
+      const currentIndex = questions.findIndex((q) => q.id === questionId);
+      const next = questions[currentIndex + 1];
+      if (next) {
+        setTimeout(() => {
+          questionRefs.current[next.id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
+      }
     }
   };
 
@@ -295,15 +305,15 @@ export default function SimuladoTemplate({
                           }}>
                             {correct ? '✅' : '❌'}
                           </div>
-                          <div style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--ink-soft)' }}>
+                          <div style={{ flex: 1, fontSize: 14, fontWeight: 600, color: 'var(--ink-soft)' }}>
                             Questão {question.id}
                           </div>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: correct ? 'var(--grass-deep)' : 'var(--bubble-deep)' }}>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: correct ? 'var(--grass-deep)' : 'var(--bubble-deep)' }}>
                             {correct ? `+${question.points} pt` : '0 pt'}
                           </div>
                         </div>
                         {!correct && (
-                          <div style={{ marginBottom: 8, padding: '10px 14px', background: '#FFF8D6', border: '1.5px solid var(--sun)', borderRadius: 'var(--radius-sm)', fontSize: 12, color: '#6B4A00', lineHeight: 1.5 }}>
+                          <div style={{ marginBottom: 8, padding: '10px 14px', background: '#FFF8D6', border: '1.5px solid var(--sun)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: '#6B4A00', lineHeight: 1.5 }}>
                             💡 {question.tip}
                           </div>
                         )}
@@ -381,6 +391,7 @@ export default function SimuladoTemplate({
             return (
               <div
                 key={question.id}
+                ref={(el) => { questionRefs.current[question.id] = el; }}
                 style={{
                   background: isFinalized
                     ? isCorrect ? 'rgba(237,255,245,.7)' : 'rgba(255,240,247,.7)'
@@ -403,7 +414,7 @@ export default function SimuladoTemplate({
                       display: 'inline-block',
                       background: '#FFE0EE',
                       color: 'var(--bubble-deep)',
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: 700,
                       borderRadius: 999,
                       padding: '3px 12px',
@@ -455,7 +466,7 @@ export default function SimuladoTemplate({
                               : 'var(--paper)',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 12,
+                            gap: 14,
                             fontFamily: 'var(--font-nunito)',
                             fontWeight: 600,
                             color: 'var(--ink)',
@@ -468,7 +479,7 @@ export default function SimuladoTemplate({
                           <span style={{
                             width: 28, height: 28, borderRadius: 999, flexShrink: 0,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 12, fontWeight: 800,
+                            fontSize: 14, fontWeight: 800,
                             background: showCorrectIndicator ? 'var(--grass)' : showIncorrectIndicator ? 'var(--bubble)' : isOptionSelected && !isFinalized ? 'var(--sky-deep)' : 'var(--line)',
                             color: (showCorrectIndicator || showIncorrectIndicator || (isOptionSelected && !isFinalized)) ? 'white' : 'var(--muted)',
                           }}>

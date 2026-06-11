@@ -216,10 +216,10 @@ export default function SelectionStep({
                         fontSize: 22, flexShrink: 0,
                       }}>{a.emoji}</div>
                       <div>
-                        <div style={{ fontFamily: 'var(--font-nunito)', fontWeight: 700, color: 'var(--ink)', fontSize: 15 }}>
+                        <div style={{ fontFamily: 'var(--font-nunito)', fontWeight: 700, color: 'var(--ink)', fontSize: 16 }}>
                           {a.label}
                         </div>
-                        <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>{a.desc}</div>
+                        <div style={{ fontSize: 14, color: 'var(--muted)', marginTop: 2 }}>{a.desc}</div>
                       </div>
                     </button>
                   );

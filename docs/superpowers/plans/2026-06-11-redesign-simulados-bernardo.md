@@ -400,7 +400,7 @@ export default function SelectionStep({
                         <div style={{ fontFamily: 'var(--font-nunito)', fontWeight: 700, color: 'var(--ink)', fontSize: 15 }}>
                           {a.label}
                         </div>
-                        <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>{a.desc}</div>
+                        <div style={{ fontSize: 14, color: 'var(--muted)', marginTop: 2 }}>{a.desc}</div>
                       </div>
                     </button>
                   );
@@ -624,7 +624,7 @@ export default function DisciplineStep({ year, bimestre, assessment, onBack }: D
                   <div style={{ fontSize: 17, fontWeight: 800, fontFamily: 'var(--font-nunito)', color: 'var(--ink)' }}>
                     {disc.label}
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4, lineHeight: 1.4 }}>
+                  <div style={{ fontSize: 14, color: 'var(--muted)', marginTop: 4, lineHeight: 1.4 }}>
                     {disc.desc}
                   </div>
                 </div>
@@ -957,7 +957,7 @@ Localizar o bloco `<div className="flex justify-between items-start mb-4 gap-4">
       display: 'inline-block',
       background: '#FFE0EE',
       color: 'var(--bubble-deep)',
-      fontSize: 12,
+      fontSize: 14,
       fontWeight: 700,
       borderRadius: 999,
       padding: '3px 12px',
@@ -1018,7 +1018,7 @@ Localizar o botão de opção `<button key={option.id} onClick=... className="w-
   <span style={{
     width: 28, height: 28, borderRadius: 999, flexShrink: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: 12, fontWeight: 800,
+    fontSize: 14, fontWeight: 800,
     background: showCorrectIndicator ? 'var(--grass)' : showIncorrectIndicator ? 'var(--bubble)' : isOptionSelected && !isFinalized ? 'var(--sky-deep)' : 'var(--line)',
     color: (showCorrectIndicator || showIncorrectIndicator || (isOptionSelected && !isFinalized)) ? 'white' : 'var(--muted)',
   }}>
@@ -1173,12 +1173,12 @@ if (isFinalized) {
                         <div style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--ink-soft)' }}>
                           Questão {question.id}
                         </div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: correct ? 'var(--grass-deep)' : 'var(--bubble-deep)' }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: correct ? 'var(--grass-deep)' : 'var(--bubble-deep)' }}>
                           {correct ? `+${question.points} pt` : '0 pt'}
                         </div>
                       </div>
                       {!correct && (
-                        <div style={{ marginBottom: 8, padding: '10px 14px', background: '#FFF8D6', border: '1.5px solid var(--sun)', borderRadius: 'var(--radius-sm)', fontSize: 12, color: '#6B4A00', lineHeight: 1.5 }}>
+                        <div style={{ marginBottom: 8, padding: '10px 14px', background: '#FFF8D6', border: '1.5px solid var(--sun)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: '#6B4A00', lineHeight: 1.5 }}>
                           💡 {question.tip}
                         </div>
                       )}

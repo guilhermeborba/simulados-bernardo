@@ -182,7 +182,7 @@ export default function DisciplineStep({ year, bimestre, assessment, onBack }: D
                   <div style={{ fontSize: 17, fontWeight: 800, fontFamily: 'var(--font-nunito)', color: 'var(--ink)' }}>
                     {disc.label}
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4, lineHeight: 1.4 }}>
+                  <div style={{ fontSize: 14, color: 'var(--muted)', marginTop: 4, lineHeight: 1.4 }}>
                     {disc.desc}
                   </div>
                 </div>
