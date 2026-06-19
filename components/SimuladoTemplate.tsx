@@ -36,23 +36,30 @@ export default function SimuladoTemplate({
   const [isFinalized, setIsFinalized] = useState(false);
   const [studentName, setStudentName] = useState('');
   const [hasStarted, setHasStarted] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
+  // Mantido apenas para compatibilidade com tipos mas não usado no quiz
   const questionRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
   const handleAnswerChange = (questionId: number, answer: any) => {
     if (!isFinalized) {
-      setUserAnswers((prev) => ({
-        ...prev,
-        [questionId]: answer,
-      }));
+      setUserAnswers((prev) => ({ ...prev, [questionId]: answer }));
+    }
+  };
 
-      // Rola para a próxima questão após um pequeno delay
-      const currentIndex = questions.findIndex((q) => q.id === questionId);
-      const next = questions[currentIndex + 1];
-      if (next) {
-        setTimeout(() => {
-          questionRefs.current[next.id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 300);
-      }
+  const handleConfirm = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex((i) => i + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      handleFinalize();
+    }
+  };
+
+  const handleBack = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex((i) => i - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -357,308 +364,288 @@ export default function SimuladoTemplate({
     );
   }
 
+  const question = questions[currentQuestionIndex];
+  const userAnswer = userAnswers[question.id];
+  const hasAnswer = userAnswer !== undefined && userAnswer !== null && userAnswer !== '';
+  const isLast = currentQuestionIndex === questions.length - 1;
+  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+
   return (
-    <div className="page-shell">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="card mb-6 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">{emoji}</span>
-            <div>
-              <h1 className="text-xl" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
-                {title}
-              </h1>
-              <p className="text-sm" style={{ color: 'var(--muted)' }}>
-                Aluno(a): <strong style={{ color: 'var(--ink)' }}>{studentName}</strong>
-              </p>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-sm" style={{ color: 'var(--muted)' }}>{subtitle}</p>
-            <p className="text-lg font-bold" style={{ color: 'var(--sky-deep)', fontFamily: 'var(--font-fredoka)' }}>
-              {Object.keys(userAnswers).length}/{questions.length} respondidas
-            </p>
+    <div className="page-shell flex flex-col px-4 py-6 md:py-8">
+
+      {/* Header */}
+      <div className="flex justify-between items-center mb-5 w-full max-w-2xl mx-auto">
+        <button className="btn btn--ghost text-sm" onClick={() => setHasStarted(false)}
+                style={{ padding: '8px 16px' }}>
+          ‹ Voltar
+        </button>
+        <div className="flex items-center gap-2">
+          <span className="text-xl">📚</span>
+          <span className="font-bold text-base" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
+            Simulados Bernardo
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold uppercase tracking-widest hidden sm:block" style={{ color: 'var(--muted)' }}>
+            04 · QUESTÃO
+          </span>
+          <div className="flex items-center gap-2 rounded-full px-3 py-1.5 font-bold text-sm"
+               style={{ background: '#FFF8D6', color: '#8B6000', boxShadow: 'var(--shadow-1)' }}>
+            <span>7</span>
+            <span className="hidden sm:inline">Dias seguidos</span>
           </div>
         </div>
+      </div>
 
-        {/* Questões */}
-        <div className="space-y-6">
-          {questions.map((question) => {
-            const isAnswered = question.id in userAnswers;
-            const isCorrect = isAnswered ? isAnswerCorrect(question.id) : null;
-            const userAnswer = userAnswers[question.id];
+      {/* Barra de progresso */}
+      <div className="w-full max-w-2xl mx-auto mb-5 flex items-center gap-3">
+        <div style={{ flex: 1, height: 8, borderRadius: 999, background: 'var(--line)', overflow: 'hidden' }}>
+          <div style={{
+            height: '100%',
+            width: `${progress}%`,
+            borderRadius: 999,
+            background: 'linear-gradient(90deg, var(--bubble), var(--sky))',
+            transition: 'width .4s ease',
+          }} />
+        </div>
+        <span style={{ fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 16, color: 'var(--ink)', flexShrink: 0 }}>
+          {currentQuestionIndex + 1}/{questions.length}
+        </span>
+      </div>
 
-            return (
-              <div
-                key={question.id}
-                ref={(el) => { questionRefs.current[question.id] = el; }}
-                style={{
-                  background: isFinalized
-                    ? isCorrect ? 'rgba(237,255,245,.7)' : 'rgba(255,240,247,.7)'
-                    : 'var(--paper)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: 24,
-                  boxShadow: 'var(--shadow-2)',
-                  border: `2px solid ${
-                    isFinalized
-                      ? isCorrect ? 'var(--grass)' : 'var(--bubble)'
-                      : 'var(--line)'
-                  }`,
-                  transition: 'all .2s',
-                }}
-              >
-                {/* Número e Pontos */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, gap: 12 }}>
-                  <div style={{ flex: 1 }}>
-                    <span style={{
-                      display: 'inline-block',
-                      background: '#FFE0EE',
-                      color: 'var(--bubble-deep)',
-                      fontSize: 14,
-                      fontWeight: 700,
-                      borderRadius: 999,
-                      padding: '3px 12px',
-                      marginBottom: 8,
-                      fontFamily: 'var(--font-nunito)',
-                    }}>
-                      Questão {question.id}{isFinalized && (isCorrect ? ' ✅' : ' ❌')}
-                    </span>
-                    <p style={{ fontFamily: 'var(--font-nunito)', fontWeight: 700, color: 'var(--ink)', fontSize: 15, lineHeight: 1.5 }}>
-                      {question.text}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <p style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600 }}>Valor</p>
-                    <p style={{ fontSize: 18, fontWeight: 800, color: 'var(--sky-deep)', fontFamily: 'var(--font-fredoka)' }}>
-                      {question.points} pt
-                    </p>
+      {/* Card da questão */}
+      <div className="w-full max-w-2xl mx-auto bg-white rounded-[1.75rem] p-6 md:p-8"
+           style={{ boxShadow: 'var(--shadow-3)' }}>
+
+        {/* Tag da questão */}
+        <div className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold mb-5"
+             style={{ background: '#FFE0EE', color: 'var(--bubble-deep)' }}>
+          + Questão {currentQuestionIndex + 1}
+        </div>
+
+        {/* Texto da questão */}
+        <p style={{ fontFamily: 'var(--font-nunito)', fontWeight: 700, color: 'var(--ink)', fontSize: 18, lineHeight: 1.55, marginBottom: 24 }}>
+          {question.text}
+        </p>
+
+        {/* Multiple choice */}
+        {question.type === 'multiple_choice' && question.options && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+            {question.options.map((option) => {
+              const isSelected = userAnswer === option.id;
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleAnswerChange(question.id, option.id)}
+                  style={{
+                    width: '100%', textAlign: 'left',
+                    padding: '14px 18px',
+                    borderRadius: 'var(--radius-md)',
+                    border: `2px solid ${isSelected ? 'var(--bubble)' : 'var(--line)'}`,
+                    background: isSelected ? '#FFF0F7' : 'white',
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    fontFamily: 'var(--font-nunito)', fontWeight: 600,
+                    color: 'var(--ink)', fontSize: 15,
+                    cursor: 'pointer', transition: 'all .15s',
+                    boxShadow: 'var(--shadow-1)',
+                  }}
+                >
+                  <span style={{
+                    width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 14, fontWeight: 800,
+                    background: isSelected ? 'var(--bubble)' : '#FFE9A3',
+                    color: isSelected ? 'white' : '#8B6000',
+                  }}>
+                    {option.id.toUpperCase()}
+                  </span>
+                  {option.text}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* True/False Multiple */}
+        {question.type === 'true_false_multiple' && question.items && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+            {question.items.map((item) => {
+              const selectedValue = userAnswer?.[item.id];
+              return (
+                <div key={item.id} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 16px', borderRadius: 'var(--radius-md)',
+                  border: '2px solid var(--line)', background: 'white',
+                  boxShadow: 'var(--shadow-1)',
+                }}>
+                  <span style={{ flex: 1, fontFamily: 'var(--font-nunito)', fontWeight: 600, color: 'var(--ink)', fontSize: 14 }}>
+                    {item.text}
+                  </span>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {['V', 'F'].map((opt) => (
+                      <button key={opt}
+                        onClick={() => handleAnswerChange(question.id, { ...userAnswer, [item.id]: opt })}
+                        style={{
+                          width: 44, height: 44, borderRadius: 12, border: 'none',
+                          fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 16,
+                          background: selectedValue === opt ? (opt === 'V' ? 'var(--grass)' : 'var(--bubble)') : '#F0EDE8',
+                          color: selectedValue === opt ? 'white' : 'var(--muted)',
+                          cursor: 'pointer', transition: 'all .15s',
+                        }}
+                      >{opt}</button>
+                    ))}
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
 
-                {/* Opções por tipo */}
-                {question.type === 'multiple_choice' && question.options && (
-                  <div className="space-y-3 mb-4">
-                    {question.options.map((option) => {
-                      const isOptionCorrect = option.id === question.correctAnswer;
-                      const isOptionSelected = userAnswer === option.id;
-                      const showCorrectIndicator = isFinalized && isOptionCorrect;
-                      const showIncorrectIndicator = isFinalized && isOptionSelected && !isOptionCorrect;
+        {/* Matching */}
+        {question.type === 'matching' && question.pairs && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+            {question.pairs.map((pair) => {
+              const selected = userAnswer?.[pair.left.id];
+              return (
+                <div key={pair.left.id} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 16px', borderRadius: 'var(--radius-md)',
+                  border: '2px solid var(--line)', background: 'white',
+                  boxShadow: 'var(--shadow-1)',
+                }}>
+                  <span style={{ flex: 1, fontFamily: 'var(--font-nunito)', fontWeight: 600, color: 'var(--ink)', fontSize: 14 }}>
+                    {pair.left.text}
+                  </span>
+                  <select
+                    value={selected || ''}
+                    onChange={(e) => handleAnswerChange(question.id, { ...userAnswer, [pair.left.id]: e.target.value })}
+                    style={{
+                      padding: '8px 12px', borderRadius: 10, border: `2px solid ${selected ? 'var(--sky)' : 'var(--line)'}`,
+                      fontFamily: 'var(--font-nunito)', fontWeight: 600, fontSize: 13,
+                      background: selected ? '#F0F7FF' : 'white', color: 'var(--ink)', cursor: 'pointer',
+                    }}
+                  >
+                    <option value="">— Escolha —</option>
+                    {pair.right?.map((opt) => (
+                      <option key={opt.id} value={opt.id}>{opt.text}</option>
+                    ))}
+                  </select>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-                      return (
-                        <button
-                          key={option.id}
-                          onClick={() => handleAnswerChange(question.id, option.id)}
-                          disabled={isFinalized}
-                          style={{
-                            width: '100%',
-                            textAlign: 'left',
-                            padding: '12px 16px',
-                            borderRadius: 'var(--radius-md)',
-                            border: `2px solid ${
-                              showCorrectIndicator ? 'var(--grass-deep)'
-                              : showIncorrectIndicator ? 'var(--bubble-deep)'
-                              : isOptionSelected && !isFinalized ? 'var(--sky-deep)'
-                              : 'var(--line)'
-                            }`,
-                            background: showCorrectIndicator ? 'rgba(237,255,245,.8)'
-                              : showIncorrectIndicator ? 'rgba(255,240,247,.8)'
-                              : isOptionSelected && !isFinalized ? 'rgba(240,247,255,.8)'
-                              : 'var(--paper)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 14,
-                            fontFamily: 'var(--font-nunito)',
-                            fontWeight: 600,
-                            color: 'var(--ink)',
-                            fontSize: 14,
-                            cursor: isFinalized ? 'default' : 'pointer',
-                            transition: 'all .15s',
-                            boxShadow: 'var(--shadow-1)',
-                          }}
-                        >
-                          <span style={{
-                            width: 28, height: 28, borderRadius: 999, flexShrink: 0,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 14, fontWeight: 800,
-                            background: showCorrectIndicator ? 'var(--grass)' : showIncorrectIndicator ? 'var(--bubble)' : isOptionSelected && !isFinalized ? 'var(--sky-deep)' : 'var(--line)',
-                            color: (showCorrectIndicator || showIncorrectIndicator || (isOptionSelected && !isFinalized)) ? 'white' : 'var(--muted)',
-                          }}>
-                            {option.id.toUpperCase()}
-                          </span>
-                          {option.text}
-                          {showCorrectIndicator && ' ✅'}
-                          {showIncorrectIndicator && ' ❌'}
-                        </button>
-                      );
-                    })}
+        {/* Classification */}
+        {question.type === 'classification' && question.items && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+            {question.items.map((item) => {
+              const selectedValue = userAnswer?.[item.id];
+              return (
+                <div key={item.id} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 16px', borderRadius: 'var(--radius-md)',
+                  border: '2px solid var(--line)', background: 'white',
+                  boxShadow: 'var(--shadow-1)',
+                }}>
+                  <span style={{ flex: 1, fontFamily: 'var(--font-nunito)', fontWeight: 600, color: 'var(--ink)', fontSize: 14 }}>
+                    {item.text}
+                  </span>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {['C', 'P'].map((opt) => (
+                      <button key={opt}
+                        onClick={() => handleAnswerChange(question.id, { ...userAnswer, [item.id]: opt })}
+                        style={{
+                          width: 44, height: 44, borderRadius: 12, border: 'none',
+                          fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 14,
+                          background: selectedValue === opt ? 'var(--sky)' : '#F0EDE8',
+                          color: selectedValue === opt ? 'white' : 'var(--muted)',
+                          cursor: 'pointer', transition: 'all .15s',
+                        }}
+                      >{opt}</button>
+                    ))}
                   </div>
-                )}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-                {/* True/False Multiple */}
-                {question.type === 'true_false_multiple' && question.items && (
-                  <div className="space-y-3 mb-4">
-                    {question.items.map((item) => {
-                      const correct = question.correctAnswer as { [key: string]: string };
-                      const correctValue = correct[item.id];
-                      const selectedValue = userAnswer?.[item.id];
-                      const isItemCorrect = selectedValue === correctValue;
+        {/* Footer do card: barra segmentada + navegação */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16, borderTop: '1.5px solid var(--line)' }}>
+          {/* Barra segmentada — uma fatia por questão, sem quebra de linha */}
+          <div style={{ display: 'flex', gap: 3 }}>
+            {questions.map((q, i) => (
+              <div key={q.id} style={{
+                flex: 1, height: 6, borderRadius: 999,
+                background: i === currentQuestionIndex
+                  ? 'var(--bubble)'
+                  : q.id in userAnswers
+                    ? 'var(--grass)'
+                    : 'var(--line)',
+                transition: 'background .2s',
+              }} />
+            ))}
+          </div>
 
-                      return (
-                        <div key={item.id} className="flex items-center gap-4">
-                          <span className="flex-1 text-slate-800 font-semibold">{item.text}</span>
-                          <div className="flex gap-2">
-                            {['V', 'F'].map((option) => (
-                              <button
-                                key={option}
-                                onClick={() =>
-                                  handleAnswerChange(question.id, {
-                                    ...userAnswer,
-                                    [item.id]: option,
-                                  })
-                                }
-                                disabled={isFinalized}
-                                className={`w-12 h-12 rounded-xl font-bold text-lg transition-all ${
-                                  selectedValue === option
-                                    ? isFinalized
-                                      ? isItemCorrect
-                                        ? 'bg-green-500 text-white'
-                                        : 'bg-red-500 text-white'
-                                      : 'bg-blue-500 text-white'
-                                    : 'bg-slate-200 text-slate-800 hover:bg-slate-300'
-                                }`}
-                              >
-                                {option}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+          {/* Botões de navegação */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            {currentQuestionIndex > 0 ? (
+              <button
+                onClick={handleBack}
+                style={{
+                  background: 'white',
+                  border: '2px solid var(--line)',
+                  borderRadius: 'var(--radius-pill)',
+                  padding: '10px 20px',
+                  fontFamily: 'var(--font-fredoka)',
+                  fontWeight: 700, fontSize: 15,
+                  color: 'var(--ink-soft)',
+                  cursor: 'pointer',
+                  boxShadow: 'var(--shadow-1)',
+                  transition: 'all .15s',
+                }}
+              >
+                ← Anterior
+              </button>
+            ) : (
+              <div />
+            )}
 
-                {/* Matching */}
-                {question.type === 'matching' && question.pairs && (
-                  <div className="space-y-4 mb-4">
-                    {question.pairs.map((pair) => {
-                      const selected = userAnswer?.[pair.left.id];
-                      const correct = (question.correctAnswer as { [key: string]: string })[
-                        pair.left.id
-                      ];
-                      const isCorrectMatch = selected === correct;
-
-                      return (
-                        <div key={pair.left.id} className="flex items-center gap-4">
-                          <span className="flex-1 font-semibold text-slate-800">
-                            {pair.left.text}
-                          </span>
-                          <select
-                            value={selected || ''}
-                            onChange={(e) =>
-                              handleAnswerChange(question.id, {
-                                ...userAnswer,
-                                [pair.left.id]: e.target.value,
-                              })
-                            }
-                            disabled={isFinalized}
-                            className={`p-2 rounded-xl border-2 font-semibold transition-all ${
-                              selected
-                                ? isFinalized
-                                  ? isCorrectMatch
-                                    ? 'border-green-500 bg-green-100 text-green-800'
-                                    : 'border-red-500 bg-red-100 text-red-800'
-                                  : 'border-blue-500 bg-blue-50'
-                                : 'border-slate-300'
-                            }`}
-                          >
-                            <option value="">--- Escolha ---</option>
-                            {pair.right?.map((option) => (
-                              <option key={option.id} value={option.id}>
-                                {option.text}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Classification */}
-                {question.type === 'classification' && question.items && (
-                  <div className="space-y-3 mb-4">
-                    {question.items.map((item) => {
-                      const correct = question.correctAnswer as { [key: string]: string };
-                      const correctValue = correct[item.id];
-                      const selectedValue = userAnswer?.[item.id];
-                      const isItemCorrect = selectedValue === correctValue;
-
-                      return (
-                        <div key={item.id} className="flex items-center gap-4">
-                          <span className="flex-1 text-slate-800 font-semibold">{item.text}</span>
-                          <div className="flex gap-2">
-                            {['C', 'P'].map((option) => (
-                              <button
-                                key={option}
-                                onClick={() =>
-                                  handleAnswerChange(question.id, {
-                                    ...userAnswer,
-                                    [item.id]: option,
-                                  })
-                                }
-                                disabled={isFinalized}
-                                className={`w-12 h-12 rounded-xl font-bold text-lg transition-all ${
-                                  selectedValue === option
-                                    ? isFinalized
-                                      ? isItemCorrect
-                                        ? 'bg-green-500 text-white'
-                                        : 'bg-red-500 text-white'
-                                      : 'bg-blue-500 text-white'
-                                    : 'bg-slate-200 text-slate-800 hover:bg-slate-300'
-                                }`}
-                              >
-                                {option}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Dica Pedagógica (mostrada após erro) */}
-                {isFinalized && !isCorrect && (
-                  <div style={{ marginTop: 16, padding: 16, background: '#FFF8D6', border: '1.5px solid var(--sun)', borderRadius: 'var(--radius-md)' }}>
-                    <p style={{ fontWeight: 700, color: '#8B6000', fontFamily: 'var(--font-nunito)' }}>💡 Dica para aprender:</p>
-                    <p style={{ fontSize: 13, color: '#6B4A00', marginTop: 6, lineHeight: 1.5 }}>{question.tip}</p>
-                  </div>
-                )}
-
-                {/* Dica Pedagógica (mostrada após acerto também) */}
-                {isFinalized && isCorrect && (
-                  <div style={{ marginTop: 16, padding: 16, background: 'rgba(237,255,245,.8)', border: '1.5px solid var(--grass)', borderRadius: 'var(--radius-md)' }}>
-                    <p style={{ fontWeight: 700, color: 'var(--grass-deep)', fontFamily: 'var(--font-nunito)' }}>🌟 Curiosidade:</p>
-                    <p style={{ fontSize: 13, color: '#1A7A3F', marginTop: 6, lineHeight: 1.5 }}>{question.tip}</p>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+            <button
+              onClick={handleConfirm}
+              disabled={!hasAnswer}
+              style={{
+                background: hasAnswer ? 'white' : 'var(--line)',
+                border: `2px solid ${hasAnswer ? 'var(--line)' : 'transparent'}`,
+                borderRadius: 'var(--radius-pill)',
+                padding: '10px 24px',
+                fontFamily: 'var(--font-fredoka)',
+                fontWeight: 700, fontSize: 16,
+                color: hasAnswer ? 'var(--ink)' : 'var(--muted)',
+                cursor: hasAnswer ? 'pointer' : 'not-allowed',
+                boxShadow: hasAnswer ? 'var(--shadow-1)' : 'none',
+                transition: 'all .15s',
+              }}
+            >
+              {isLast ? 'Finalizar ✓' : 'Confirmar'}
+            </button>
+          </div>
         </div>
+      </div>
 
-        {/* Botão Finalizar */}
+      {/* Pular para revisão */}
+      <div className="w-full max-w-2xl mx-auto mt-4 text-center">
         <button
           onClick={handleFinalize}
-          disabled={Object.keys(userAnswers).length < questions.length}
-          className={`btn btn--lg w-full mt-8 text-lg ${
-            Object.keys(userAnswers).length === questions.length ? 'btn--grass' : 'btn--ghost'
-          }`}
-          style={Object.keys(userAnswers).length < questions.length ? { cursor: 'not-allowed', opacity: 0.5 } : {}}
+          style={{
+            background: 'white', border: '1.5px solid var(--line)',
+            borderRadius: 'var(--radius-pill)', padding: '10px 24px',
+            fontSize: 14, fontWeight: 600, color: 'var(--muted)',
+            cursor: 'pointer', boxShadow: 'var(--shadow-1)',
+          }}
         >
-          {Object.keys(userAnswers).length === questions.length
-            ? '✅ Finalizar e Ver Resultado'
-            : `⏳ Responda todas (${Object.keys(userAnswers).length}/${questions.length})`}
+          Pular para revisão (demo)
         </button>
       </div>
     </div>

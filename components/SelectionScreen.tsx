@@ -28,7 +28,10 @@ export default function SelectionScreen() {
 
   const handleAssessmentChange = (assessment: Assessment) => {
     setSelectedAssessment(assessment);
-    setTimeout(() => setStep('discipline'), 300);
+  };
+
+  const handleNext = () => {
+    setStep('discipline');
   };
 
   const handleBackFromSelection = () => {
@@ -44,7 +47,17 @@ export default function SelectionScreen() {
   };
 
   if (step === 'hero') {
-    return <HeroStep onStart={() => setStep('selection')} />;
+    return (
+      <HeroStep
+        onStart={() => setStep('selection')}
+        onViewDisciplines={() => {
+          setSelectedYear('terceiro');
+          setSelectedBimestre('2');
+          setSelectedAssessment('AV2');
+          setStep('discipline');
+        }}
+      />
+    );
   }
 
   if (step === 'discipline' && selectedYear && selectedBimestre && selectedAssessment) {
@@ -66,6 +79,7 @@ export default function SelectionScreen() {
       onYearChange={handleYearChange}
       onBimestreChange={handleBimestreChange}
       onAssessmentChange={handleAssessmentChange}
+      onNext={handleNext}
       onBack={handleBackFromSelection}
     />
   );
