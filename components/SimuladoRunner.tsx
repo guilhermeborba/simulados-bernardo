@@ -63,6 +63,7 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
     const question = questions[currentIndex];
     const answer = userAnswers[question.id];
 
+    setErrorMessage('');
     setIsSubmitting(true);
 
     try {
@@ -284,6 +285,10 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16, borderTop: '1.5px solid var(--line)' }}>
+          {errorMessage && (
+            <p style={{ color: 'var(--bubble-deep)', fontSize: 14, fontWeight: 600 }}>{errorMessage}</p>
+          )}
+
           <div style={{ display: 'flex', gap: 3 }}>
             {questions.map((q, i) => (
               <div key={q.id} style={{

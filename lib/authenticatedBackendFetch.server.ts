@@ -16,6 +16,8 @@ export interface AuthenticatedFetchResult {
   shouldClearCookies?: boolean;
 }
 
+let refreshPromise: Promise<{ status: number; body: unknown }> | null = null;
+
 export async function authenticatedBackendFetch(
   path: string,
   init: RequestInit = {},
@@ -44,10 +46,15 @@ export async function authenticatedBackendFetch(
     return { ...first, shouldClearCookies: true };
   }
 
-  const refreshResult = await backendFetch('/auth/refresh', {
-    method: 'POST',
-    body: JSON.stringify({ refreshToken }),
-  });
+  if (!refreshPromise) {
+    refreshPromise = backendFetch('/auth/refresh', {
+      method: 'POST',
+      body: JSON.stringify({ refreshToken }),
+    }).finally(() => {
+      refreshPromise = null;
+    });
+  }
+  const refreshResult = await refreshPromise;
 
   if (refreshResult.status !== 200) {
     return { ...first, shouldClearCookies: true };

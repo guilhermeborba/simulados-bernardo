@@ -4,10 +4,16 @@ import {
   applyAuthenticatedFetchCookies,
 } from '@/lib/authenticatedBackendFetch.server';
 
+const ALLOWED_PREFIXES = ['disciplines', 'simulations', 'attempts', 'me'];
+
 async function handle(
   request: NextRequest,
   { params }: { params: { path: string[] } },
 ) {
+  if (!ALLOWED_PREFIXES.includes(params.path[0])) {
+    return NextResponse.json({ message: 'Not found' }, { status: 404 });
+  }
+
   const path = `/${params.path.join('/')}`;
   const search = request.nextUrl.search;
   const hasBody = !['GET', 'HEAD'].includes(request.method);

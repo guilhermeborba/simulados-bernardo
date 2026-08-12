@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ACCESS_TOKEN_COOKIE } from '@/lib/serverCookies';
+import { REFRESH_TOKEN_COOKIE } from '@/lib/serverCookies';
 
 const PROTECTED_PREFIXES = ['/simulado/', '/historico'];
 
@@ -11,9 +11,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const hasAccessToken = request.cookies.has(ACCESS_TOKEN_COOKIE);
+  const hasRefreshToken = request.cookies.has(REFRESH_TOKEN_COOKIE);
 
-  if (hasAccessToken) {
+  if (hasRefreshToken) {
     return NextResponse.next();
   }
 

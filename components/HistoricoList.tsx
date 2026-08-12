@@ -11,10 +11,12 @@ export default function HistoricoList() {
   const { user, logout } = useAuth();
   const [attempts, setAttempts] = useState<ApiMyAttempt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getMyAttempts()
       .then(setAttempts)
+      .catch(() => setError('Não foi possível carregar seu histórico.'))
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -42,7 +44,11 @@ export default function HistoricoList() {
 
         {isLoading && <p style={{ color: 'var(--muted)' }}>Carregando...</p>}
 
-        {!isLoading && attempts.length === 0 && (
+        {error && (
+          <p className="text-center" style={{ color: 'var(--bubble-deep)' }}>{error}</p>
+        )}
+
+        {!isLoading && !error && attempts.length === 0 && (
           <p style={{ color: 'var(--muted)' }}>Você ainda não fez nenhum simulado.</p>
         )}
 

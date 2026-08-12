@@ -1,11 +1,23 @@
 'use client';
 
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+
 interface HeroStepProps {
   onStart: () => void;
   onViewDisciplines: () => void;
 }
 
 export default function HeroStep({ onStart, onViewDisciplines }: HeroStepProps) {
+  const router = useRouter();
+  const { user, isLoading, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+  };
+
   return (
     <div className="page-shell flex flex-col px-4 py-6 md:py-8">
 
@@ -26,6 +38,25 @@ export default function HeroStep({ onStart, onViewDisciplines }: HeroStepProps) 
             <span className="text-base">7</span>
             <span>Dias seguidos</span>
           </div>
+          {!isLoading && user && (
+            <>
+              <Link
+                href="/historico"
+                className="flex items-center gap-2 rounded-full px-4 py-2 font-bold text-sm"
+                style={{ background: 'var(--cream)', color: 'var(--ink)', boxShadow: 'var(--shadow-1)' }}
+              >
+                <span>📊</span>
+                <span>Histórico</span>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 rounded-full px-4 py-2 font-bold text-sm"
+                style={{ background: 'var(--cream)', color: 'var(--ink)', boxShadow: 'var(--shadow-1)', border: 'none', cursor: 'pointer' }}
+              >
+                Sair
+              </button>
+            </>
+          )}
         </div>
       </div>
 
