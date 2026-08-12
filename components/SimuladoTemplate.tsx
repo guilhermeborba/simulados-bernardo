@@ -16,6 +16,7 @@ export interface Question {
   items?: { id: string; text: string }[];
   correctAnswer?: string | string[] | { [key: string]: string };
   tip: string;
+  curiosity?: string;
   points: number;
 }
 
@@ -322,6 +323,11 @@ export default function SimuladoTemplate({
                         {!correct && (
                           <div style={{ marginBottom: 8, padding: '10px 14px', background: '#FFF8D6', border: '1.5px solid var(--sun)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: '#6B4A00', lineHeight: 1.5 }}>
                             💡 {question.tip}
+                          </div>
+                        )}
+                        {correct && question.curiosity && (
+                          <div style={{ marginBottom: 8, padding: '10px 14px', background: 'rgba(237,255,245,.9)', border: '1.5px solid var(--grass)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: 'var(--grass-deep)', lineHeight: 1.5 }}>
+                            ✨ {question.curiosity}
                           </div>
                         )}
                         {idx < questions.length - 1 && <div style={{ height: 1, background: 'var(--line)' }} />}
