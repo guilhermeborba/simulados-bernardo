@@ -27,6 +27,10 @@ const YEARS: { value: Year; num: number; label: string; sub: string; available: 
   { value: 'nono',     num: 9, label: '9º Ano', sub: 'Fundamental II', available: false, color: '#2FB867', bg: 'linear-gradient(135deg,#A0F0C0,#2FB867)' },
 ];
 
+export const YEAR_TO_SCHOOL_YEAR: Record<string, number> = Object.fromEntries(
+  YEARS.map((y) => [y.value, y.num]),
+);
+
 const BIMESTRES: { value: Bimestre; label: string; range: string; available: boolean; sub: string }[] = [
   { value: '1', label: '1º Bimestre', range: 'Fev — Abr', available: true,  sub: 'Apenas AV2' },
   { value: '2', label: '2º Bimestre', range: 'Mai — Jul', available: true,  sub: 'AV1 + AV2' },
