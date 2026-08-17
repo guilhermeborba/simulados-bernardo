@@ -34,7 +34,7 @@ export const YEAR_TO_SCHOOL_YEAR: Record<string, number> = Object.fromEntries(
 const BIMESTRES: { value: Bimestre; label: string; range: string; available: boolean; sub: string }[] = [
   { value: '1', label: '1º Bimestre', range: 'Fev — Abr', available: true,  sub: 'Apenas AV2' },
   { value: '2', label: '2º Bimestre', range: 'Mai — Jul', available: true,  sub: 'AV1 + AV2' },
-  { value: '3', label: '3º Bimestre', range: 'Ago — Out', available: false, sub: 'Em breve' },
+  { value: '3', label: '3º Bimestre', range: 'Ago — Out', available: true,  sub: 'Apenas AV1' },
   { value: '4', label: '4º Bimestre', range: 'Nov — Dez', available: false, sub: 'Em breve' },
 ];
 
@@ -48,6 +48,7 @@ const BIMESTRE_COLORS: Record<string, string> = {
 const AVAILABLE_ASSESSMENTS: Record<string, Assessment[]> = {
   '1': ['AV2'],
   '2': ['AV1', 'AV2'],
+  '3': ['AV1'],
 };
 
 const ASSESSMENTS: { value: Assessment; label: string; desc: string }[] = [
