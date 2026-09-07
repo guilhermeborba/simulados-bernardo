@@ -77,6 +77,29 @@ function stripPrefix(value: string, prefix: string): string {
   return value.startsWith(prefix) ? value.slice(prefix.length) : value;
 }
 
+/**
+ * Caminho inverso de buildAnswerBody: converte o que está gravado no servidor
+ * de volta para o formato que o runner usa em tela, para retomar uma tentativa.
+ *
+ * Devolve undefined quando não há resposta de verdade — ao finalizar, o servidor
+ * grava um objeto vazio nas questões que ficaram em branco.
+ */
+export function parseStoredAnswer(
+  type: TemplateQuestion['type'],
+  stored: unknown,
+): unknown {
+  if (stored === null || typeof stored !== 'object') {
+    return undefined;
+  }
+
+  if (type === 'multiple_choice') {
+    const value = (stored as { answer?: unknown }).answer;
+    return typeof value === 'string' && value !== '' ? value : undefined;
+  }
+
+  return Object.keys(stored as Record<string, unknown>).length > 0 ? stored : undefined;
+}
+
 export function buildAnswerBody(
   type: TemplateQuestion['type'],
   rawAnswer: unknown,

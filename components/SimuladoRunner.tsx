@@ -9,7 +9,12 @@ import {
   finishAttempt,
   ApiAttemptResult,
 } from '@/lib/apiClient';
-import { mapApiQuestion, buildAnswerBody, TemplateQuestion } from '@/lib/questionMapper';
+import {
+  mapApiQuestion,
+  buildAnswerBody,
+  parseStoredAnswer,
+  TemplateQuestion,
+} from '@/lib/questionMapper';
 import { DEFAULT_TIER, Tier, tierForSchoolYear } from '@/lib/tier';
 
 interface SimuladoRunnerProps {
@@ -75,6 +80,24 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
       const startedAtMs = attempt.startedAt ? Date.parse(attempt.startedAt) : Date.now();
       setStartedAt(Number.isNaN(startedAtMs) ? Date.now() : startedAtMs);
 
+      // Retomada: recupera o que já foi respondido e abre na primeira questão
+      // em aberto, em vez de jogar o aluno de volta na questão 1.
+      const restored: { [questionId: string]: unknown } = {};
+      apiQuestions.forEach((apiQuestion) => {
+        const question = mapped.find((item) => item.id === apiQuestion.id);
+        if (!question) return;
+
+        const answer = parseStoredAnswer(question.type, apiQuestion.answer);
+        if (answer !== undefined) {
+          restored[question.id] = answer;
+        }
+      });
+
+      const firstUnanswered = mapped.findIndex((question) => !(question.id in restored));
+
+      setUserAnswers(restored);
+      setSavedAnswers(restored);
+      setCurrentIndex(firstUnanswered === -1 ? 0 : firstUnanswered);
       setAttemptId(attempt.id);
       setQuestions(mapped);
       setState('ready');
