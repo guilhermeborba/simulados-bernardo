@@ -117,6 +117,8 @@ export interface ApiQuestion {
   points: string;
   order: number;
   options: ApiQuestionOption[];
+  /** Resposta que o próprio aluno já enviou nesta tentativa, se houver. */
+  answer?: unknown;
 }
 
 export function getAttemptQuestions(attemptId: string) {
@@ -170,6 +172,7 @@ export function getAttemptResult(attemptId: string) {
 export interface ApiMyAttempt {
   id: string;
   status: string;
+  simulationId: string;
   score: string | null;
   maxScore: string;
   percentage: string | null;
