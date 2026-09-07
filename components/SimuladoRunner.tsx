@@ -10,6 +10,7 @@ import {
   ApiAttemptResult,
 } from '@/lib/apiClient';
 import { mapApiQuestion, buildAnswerBody, TemplateQuestion } from '@/lib/questionMapper';
+import { DEFAULT_TIER, Tier, tierForSchoolYear } from '@/lib/tier';
 
 interface SimuladoRunnerProps {
   simulationId: string;
@@ -27,6 +28,8 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
   const [userAnswers, setUserAnswers] = useState<{ [questionId: string]: unknown }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<ApiAttemptResult | null>(null);
+  const [tier, setTier] = useState<Tier>(DEFAULT_TIER);
+  const [heading, setHeading] = useState('Simulados Bernardo');
 
   useEffect(() => {
     void loadAttempt();
@@ -43,6 +46,16 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
       const attempt = await startAttempt(simulationId);
       const apiQuestions = await getAttemptQuestions(attempt.id);
       const mapped = apiQuestions.map(mapApiQuestion).sort((a, b) => a.order - b.order);
+
+      const attemptTier = tierForSchoolYear(attempt.simulation?.schoolYear);
+      setTier(attemptTier);
+      setHeading(
+        attemptTier === 'ludico' || !attempt.simulation
+          ? 'Simulados Bernardo'
+          : [attempt.simulation.discipline.name, attempt.simulation.subtitle]
+              .filter(Boolean)
+              .join(' · '),
+      );
 
       setAttemptId(attempt.id);
       setQuestions(mapped);
@@ -112,7 +125,15 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
   }
 
   if (state === 'finished' && result) {
-    return <ResultScreen result={result} onRetry={loadAttempt} onExit={() => router.push('/')} />;
+    return (
+      <ResultScreen
+        result={result}
+        tier={tier}
+        heading={heading}
+        onRetry={loadAttempt}
+        onExit={() => router.push('/')}
+      />
+    );
   }
 
   const question = questions[currentIndex];
@@ -122,67 +143,48 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
   return (
-    <div className="page-shell flex flex-col px-4 py-6 md:py-8">
-      <div className="flex justify-between items-center mb-5 w-full max-w-2xl mx-auto">
-        <button className="btn btn--ghost text-sm" onClick={() => router.push('/')} style={{ padding: '8px 16px' }}>
+    <div data-tier={tier} className="sim-shell page-shell flex flex-col px-4 py-6 md:py-8">
+      <div className="flex justify-between items-center mb-5 w-full max-w-2xl mx-auto gap-3">
+        <button className="sim-btn sim-btn--ghost text-sm" onClick={() => router.push('/')}>
           ‹ Sair
         </button>
-        <div className="flex items-center gap-2">
-          <span className="text-xl">📚</span>
-          <span className="font-bold text-base" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
-            Simulados Bernardo
-          </span>
+        <div className="flex items-center gap-2 min-w-0">
+          {tier === 'ludico' && <span className="text-xl">📚</span>}
+          <span className="sim-brand font-bold text-base truncate">{heading}</span>
         </div>
-        <span className="text-xs font-bold uppercase tracking-widest hidden sm:block" style={{ color: 'var(--muted)' }}>
-          QUESTÃO {currentIndex + 1}
+        <span className="sim-step hidden sm:block flex-shrink-0">
+          {tier === 'exame' ? `${currentIndex + 1} / ${questions.length}` : `Questão ${currentIndex + 1}`}
         </span>
       </div>
 
       <div className="w-full max-w-2xl mx-auto mb-5 flex items-center gap-3">
-        <div style={{ flex: 1, height: 8, borderRadius: 999, background: 'var(--line)', overflow: 'hidden' }}>
-          <div style={{
-            height: '100%', width: `${progress}%`, borderRadius: 999,
-            background: 'linear-gradient(90deg, var(--bubble), var(--sky))', transition: 'width .4s ease',
-          }} />
+        <div className="sim-track">
+          <div className="sim-track-fill" style={{ width: `${progress}%` }} />
         </div>
-        <span style={{ fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 16, color: 'var(--ink)', flexShrink: 0 }}>
+        <span className="sim-count">
           {currentIndex + 1}/{questions.length}
         </span>
       </div>
 
-      <div className="w-full max-w-2xl mx-auto bg-white rounded-[1.75rem] p-6 md:p-8" style={{ boxShadow: 'var(--shadow-3)' }}>
-        <div className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold mb-5"
-             style={{ background: '#FFE0EE', color: 'var(--bubble-deep)' }}>
-          + Questão {currentIndex + 1}
+      <div className="sim-card w-full max-w-2xl mx-auto">
+        <div className="sim-chip">
+          {tier === 'ludico' ? `+ Questão ${currentIndex + 1}` : `Questão ${currentIndex + 1}`}
         </div>
 
-        <p style={{ fontFamily: 'var(--font-nunito)', fontWeight: 700, color: 'var(--ink)', fontSize: 18, lineHeight: 1.55, marginBottom: 24 }}>
-          {question.text}
-        </p>
+        <p className="sim-statement">{question.text}</p>
 
         {question.type === 'multiple_choice' && question.options && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+          <div className="flex flex-col gap-2.5 mb-6">
             {question.options.map((option) => {
               const isSelected = userAnswer === option.id;
               return (
                 <button
                   key={option.id}
+                  className="sim-opt"
+                  aria-pressed={isSelected}
                   onClick={() => handleAnswerChange(question.id, option.id)}
-                  style={{
-                    width: '100%', textAlign: 'left', padding: '14px 18px', borderRadius: 'var(--radius-md)',
-                    border: `2px solid ${isSelected ? 'var(--bubble)' : 'var(--line)'}`,
-                    background: isSelected ? '#FFF0F7' : 'white', display: 'flex', alignItems: 'center', gap: 14,
-                    fontFamily: 'var(--font-nunito)', fontWeight: 600, color: 'var(--ink)', fontSize: 15,
-                    cursor: 'pointer', boxShadow: 'var(--shadow-1)',
-                  }}
                 >
-                  <span style={{
-                    width: 34, height: 34, borderRadius: '50%', flexShrink: 0, display: 'flex',
-                    alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800,
-                    background: isSelected ? 'var(--bubble)' : '#FFE9A3', color: isSelected ? 'white' : '#8B6000',
-                  }}>
-                    {option.id.toUpperCase()}
-                  </span>
+                  <span className="sim-bullet">{option.id.toUpperCase()}</span>
                   {option.text}
                 </button>
               );
@@ -191,28 +193,28 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
         )}
 
         {question.type === 'true_false_multiple' && question.items && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+          <div className="flex flex-col gap-2.5 mb-6">
             {question.items.map((item) => {
               const selectedValue = (userAnswer as Record<string, string> | undefined)?.[item.id];
               return (
-                <div key={item.id} style={{
-                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-                  borderRadius: 'var(--radius-md)', border: '2px solid var(--line)', background: 'white', boxShadow: 'var(--shadow-1)',
-                }}>
-                  <span style={{ flex: 1, fontFamily: 'var(--font-nunito)', fontWeight: 600, color: 'var(--ink)', fontSize: 14 }}>
-                    {item.text}
-                  </span>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                <div key={item.id} className="sim-row">
+                  <span className="sim-row-text">{item.text}</span>
+                  <div className="flex gap-2">
                     {['V', 'F'].map((opt) => (
-                      <button key={opt}
-                        onClick={() => handleAnswerChange(question.id, { ...(userAnswer as Record<string, string>), [item.id]: opt })}
-                        style={{
-                          width: 44, height: 44, borderRadius: 12, border: 'none',
-                          fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 16,
-                          background: selectedValue === opt ? (opt === 'V' ? 'var(--grass)' : 'var(--bubble)') : '#F0EDE8',
-                          color: selectedValue === opt ? 'white' : 'var(--muted)', cursor: 'pointer',
-                        }}
-                      >{opt}</button>
+                      <button
+                        key={opt}
+                        className="sim-vf"
+                        data-value={opt}
+                        aria-pressed={selectedValue === opt}
+                        onClick={() =>
+                          handleAnswerChange(question.id, {
+                            ...(userAnswer as Record<string, string>),
+                            [item.id]: opt,
+                          })
+                        }
+                      >
+                        {opt}
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -222,25 +224,22 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
         )}
 
         {question.type === 'matching' && question.pairs && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+          <div className="flex flex-col gap-2.5 mb-6">
             {question.pairs.map((pair) => {
               const selected = (userAnswer as Record<string, string> | undefined)?.[pair.left.id];
               return (
-                <div key={pair.left.id} style={{
-                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-                  borderRadius: 'var(--radius-md)', border: '2px solid var(--line)', background: 'white', boxShadow: 'var(--shadow-1)',
-                }}>
-                  <span style={{ flex: 1, fontFamily: 'var(--font-nunito)', fontWeight: 600, color: 'var(--ink)', fontSize: 14 }}>
-                    {pair.left.text}
-                  </span>
+                <div key={pair.left.id} className="sim-row">
+                  <span className="sim-row-text">{pair.left.text}</span>
                   <select
+                    className="sim-select"
+                    data-filled={Boolean(selected)}
                     value={selected || ''}
-                    onChange={(e) => handleAnswerChange(question.id, { ...(userAnswer as Record<string, string>), [pair.left.id]: e.target.value })}
-                    style={{
-                      padding: '8px 12px', borderRadius: 10, border: `2px solid ${selected ? 'var(--sky)' : 'var(--line)'}`,
-                      fontFamily: 'var(--font-nunito)', fontWeight: 600, fontSize: 13,
-                      background: selected ? '#F0F7FF' : 'white', color: 'var(--ink)', cursor: 'pointer',
-                    }}
+                    onChange={(e) =>
+                      handleAnswerChange(question.id, {
+                        ...(userAnswer as Record<string, string>),
+                        [pair.left.id]: e.target.value,
+                      })
+                    }
                   >
                     <option value="">— Escolha —</option>
                     {pair.right.map((opt) => (
@@ -254,28 +253,27 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
         )}
 
         {question.type === 'classification' && question.items && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+          <div className="flex flex-col gap-2.5 mb-6">
             {question.items.map((item) => {
               const selectedValue = (userAnswer as Record<string, string> | undefined)?.[item.id];
               return (
-                <div key={item.id} style={{
-                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-                  borderRadius: 'var(--radius-md)', border: '2px solid var(--line)', background: 'white', boxShadow: 'var(--shadow-1)',
-                }}>
-                  <span style={{ flex: 1, fontFamily: 'var(--font-nunito)', fontWeight: 600, color: 'var(--ink)', fontSize: 14 }}>
-                    {item.text}
-                  </span>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                <div key={item.id} className="sim-row">
+                  <span className="sim-row-text">{item.text}</span>
+                  <div className="flex gap-2">
                     {['C', 'P'].map((opt) => (
-                      <button key={opt}
-                        onClick={() => handleAnswerChange(question.id, { ...(userAnswer as Record<string, string>), [item.id]: opt })}
-                        style={{
-                          width: 44, height: 44, borderRadius: 12, border: 'none',
-                          fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 14,
-                          background: selectedValue === opt ? 'var(--sky)' : '#F0EDE8',
-                          color: selectedValue === opt ? 'white' : 'var(--muted)', cursor: 'pointer',
-                        }}
-                      >{opt}</button>
+                      <button
+                        key={opt}
+                        className="sim-vf"
+                        aria-pressed={selectedValue === opt}
+                        onClick={() =>
+                          handleAnswerChange(question.id, {
+                            ...(userAnswer as Record<string, string>),
+                            [item.id]: opt,
+                          })
+                        }
+                      >
+                        {opt}
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -284,46 +282,32 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
           </div>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16, borderTop: '1.5px solid var(--line)' }}>
-          {errorMessage && (
-            <p style={{ color: 'var(--bubble-deep)', fontSize: 14, fontWeight: 600 }}>{errorMessage}</p>
-          )}
+        <div className="flex flex-col gap-3 pt-4 sim-divider">
+          {errorMessage && <p className="sim-error">{errorMessage}</p>}
 
-          <div style={{ display: 'flex', gap: 3 }}>
+          <div className="flex gap-[3px]">
             {questions.map((q, i) => (
-              <div key={q.id} style={{
-                flex: 1, height: 6, borderRadius: 999,
-                background: i === currentIndex ? 'var(--bubble)' : q.id in userAnswers ? 'var(--grass)' : 'var(--line)',
-                transition: 'background .2s',
-              }} />
+              <div
+                key={q.id}
+                className="sim-seg"
+                data-state={i === currentIndex ? 'current' : q.id in userAnswers ? 'answered' : 'pending'}
+              />
             ))}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="flex items-center justify-between">
             {currentIndex > 0 ? (
-              <button onClick={handleBack} style={{
-                background: 'white', border: '2px solid var(--line)', borderRadius: 'var(--radius-pill)',
-                padding: '10px 20px', fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 15,
-                color: 'var(--ink-soft)', cursor: 'pointer', boxShadow: 'var(--shadow-1)',
-              }}>
+              <button className="sim-btn sim-btn--ghost" onClick={handleBack}>
                 ← Anterior
               </button>
             ) : <div />}
 
             <button
+              className="sim-btn sim-btn--primary"
               onClick={handleConfirm}
               disabled={!hasAnswer || isSubmitting}
-              style={{
-                background: hasAnswer ? 'white' : 'var(--line)',
-                border: `2px solid ${hasAnswer ? 'var(--line)' : 'transparent'}`,
-                borderRadius: 'var(--radius-pill)', padding: '10px 24px',
-                fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 16,
-                color: hasAnswer ? 'var(--ink)' : 'var(--muted)',
-                cursor: hasAnswer ? 'pointer' : 'not-allowed',
-                boxShadow: hasAnswer ? 'var(--shadow-1)' : 'none',
-              }}
             >
-              {isSubmitting ? 'Enviando...' : isLast ? 'Finalizar ✓' : 'Confirmar'}
+              {isSubmitting ? 'Enviando...' : isLast ? finishLabel(tier) : confirmLabel(tier)}
             </button>
           </div>
         </div>
@@ -332,12 +316,24 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
   );
 }
 
+function confirmLabel(tier: Tier) {
+  return tier === 'exame' ? 'Responder' : 'Confirmar';
+}
+
+function finishLabel(tier: Tier) {
+  return tier === 'ludico' ? 'Finalizar ✓' : 'Finalizar';
+}
+
 function ResultScreen({
   result,
+  tier,
+  heading,
   onRetry,
   onExit,
 }: {
   result: ApiAttemptResult;
+  tier: Tier;
+  heading: string;
   onRetry: () => void;
   onExit: () => void;
 }) {
@@ -346,90 +342,86 @@ function ResultScreen({
   const pct = Math.round((score / maxScore) * 100);
   const circumference = 2 * Math.PI * 44;
   const strokeDash = (score / maxScore) * circumference;
-  const motivational = getMotivationalMessage(pct);
+  const feedback = getFeedback(pct, tier);
 
   return (
-    <div className="page-shell">
+    <div data-tier={tier} className="sim-shell page-shell">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <span className="text-2xl font-bold" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
-            📚 Resultado
+        <div className="flex justify-between items-center mb-8 gap-3">
+          <span className="sim-brand text-xl font-bold truncate">
+            {tier === 'ludico' ? '📚 Resultado' : heading}
           </span>
-          <span className="badge">Concluído</span>
+          <span className="sim-chip flex-shrink-0" style={{ marginBottom: 0 }}>Concluído</span>
         </div>
 
         <div className="flex flex-col md:flex-row gap-6 items-start">
-          <div className="flex-1 flex flex-col gap-5">
-            <div className="card card--hero flex items-center gap-6">
+          <div className="flex-1 flex flex-col gap-5 w-full">
+            <div className="sim-card flex items-center gap-6">
               <svg width="110" height="110" viewBox="0 0 100 100" style={{ flexShrink: 0, transform: 'rotate(-90deg)' }}>
-                <circle cx="50" cy="50" r="44" fill="none" stroke="var(--line)" strokeWidth="10" />
-                <circle cx="50" cy="50" r="44" fill="none" stroke="var(--grass)" strokeWidth="10" strokeLinecap="round"
+                <circle cx="50" cy="50" r="44" fill="none" stroke="var(--t-line)" strokeWidth="10" />
+                <circle cx="50" cy="50" r="44" fill="none" stroke="var(--t-accent)" strokeWidth="10" strokeLinecap="round"
                         strokeDasharray={`${strokeDash} ${circumference}`} />
                 <text x="50" y="50" textAnchor="middle" dominantBaseline="central"
-                      style={{ transform: 'rotate(90deg)', transformOrigin: '50px 50px', fontFamily: 'var(--font-fredoka)', fill: 'var(--ink)' }}>
+                      style={{ transform: 'rotate(90deg)', transformOrigin: '50px 50px', fontFamily: 'var(--t-font-ui)', fill: 'var(--t-ink)' }}>
                   <tspan fontSize="24" fontWeight="800">{score}</tspan>
-                  <tspan fontSize="13" fill="var(--muted)"> /{maxScore}</tspan>
+                  <tspan fontSize="13" fill="var(--t-muted)"> /{maxScore}</tspan>
                 </text>
               </svg>
 
               <div>
-                <h2 className="text-2xl mb-1" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
-                  {motivational.emoji} {motivational.title}!
-                </h2>
-                <p className="text-sm mb-3" style={{ color: 'var(--muted)', lineHeight: 1.5 }}>
-                  {motivational.message}
+                <h2 className="sim-brand text-2xl mb-1">{feedback.title}</h2>
+                <p className="text-sm mb-3" style={{ color: 'var(--t-muted)', lineHeight: 1.5 }}>
+                  {feedback.message}
                 </p>
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(237,255,245,.9)',
-                  borderRadius: 999, padding: '5px 14px', fontSize: 13, fontWeight: 700, color: 'var(--grass-deep)',
-                }}>
-                  ✅ {pct}% de aproveitamento
+                <div className="sim-chip" style={{ marginBottom: 0 }}>
+                  {pct}% de aproveitamento
                 </div>
               </div>
             </div>
 
-            <div className="card">
-              <h3 className="text-lg mb-4" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
-                📊 Análise detalhada
+            <div className="sim-card">
+              <h3 className="sim-brand text-lg mb-4">
+                {tier === 'ludico' ? '📊 Análise detalhada' : 'Análise detalhada'}
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div className="flex flex-col">
                 {result.questions.map((question, idx) => (
                   <div key={question.id}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0' }}>
-                      <div style={{
-                        width: 28, height: 28, borderRadius: 10, flexShrink: 0,
-                        background: question.isCorrect ? 'rgba(237,255,245,.9)' : 'rgba(255,240,247,.9)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
-                      }}>
-                        {question.isCorrect ? '✅' : '❌'}
+                    <div className="flex items-center gap-3 py-2.5">
+                      <div className="sim-mark" data-correct={question.isCorrect}>
+                        {tier === 'ludico'
+                          ? (question.isCorrect ? '✅' : '❌')
+                          : (question.isCorrect ? '✓' : '✕')}
                       </div>
-                      <div style={{ flex: 1, fontSize: 14, fontWeight: 600, color: 'var(--ink-soft)' }}>
+                      <div className="flex-1 text-sm font-semibold" style={{ color: 'var(--t-ink-soft)' }}>
                         Questão {idx + 1}
                       </div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: question.isCorrect ? 'var(--grass-deep)' : 'var(--bubble-deep)' }}>
+                      <div className="text-sm font-bold" style={{ color: question.isCorrect ? 'var(--t-correct)' : 'var(--t-muted)' }}>
                         {question.isCorrect ? `+${question.pointsEarned} pt` : '0 pt'}
                       </div>
                     </div>
                     {!question.isCorrect && question.tip && (
-                      <div style={{ marginBottom: 8, padding: '10px 14px', background: '#FFF8D6', border: '1.5px solid var(--sun)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: '#6B4A00', lineHeight: 1.5 }}>
-                        💡 {question.tip}
+                      <div className="sim-tip">
+                        {tier === 'ludico' ? '💡 ' : ''}{question.tip}
                       </div>
                     )}
-                    {idx < result.questions.length - 1 && <div style={{ height: 1, background: 'var(--line)' }} />}
+                    {idx < result.questions.length - 1 && <div style={{ height: 1, background: 'var(--t-line)' }} />}
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          <div style={{ width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <p className="text-xs font-bold" style={{ color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+          <div className="w-full md:w-60 flex-shrink-0 flex flex-col gap-3">
+            <div className="sim-card flex flex-col gap-2.5">
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--t-muted)' }}>
                 O que fazer agora?
               </p>
-              <button className="btn btn--sky w-full" onClick={onRetry}>🔄 Refazer simulado</button>
-              <button className="btn btn--lilac w-full" onClick={onExit}>📚 Outra disciplina</button>
-              <button className="btn btn--ghost w-full" onClick={onExit}>🏠 Voltar ao início</button>
+              <button className="sim-btn sim-btn--primary w-full" onClick={onRetry}>
+                {tier === 'ludico' ? '🔄 Refazer simulado' : 'Refazer simulado'}
+              </button>
+              <button className="sim-btn sim-btn--ghost w-full" onClick={onExit}>
+                {tier === 'ludico' ? '🏠 Voltar ao início' : 'Voltar ao início'}
+              </button>
             </div>
           </div>
         </div>
@@ -438,18 +430,27 @@ function ResultScreen({
   );
 }
 
-function getMotivationalMessage(percentage: number) {
-  if (percentage === 100) {
-    return { emoji: '🏆', title: 'Perfeição Total', message: 'Você é um verdadeiro campeão! Acertou TODAS as questões! 🌟' };
+function getFeedback(percentage: number, tier: Tier) {
+  // Na faixa de prova o retorno é factual: quem estuda para uma avaliação real
+  // quer saber onde está, não ser parabenizado.
+  if (tier === 'exame') {
+    if (percentage >= 90) return { title: 'Desempenho alto', message: 'Conteúdo dominado. Revise apenas os itens marcados como incorretos.' };
+    if (percentage >= 70) return { title: 'Desempenho satisfatório', message: 'Base sólida, com lacunas pontuais. Priorize os assuntos das questões erradas.' };
+    if (percentage >= 50) return { title: 'Desempenho parcial', message: 'Metade do conteúdo ainda não está consolidada. Recomendado revisar antes de repetir.' };
+    return { title: 'Desempenho abaixo do esperado', message: 'Retome o material do módulo antes de uma nova tentativa.' };
   }
-  if (percentage >= 90) {
-    return { emoji: '⭐', title: 'Excelente', message: 'Você é incrível! Apenas um detalhe faltou para a perfeição! 🚀' };
+
+  if (tier === 'jovem') {
+    if (percentage === 100) return { title: 'Gabaritou', message: 'Acertou todas. Esse conteúdo está dominado.' };
+    if (percentage >= 90) return { title: 'Muito bom', message: 'Faltou pouco para o total. Dá uma olhada no que escapou.' };
+    if (percentage >= 70) return { title: 'Bom resultado', message: 'Você está no caminho. Foca nos assuntos das questões que errou.' };
+    if (percentage >= 50) return { title: 'Dá pra melhorar', message: 'Metade do conteúdo ainda precisa de revisão.' };
+    return { title: 'Vale revisar', message: 'Retoma a matéria e tenta de novo — a segunda vez costuma render bem mais.' };
   }
-  if (percentage >= 70) {
-    return { emoji: '👏', title: 'Muito Bom', message: 'Parabéns! Você está no caminho certo! Siga estudando! 📚' };
-  }
-  if (percentage >= 50) {
-    return { emoji: '💪', title: 'Bom Início', message: 'Você está aprendendo! Continue praticando para melhorar! 🎯' };
-  }
-  return { emoji: '🌱', title: 'Próxima Vez', message: 'Você está no caminho! Revise os conteúdos e tente novamente! 💡' };
+
+  if (percentage === 100) return { title: '🏆 Perfeição Total', message: 'Você é um verdadeiro campeão! Acertou TODAS as questões! 🌟' };
+  if (percentage >= 90) return { title: '⭐ Excelente', message: 'Você é incrível! Apenas um detalhe faltou para a perfeição! 🚀' };
+  if (percentage >= 70) return { title: '👏 Muito Bom', message: 'Parabéns! Você está no caminho certo! Siga estudando! 📚' };
+  if (percentage >= 50) return { title: '💪 Bom Início', message: 'Você está aprendendo! Continue praticando para melhorar! 🎯' };
+  return { title: '🌱 Próxima Vez', message: 'Você está no caminho! Revise os conteúdos e tente novamente! 💡' };
 }
