@@ -86,6 +86,8 @@ export interface ApiAttempt {
   id: string;
   status: string;
   simulationId: string;
+  /** Início da tentativa no servidor — base do cronômetro. */
+  startedAt?: string;
   /**
    * Opcional de propósito: o front-end pode ir para produção antes do back-end
    * que passou a devolver esse campo. Sem ele, a faixa cai no padrão.

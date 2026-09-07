@@ -30,16 +30,31 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
   const [result, setResult] = useState<ApiAttemptResult | null>(null);
   const [tier, setTier] = useState<Tier>(DEFAULT_TIER);
   const [heading, setHeading] = useState('Simulados Bernardo');
+  // Respostas já gravadas no servidor, para não reenviar o que não mudou.
+  const [savedAnswers, setSavedAnswers] = useState<{ [questionId: string]: unknown }>({});
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
     void loadAttempt();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulationId]);
 
+  useEffect(() => {
+    if (state !== 'ready' || startedAt === null) return;
+
+    const tick = () => setElapsed(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [state, startedAt]);
+
   async function loadAttempt() {
     setState('loading');
     setCurrentIndex(0);
     setUserAnswers({});
+    setSavedAnswers({});
+    setElapsed(0);
     setResult(null);
 
     try {
@@ -57,6 +72,9 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
               .join(' · '),
       );
 
+      const startedAtMs = attempt.startedAt ? Date.parse(attempt.startedAt) : Date.now();
+      setStartedAt(Number.isNaN(startedAtMs) ? Date.now() : startedAtMs);
+
       setAttemptId(attempt.id);
       setQuestions(mapped);
       setState('ready');
@@ -70,27 +88,80 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
     setUserAnswers((prev) => ({ ...prev, [questionId]: answer }));
   }
 
-  async function handleConfirm() {
+  /**
+   * Grava a resposta da questão informada, se houver e se tiver mudado desde
+   * o último envio. Como agora dá para pular de questão sem passar pelo botão
+   * de confirmar, toda saída de questão precisa persistir — senão a resposta
+   * ficaria só no estado local e a correção do servidor a trataria como vazia.
+   */
+  async function persistAnswer(index: number) {
     if (!attemptId) return;
 
-    const question = questions[currentIndex];
+    const question = questions[index];
+    if (!question) return;
+
     const answer = userAnswers[question.id];
+    if (answer === undefined || answer === null || answer === '') return;
+    if (JSON.stringify(savedAnswers[question.id]) === JSON.stringify(answer)) return;
+
+    await submitAttemptAnswer(attemptId, question.id, buildAnswerBody(question.type, answer));
+    setSavedAnswers((prev) => ({ ...prev, [question.id]: answer }));
+  }
+
+  function goToIndex(index: number) {
+    setCurrentIndex(index);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function finishNow() {
+    if (!attemptId) return;
 
     setErrorMessage('');
     setIsSubmitting(true);
 
     try {
-      await submitAttemptAnswer(attemptId, question.id, buildAnswerBody(question.type, answer));
+      await persistAnswer(currentIndex);
+      const finalResult = await finishAttempt(attemptId);
+      setResult(finalResult);
+      setState('finished');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Erro ao enviar resposta');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
-      if (currentIndex < questions.length - 1) {
-        setCurrentIndex((i) => i + 1);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        const finalResult = await finishAttempt(attemptId);
-        setResult(finalResult);
-        setState('finished');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+  async function handleConfirm() {
+    if (!attemptId) return;
+
+    if (currentIndex === questions.length - 1) {
+      await finishNow();
+      return;
+    }
+
+    setErrorMessage('');
+    setIsSubmitting(true);
+
+    try {
+      await persistAnswer(currentIndex);
+      goToIndex(currentIndex + 1);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Erro ao enviar resposta');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleNavigate(index: number) {
+    if (index === currentIndex || isSubmitting) return;
+
+    setErrorMessage('');
+    setIsSubmitting(true);
+
+    try {
+      await persistAnswer(currentIndex);
+      goToIndex(index);
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Erro ao enviar resposta');
     } finally {
@@ -100,8 +171,7 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
 
   function handleBack() {
     if (currentIndex > 0) {
-      setCurrentIndex((i) => i - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      void handleNavigate(currentIndex - 1);
     }
   }
 
@@ -141,6 +211,10 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
   const hasAnswer = userAnswer !== undefined && userAnswer !== null && userAnswer !== '';
   const isLast = currentIndex === questions.length - 1;
   const progress = ((currentIndex + 1) / questions.length) * 100;
+  const answeredCount = questions.filter((q) => q.id in userAnswers).length;
+  // Com o navegador dá para responder tudo e parar no meio da prova, então a
+  // saída não pode existir só na última questão.
+  const canFinishFromHere = tier !== 'ludico' && !isLast && answeredCount === questions.length;
 
   return (
     <div data-tier={tier} className="sim-shell page-shell flex flex-col px-4 py-6 md:py-8">
@@ -152,9 +226,19 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
           {tier === 'ludico' && <span className="text-xl">📚</span>}
           <span className="sim-brand font-bold text-base truncate">{heading}</span>
         </div>
-        <span className="sim-step hidden sm:block flex-shrink-0">
-          {tier === 'exame' ? `${currentIndex + 1} / ${questions.length}` : `Questão ${currentIndex + 1}`}
-        </span>
+        {tier === 'ludico' ? (
+          <span className="sim-step hidden sm:block flex-shrink-0">
+            Questão {currentIndex + 1}
+          </span>
+        ) : (
+          <span
+            className="sim-timer flex-shrink-0"
+            title="Tempo desde o início da tentativa"
+            aria-label={`Tempo decorrido: ${formatDuration(elapsed)}`}
+          >
+            {formatDuration(elapsed)}
+          </span>
+        )}
       </div>
 
       <div className="w-full max-w-2xl mx-auto mb-5 flex items-center gap-3">
@@ -285,35 +369,80 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
         <div className="flex flex-col gap-3 pt-4 sim-divider">
           {errorMessage && <p className="sim-error">{errorMessage}</p>}
 
-          <div className="flex gap-[3px]">
-            {questions.map((q, i) => (
-              <div
-                key={q.id}
-                className="sim-seg"
-                data-state={i === currentIndex ? 'current' : q.id in userAnswers ? 'answered' : 'pending'}
-              />
-            ))}
-          </div>
+          {tier === 'ludico' ? (
+            <div className="flex gap-[3px]">
+              {questions.map((q, i) => (
+                <div
+                  key={q.id}
+                  className="sim-seg"
+                  data-state={i === currentIndex ? 'current' : q.id in userAnswers ? 'answered' : 'pending'}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="sim-nav" role="group" aria-label="Ir para uma questão">
+              {questions.map((q, i) => (
+                <button
+                  key={q.id}
+                  className="sim-nav-item"
+                  data-state={i === currentIndex ? 'current' : q.id in userAnswers ? 'answered' : 'pending'}
+                  aria-current={i === currentIndex ? 'true' : undefined}
+                  aria-label={`Questão ${i + 1}${q.id in userAnswers ? ', respondida' : ''}`}
+                  onClick={() => void handleNavigate(i)}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          )}
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             {currentIndex > 0 ? (
-              <button className="sim-btn sim-btn--ghost" onClick={handleBack}>
+              <button className="sim-btn sim-btn--ghost" onClick={handleBack} disabled={isSubmitting}>
                 ← Anterior
               </button>
             ) : <div />}
 
-            <button
-              className="sim-btn sim-btn--primary"
-              onClick={handleConfirm}
-              disabled={!hasAnswer || isSubmitting}
-            >
-              {isSubmitting ? 'Enviando...' : isLast ? finishLabel(tier) : confirmLabel(tier)}
-            </button>
+            <div className="flex items-center gap-3 ml-auto">
+              {tier !== 'ludico' && (
+                <span className="sim-answered-count">
+                  {answeredCount} de {questions.length} respondidas
+                </span>
+              )}
+
+              {canFinishFromHere && (
+                <button
+                  className="sim-btn sim-btn--ghost"
+                  onClick={() => void finishNow()}
+                  disabled={isSubmitting}
+                >
+                  {finishLabel(tier)}
+                </button>
+              )}
+
+              <button
+                className="sim-btn sim-btn--primary"
+                onClick={handleConfirm}
+                disabled={!hasAnswer || isSubmitting}
+              >
+                {isSubmitting ? 'Enviando...' : isLast ? finishLabel(tier) : confirmLabel(tier)}
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+/** Sem horas até 59:59; com horas a partir daí — prova longa passa de uma hora. */
+function formatDuration(totalSeconds: number) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (value: number) => String(value).padStart(2, '0');
+
+  return hours > 0 ? `${hours}:${pad(minutes)}:${pad(seconds)}` : `${pad(minutes)}:${pad(seconds)}`;
 }
 
 function confirmLabel(tier: Tier) {
