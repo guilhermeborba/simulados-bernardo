@@ -13,7 +13,7 @@ interface TecnicoStepProps {
  * Listagem dos simulados de curso técnico.
  *
  * Adota a linguagem sóbria da faixa "exame" — a mesma que o aluno encontra ao
- * abrir o simulado —, em vez do visual lúdico da Educação Básica.
+ * abrir o simulado —, em vez do visual lúdico do ensino escolar.
  */
 export default function TecnicoStep({ onBack }: TecnicoStepProps) {
   const router = useRouter();

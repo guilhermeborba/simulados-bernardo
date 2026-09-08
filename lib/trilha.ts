@@ -43,6 +43,6 @@ export function esquecerTrilha() {
 }
 
 export const TRILHA_LABELS: Record<Trilha, string> = {
-  basica: 'Educação Básica',
+  basica: 'Ensino Fundamental e Médio',
   tecnico: 'Cursos Técnicos',
 };
