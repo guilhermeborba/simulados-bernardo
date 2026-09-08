@@ -1,6 +1,10 @@
 'use client';
 
-export type Year = 'primeiro' | 'segundo' | 'terceiro' | 'quarto' | 'quinto' | 'sexto' | 'setimo' | 'oitavo' | 'nono' | '';
+export type Year =
+  | 'primeiro' | 'segundo' | 'terceiro' | 'quarto' | 'quinto'
+  | 'sexto' | 'setimo' | 'oitavo' | 'nono'
+  | 'em1' | 'em2' | 'em3'
+  | '';
 export type Bimestre = '1' | '2' | '3' | '4' | '';
 export type Assessment = 'AV1' | 'AV2' | '';
 
@@ -15,7 +19,10 @@ interface SelectionStepProps {
   onBack: () => void;
 }
 
-const YEARS: { value: Year; num: number; label: string; sub: string; available: boolean; color: string; bg: string }[] = [
+// `num` é o schoolYear que vai para a API; `badge` é o que aparece no cartão.
+// Os dois divergem no Ensino Médio, que é numerado 10–12 internamente mas
+// falado como 1ª, 2ª e 3ª série.
+const YEARS: { value: Year; num: number; badge?: string; label: string; sub: string; available: boolean; color: string; bg: string }[] = [
   { value: 'primeiro', num: 1, label: '1º Ano', sub: 'Fundamental I',  available: false, color: '#8B6DE0', bg: 'linear-gradient(135deg,#D4C0FF,#8B6DE0)' },
   { value: 'segundo',  num: 2, label: '2º Ano', sub: 'Fundamental I',  available: false, color: '#4A95E5', bg: 'linear-gradient(135deg,#B4DAFF,#4A95E5)' },
   { value: 'terceiro', num: 3, label: '3º Ano', sub: 'Fundamental I',  available: true,  color: '#E54F94', bg: 'linear-gradient(135deg,#FFB3D1,#E54F94)' },
@@ -25,11 +32,32 @@ const YEARS: { value: Year; num: number; label: string; sub: string; available: 
   { value: 'setimo',   num: 7, label: '7º Ano', sub: 'Fundamental II', available: false, color: '#2FB867', bg: 'linear-gradient(135deg,#A0F0C0,#2FB867)' },
   { value: 'oitavo',   num: 8, label: '8º Ano', sub: 'Fundamental II', available: false, color: '#8B6DE0', bg: 'linear-gradient(135deg,#D4C0FF,#8B6DE0)' },
   { value: 'nono',     num: 9, label: '9º Ano', sub: 'Fundamental II', available: false, color: '#2FB867', bg: 'linear-gradient(135deg,#A0F0C0,#2FB867)' },
+  // Ensino Médio segue a numeração contínua (10–12) que tierForSchoolYear já
+  // reconhece como faixa de exame; o rótulo é "série", como na escola.
+  { value: 'em1',     num: 10, badge: '1ª', label: '1ª Série', sub: 'Ensino Médio', available: false, color: '#0E7490', bg: 'linear-gradient(135deg,#9FE0DA,#0E7490)' },
+  { value: 'em2',     num: 11, badge: '2ª', label: '2ª Série', sub: 'Ensino Médio', available: false, color: '#4A95E5', bg: 'linear-gradient(135deg,#B4DAFF,#4A95E5)' },
+  { value: 'em3',     num: 12, badge: '3ª', label: '3ª Série', sub: 'Ensino Médio', available: false, color: '#8B6DE0', bg: 'linear-gradient(135deg,#D4C0FF,#8B6DE0)' },
 ];
 
 export const YEAR_TO_SCHOOL_YEAR: Record<string, number> = Object.fromEntries(
   YEARS.map((y) => [y.value, y.num]),
 );
+
+export const YEAR_LABELS: Record<string, string> = Object.fromEntries(
+  YEARS.map((y) => [y.value, y.label]),
+);
+
+// Cada etapa em sua própria linha: com o Ensino Médio o antigo corte fixo em
+// cinco/quatro colunas deixava de bater com a quantidade de anos.
+const YEAR_GROUPS: { label: string; years: typeof YEARS }[] = [
+  { label: 'Fundamental I', years: YEARS.filter((y) => y.sub === 'Fundamental I') },
+  { label: 'Fundamental II', years: YEARS.filter((y) => y.sub === 'Fundamental II') },
+  { label: 'Ensino Médio', years: YEARS.filter((y) => y.sub === 'Ensino Médio') },
+];
+
+// auto-fit quebra a linha no celular em vez de estourar a largura da tela, e
+// no desktop as faixas vazias colapsam, deixando os anos do grupo lado a lado.
+const YEAR_GRID = 'repeat(auto-fit, minmax(96px, 1fr))';
 
 const BIMESTRES: { value: Bimestre; label: string; range: string; available: boolean; sub: string }[] = [
   { value: '1', label: '1º Bimestre', range: 'Fev — Abr', available: true,  sub: 'Apenas AV2' },
@@ -56,10 +84,6 @@ const ASSESSMENTS: { value: Assessment; label: string; desc: string }[] = [
   { value: 'AV2', label: 'AV2 – Segunda Avaliação',  desc: 'Conteúdo completo do bimestre' },
 ];
 
-const YEAR_LABELS: Record<string, string> = {
-  primeiro: '1º Ano', segundo: '2º Ano', terceiro: '3º Ano', quarto: '4º Ano',
-  quinto: '5º Ano', sexto: '6º Ano', setimo: '7º Ano', oitavo: '8º Ano', nono: '9º Ano',
-};
 const BIM_LABELS: Record<string, string> = { '1': '1º Bimestre', '2': '2º Bimestre', '3': '3º Bimestre', '4': '4º Bimestre' };
 
 function SectionHeader({ step, title, selected }: { step: number; title: string; selected?: string }) {
@@ -148,16 +172,21 @@ export default function SelectionStep({
           title="Qual ano você está cursando?"
           selected={selectedYear ? `Selecionado: ${YEAR_LABELS[selectedYear]}` : undefined}
         />
-        <div className="grid gap-3 mb-8" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
-          {YEARS.slice(0, 5).map((y) => (
-            <YearCard key={y.value} y={y} selected={selectedYear === y.value} onClick={() => y.available && onYearChange(y.value)} />
-          ))}
-        </div>
-        <div className="grid gap-3 mb-8" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-          {YEARS.slice(5).map((y) => (
-            <YearCard key={y.value} y={y} selected={selectedYear === y.value} onClick={() => y.available && onYearChange(y.value)} />
-          ))}
-        </div>
+        {YEAR_GROUPS.map((group) => (
+          <div key={group.label} className="mb-8">
+            <div style={{
+              fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.06em',
+              color: 'var(--muted)', marginBottom: 8,
+            }}>
+              {group.label}
+            </div>
+            <div className="grid gap-3" style={{ gridTemplateColumns: YEAR_GRID }}>
+              {group.years.map((y) => (
+                <YearCard key={y.value} y={y} selected={selectedYear === y.value} onClick={() => y.available && onYearChange(y.value)} />
+              ))}
+            </div>
+          </div>
+        ))}
 
         {/* ── Seção 2: Bimestre ── */}
         {selectedYear && (
@@ -339,7 +368,7 @@ function YearCard({
         color: 'white', fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 20,
         boxShadow: y.available ? `0 4px 10px ${y.color}50` : 'none',
       }}>
-        {y.num}
+        {y.badge ?? y.num}
       </div>
       <div style={{ fontFamily: 'var(--font-nunito)', fontWeight: 700, color: 'var(--ink)', fontSize: 14 }}>
         {y.label}
@@ -348,7 +377,7 @@ function YearCard({
         fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em',
         color: selected ? '#8B6000' : 'var(--muted)',
       }}>
-        {selected ? 'FUNDAMENTAL I' : y.sub.toUpperCase()}
+        {y.sub.toUpperCase()}
       </div>
     </button>
   );

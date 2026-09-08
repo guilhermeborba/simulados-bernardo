@@ -69,15 +69,16 @@ export interface ApiSimulation {
 }
 
 export function getAvailableSimulations(params: {
-  schoolYear: number;
-  bimester: number;
-  assessment: string;
+  schoolYear?: number;
+  bimester?: number;
+  assessment?: string;
 }) {
-  const query = new URLSearchParams({
-    schoolYear: String(params.schoolYear),
-    bimester: String(params.bimester),
-    assessment: params.assessment,
-  });
+  const query = new URLSearchParams();
+
+  // Curso técnico é listado só por schoolYear 0, sem bimestre nem avaliação.
+  if (params.schoolYear !== undefined) query.set('schoolYear', String(params.schoolYear));
+  if (params.bimester !== undefined) query.set('bimester', String(params.bimester));
+  if (params.assessment) query.set('assessment', params.assessment);
 
   return apiFetch<ApiSimulation[]>(`/api/backend/simulations/available?${query.toString()}`);
 }

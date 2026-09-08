@@ -96,7 +96,7 @@ export default function HeroStep({ onStart }: HeroStepProps) {
             {/* Eyebrow */}
             <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold mb-6"
                  style={{ background: 'rgba(91,214,138,.15)', color: 'var(--grass-deep)' }}>
-              + Plataforma educativa do 1º ao 9º ano
+              + Plataforma educativa do 1º ano ao Ensino Médio
             </div>
 
             <h1 className="text-5xl md:text-6xl mb-4" style={{ lineHeight: 1.1 }}>
