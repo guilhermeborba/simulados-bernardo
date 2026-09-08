@@ -1,5 +1,9 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
+import { getAvailableSimulations, ApiSimulation } from '@/lib/apiClient';
+import { TECNICO_SCHOOL_YEAR } from '@/lib/trilha';
+
 export type Year =
   | 'primeiro' | 'segundo' | 'terceiro' | 'quarto' | 'quinto'
   | 'sexto' | 'setimo' | 'oitavo' | 'nono'
@@ -22,21 +26,21 @@ interface SelectionStepProps {
 // `num` é o schoolYear que vai para a API; `badge` é o que aparece no cartão.
 // Os dois divergem no Ensino Médio, que é numerado 10–12 internamente mas
 // falado como 1ª, 2ª e 3ª série.
-const YEARS: { value: Year; num: number; badge?: string; label: string; sub: string; available: boolean; color: string; bg: string }[] = [
-  { value: 'primeiro', num: 1, label: '1º Ano', sub: 'Fundamental I',  available: false, color: '#8B6DE0', bg: 'linear-gradient(135deg,#D4C0FF,#8B6DE0)' },
-  { value: 'segundo',  num: 2, label: '2º Ano', sub: 'Fundamental I',  available: false, color: '#4A95E5', bg: 'linear-gradient(135deg,#B4DAFF,#4A95E5)' },
-  { value: 'terceiro', num: 3, label: '3º Ano', sub: 'Fundamental I',  available: true,  color: '#E54F94', bg: 'linear-gradient(135deg,#FFB3D1,#E54F94)' },
-  { value: 'quarto',   num: 4, label: '4º Ano', sub: 'Fundamental I',  available: false, color: '#2FB867', bg: 'linear-gradient(135deg,#A0F0C0,#2FB867)' },
-  { value: 'quinto',   num: 5, label: '5º Ano', sub: 'Fundamental I',  available: false, color: '#FF7A3D', bg: 'linear-gradient(135deg,#FFD0B0,#FF7A3D)' },
-  { value: 'sexto',    num: 6, label: '6º Ano', sub: 'Fundamental II', available: false, color: '#4A95E5', bg: 'linear-gradient(135deg,#B4DAFF,#4A95E5)' },
-  { value: 'setimo',   num: 7, label: '7º Ano', sub: 'Fundamental II', available: false, color: '#2FB867', bg: 'linear-gradient(135deg,#A0F0C0,#2FB867)' },
-  { value: 'oitavo',   num: 8, label: '8º Ano', sub: 'Fundamental II', available: false, color: '#8B6DE0', bg: 'linear-gradient(135deg,#D4C0FF,#8B6DE0)' },
-  { value: 'nono',     num: 9, label: '9º Ano', sub: 'Fundamental II', available: false, color: '#2FB867', bg: 'linear-gradient(135deg,#A0F0C0,#2FB867)' },
+const YEARS: { value: Year; num: number; badge?: string; label: string; sub: string; color: string; bg: string }[] = [
+  { value: 'primeiro', num: 1, label: '1º Ano', sub: 'Fundamental I', color: '#8B6DE0', bg: 'linear-gradient(135deg,#D4C0FF,#8B6DE0)' },
+  { value: 'segundo',  num: 2, label: '2º Ano', sub: 'Fundamental I', color: '#4A95E5', bg: 'linear-gradient(135deg,#B4DAFF,#4A95E5)' },
+  { value: 'terceiro', num: 3, label: '3º Ano', sub: 'Fundamental I',  color: '#E54F94', bg: 'linear-gradient(135deg,#FFB3D1,#E54F94)' },
+  { value: 'quarto',   num: 4, label: '4º Ano', sub: 'Fundamental I', color: '#2FB867', bg: 'linear-gradient(135deg,#A0F0C0,#2FB867)' },
+  { value: 'quinto',   num: 5, label: '5º Ano', sub: 'Fundamental I', color: '#FF7A3D', bg: 'linear-gradient(135deg,#FFD0B0,#FF7A3D)' },
+  { value: 'sexto',    num: 6, label: '6º Ano', sub: 'Fundamental II', color: '#4A95E5', bg: 'linear-gradient(135deg,#B4DAFF,#4A95E5)' },
+  { value: 'setimo',   num: 7, label: '7º Ano', sub: 'Fundamental II', color: '#2FB867', bg: 'linear-gradient(135deg,#A0F0C0,#2FB867)' },
+  { value: 'oitavo',   num: 8, label: '8º Ano', sub: 'Fundamental II', color: '#8B6DE0', bg: 'linear-gradient(135deg,#D4C0FF,#8B6DE0)' },
+  { value: 'nono',     num: 9, label: '9º Ano', sub: 'Fundamental II', color: '#2FB867', bg: 'linear-gradient(135deg,#A0F0C0,#2FB867)' },
   // Ensino Médio segue a numeração contínua (10–12) que tierForSchoolYear já
   // reconhece como faixa de exame; o rótulo é "série", como na escola.
-  { value: 'em1',     num: 10, badge: '1ª', label: '1ª Série', sub: 'Ensino Médio', available: false, color: '#0E7490', bg: 'linear-gradient(135deg,#9FE0DA,#0E7490)' },
-  { value: 'em2',     num: 11, badge: '2ª', label: '2ª Série', sub: 'Ensino Médio', available: false, color: '#4A95E5', bg: 'linear-gradient(135deg,#B4DAFF,#4A95E5)' },
-  { value: 'em3',     num: 12, badge: '3ª', label: '3ª Série', sub: 'Ensino Médio', available: false, color: '#8B6DE0', bg: 'linear-gradient(135deg,#D4C0FF,#8B6DE0)' },
+  { value: 'em1',     num: 10, badge: '1ª', label: '1ª Série', sub: 'Ensino Médio', color: '#0E7490', bg: 'linear-gradient(135deg,#9FE0DA,#0E7490)' },
+  { value: 'em2',     num: 11, badge: '2ª', label: '2ª Série', sub: 'Ensino Médio', color: '#4A95E5', bg: 'linear-gradient(135deg,#B4DAFF,#4A95E5)' },
+  { value: 'em3',     num: 12, badge: '3ª', label: '3ª Série', sub: 'Ensino Médio', color: '#8B6DE0', bg: 'linear-gradient(135deg,#D4C0FF,#8B6DE0)' },
 ];
 
 export const YEAR_TO_SCHOOL_YEAR: Record<string, number> = Object.fromEntries(
@@ -59,11 +63,11 @@ const YEAR_GROUPS: { label: string; years: typeof YEARS }[] = [
 // no desktop as faixas vazias colapsam, deixando os anos do grupo lado a lado.
 const YEAR_GRID = 'repeat(auto-fit, minmax(96px, 1fr))';
 
-const BIMESTRES: { value: Bimestre; label: string; range: string; available: boolean; sub: string }[] = [
-  { value: '1', label: '1º Bimestre', range: 'Fev — Abr', available: true,  sub: 'Apenas AV2' },
-  { value: '2', label: '2º Bimestre', range: 'Mai — Jul', available: true,  sub: 'AV1 + AV2' },
-  { value: '3', label: '3º Bimestre', range: 'Ago — Out', available: true,  sub: 'Apenas AV1' },
-  { value: '4', label: '4º Bimestre', range: 'Nov — Dez', available: false, sub: 'Em breve' },
+const BIMESTRES: { value: Bimestre; label: string; range: string }[] = [
+  { value: '1', label: '1º Bimestre', range: 'Fev — Abr' },
+  { value: '2', label: '2º Bimestre', range: 'Mai — Jul' },
+  { value: '3', label: '3º Bimestre', range: 'Ago — Out' },
+  { value: '4', label: '4º Bimestre', range: 'Nov — Dez' },
 ];
 
 const BIMESTRE_COLORS: Record<string, string> = {
@@ -71,12 +75,6 @@ const BIMESTRE_COLORS: Record<string, string> = {
   '2': '#2FB867',
   '3': '#FFB800',
   '4': '#E54F94',
-};
-
-const AVAILABLE_ASSESSMENTS: Record<string, Assessment[]> = {
-  '1': ['AV2'],
-  '2': ['AV1', 'AV2'],
-  '3': ['AV1'],
 };
 
 const ASSESSMENTS: { value: Assessment; label: string; desc: string }[] = [
@@ -120,10 +118,41 @@ export default function SelectionStep({
   onNext,
   onBack,
 }: SelectionStepProps) {
-  const availableAvs = selectedBimestre ? (AVAILABLE_ASSESSMENTS[selectedBimestre] ?? []) : [];
-  const canAdvance = !!selectedYear && !!selectedBimestre && !!selectedAssessment;
+  const { catalogo, isLoading } = useCatalogoDoAluno();
 
-  const selectedYearData = YEARS.find(y => y.value === selectedYear);
+  const anosLiberados = useMemo(
+    () => new Set(catalogo.map((simulacao) => simulacao.schoolYear)),
+    [catalogo],
+  );
+
+  const selectedSchoolYear = selectedYear ? YEAR_TO_SCHOOL_YEAR[selectedYear] : null;
+
+  const bimestresLiberados = useMemo(
+    () =>
+      new Set(
+        catalogo
+          .filter((simulacao) => simulacao.schoolYear === selectedSchoolYear)
+          .map((simulacao) => String(simulacao.bimester)),
+      ),
+    [catalogo, selectedSchoolYear],
+  );
+
+  const avsLiberadas = useMemo(
+    () =>
+      new Set(
+        catalogo
+          .filter(
+            (simulacao) =>
+              simulacao.schoolYear === selectedSchoolYear &&
+              String(simulacao.bimester) === selectedBimestre,
+          )
+          .map((simulacao) => simulacao.assessment),
+      ),
+    [catalogo, selectedSchoolYear, selectedBimestre],
+  );
+
+  const canAdvance = !!selectedYear && !!selectedBimestre && !!selectedAssessment;
+  const nadaLiberado = !isLoading && anosLiberados.size === 0;
 
   return (
     <div className="page-shell flex flex-col px-4 py-6 md:py-8">
@@ -166,6 +195,28 @@ export default function SelectionStep({
       <div className="w-full max-w-3xl mx-auto bg-white rounded-[2rem] p-6 md:p-8"
            style={{ boxShadow: 'var(--shadow-3)' }}>
 
+        {isLoading && (
+          <p className="text-center py-4" style={{ color: 'var(--muted)' }}>
+            Carregando os simulados disponíveis para você...
+          </p>
+        )}
+
+        {/* Sem esta faixa, quem não tem nenhum ano liberado vê só uma grade
+            cinza e nenhuma explicação do porquê. */}
+        {nadaLiberado && (
+          <div
+            className="flex items-start gap-3 rounded-2xl px-5 py-4 mb-6"
+            style={{ background: '#FFF8D6', border: '1.5px solid #FFD66B' }}
+          >
+            <span style={{ fontSize: 20, flexShrink: 0 }}>💡</span>
+            <p style={{ fontSize: 13, color: '#6B4A00', fontWeight: 600, lineHeight: 1.5 }}>
+              Ainda não há simulados liberados para a sua conta. Se você recebeu
+              um link de convite de turma, abra o link para liberar os simulados
+              dela.
+            </p>
+          </div>
+        )}
+
         {/* ── Seção 1: Ano ── */}
         <SectionHeader
           step={1}
@@ -181,9 +232,18 @@ export default function SelectionStep({
               {group.label}
             </div>
             <div className="grid gap-3" style={{ gridTemplateColumns: YEAR_GRID }}>
-              {group.years.map((y) => (
-                <YearCard key={y.value} y={y} selected={selectedYear === y.value} onClick={() => y.available && onYearChange(y.value)} />
-              ))}
+              {group.years.map((y) => {
+                const available = anosLiberados.has(y.num);
+                return (
+                  <YearCard
+                    key={y.value}
+                    y={y}
+                    available={available}
+                    selected={selectedYear === y.value}
+                    onClick={() => available && onYearChange(y.value)}
+                  />
+                );
+              })}
             </div>
           </div>
         ))}
@@ -201,11 +261,12 @@ export default function SelectionStep({
               {BIMESTRES.map((b) => {
                 const color = BIMESTRE_COLORS[b.value];
                 const isSelected = selectedBimestre === b.value;
+                const available = bimestresLiberados.has(b.value);
                 return (
                   <button
                     key={b.value}
-                    disabled={!b.available}
-                    onClick={() => b.available && onBimestreChange(b.value)}
+                    disabled={!available}
+                    onClick={() => available && onBimestreChange(b.value)}
                     style={{
                       background: isSelected ? `${color}18` : 'var(--paper)',
                       borderRadius: 'var(--radius-md)',
@@ -214,8 +275,8 @@ export default function SelectionStep({
                       display: 'flex',
                       alignItems: 'center',
                       gap: 10,
-                      opacity: b.available ? 1 : 0.45,
-                      cursor: b.available ? 'pointer' : 'not-allowed',
+                      opacity: available ? 1 : 0.45,
+                      cursor: available ? 'pointer' : 'not-allowed',
                       boxShadow: 'var(--shadow-1)',
                       transition: 'all .15s',
                       textAlign: 'left',
@@ -235,7 +296,7 @@ export default function SelectionStep({
                       <div style={{ fontFamily: 'var(--font-nunito)', fontWeight: 700, color: 'var(--ink)', fontSize: 14, lineHeight: 1.2 }}>
                         {b.label}
                       </div>
-                      <div style={{ fontSize: 12, color: b.available ? 'var(--muted)' : 'var(--muted)', marginTop: 1 }}>
+                      <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 1 }}>
                         {b.range}
                       </div>
                     </div>
@@ -257,7 +318,7 @@ export default function SelectionStep({
             />
             <div className="grid grid-cols-2 gap-3 mb-6">
               {ASSESSMENTS.map((a) => {
-                const isAvailable = availableAvs.includes(a.value);
+                const isAvailable = avsLiberadas.has(a.value);
                 const isSelected = selectedAssessment === a.value;
                 const avColor = a.value === 'AV1' ? '#E54F94' : '#8B6DE0';
                 return (
@@ -334,16 +395,18 @@ export default function SelectionStep({
 
 function YearCard({
   y,
+  available,
   selected,
   onClick,
 }: {
   y: typeof YEARS[number];
+  available: boolean;
   selected: boolean;
   onClick: () => void;
 }) {
   return (
     <button
-      disabled={!y.available}
+      disabled={!available}
       onClick={onClick}
       style={{
         background: selected ? '#FFFBE8' : 'var(--paper)',
@@ -354,8 +417,8 @@ function YearCard({
         flexDirection: 'column',
         alignItems: 'center',
         gap: 8,
-        opacity: y.available ? 1 : 1,
-        cursor: y.available ? 'pointer' : 'default',
+        opacity: available ? 1 : 0.55,
+        cursor: available ? 'pointer' : 'default',
         boxShadow: selected ? '0 0 0 3px #FFD70040' : 'var(--shadow-1)',
         transition: 'all .15s',
       }}
@@ -363,10 +426,10 @@ function YearCard({
       {/* Badge com número */}
       <div style={{
         width: 44, height: 44, borderRadius: 14,
-        background: y.available ? y.bg : '#DDD',
+        background: available ? y.bg : '#DDD',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: 'white', fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 20,
-        boxShadow: y.available ? `0 4px 10px ${y.color}50` : 'none',
+        boxShadow: available ? `0 4px 10px ${y.color}50` : 'none',
       }}>
         {y.badge ?? y.num}
       </div>
@@ -381,4 +444,44 @@ function YearCard({
       </div>
     </button>
   );
+}
+
+
+/**
+ * O que este aluno pode de fato abrir.
+ *
+ * Antes a disponibilidade de ano, bimestre e avaliação era uma tabela fixa no
+ * código. Com simulados de turma isso passou a mentir: a tela oferecia o 3º ano
+ * para qualquer pessoa e só o fim do caminho revelava que não havia nada ali.
+ * Agora ela pergunta ao catálogo, que já vem filtrado por quem está pedindo.
+ */
+function useCatalogoDoAluno() {
+  const [catalogo, setCatalogo] = useState<ApiSimulation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let ativo = true;
+
+    getAvailableSimulations({})
+      .then((todos) => {
+        if (!ativo) return;
+        // Curso técnico não tem ano escolar e é gravado com schoolYear 0; ele
+        // tem tela própria e não entra na grade de anos.
+        setCatalogo(
+          todos.filter((simulacao) => simulacao.schoolYear !== TECNICO_SCHOOL_YEAR),
+        );
+      })
+      .catch(() => {
+        if (ativo) setCatalogo([]);
+      })
+      .finally(() => {
+        if (ativo) setIsLoading(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  return { catalogo, isLoading };
 }
