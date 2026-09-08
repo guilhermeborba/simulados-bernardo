@@ -72,7 +72,7 @@ export default function TrilhaStep({ onEscolher }: TrilhaStepProps) {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Porta 1 — Educação Básica, com a linguagem lúdica */}
+          {/* Porta 1 — ensino escolar, com a linguagem lúdica */}
           <button
             onClick={() => onEscolher('basica')}
             className="relative overflow-hidden text-left rounded-[1.75rem] p-6 flex flex-col gap-3"
@@ -87,10 +87,10 @@ export default function TrilhaStep({ onEscolher }: TrilhaStepProps) {
               className="self-start rounded-full px-3 py-1 text-xs font-extrabold"
               style={{ background: 'rgba(91,214,138,.16)', color: 'var(--grass-deep)' }}
             >
-              Infantil ao Ensino Médio
+              1º ano à 3ª série
             </span>
             <span className="text-2xl" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
-              Educação Básica
+              Ensino Fundamental e Médio
             </span>
             <span className="text-sm" style={{ color: 'var(--muted)', lineHeight: 1.5, maxWidth: 280 }}>
               Português, Matemática, Ciências, História e Geografia, organizados por bimestre e avaliação.
