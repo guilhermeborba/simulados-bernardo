@@ -6,10 +6,33 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface HeroStepProps {
   onStart: () => void;
-  onViewDisciplines: () => void;
 }
 
-export default function HeroStep({ onStart, onViewDisciplines }: HeroStepProps) {
+const DESTAQUES = [
+  {
+    emoji: '✅',
+    titulo: 'Feedback na hora',
+    texto: 'Você vê o resultado assim que responde.',
+    cor: 'var(--grass-deep)',
+    fundo: 'rgba(91,214,138,.16)',
+  },
+  {
+    emoji: '💡',
+    titulo: 'Dicas em cada questão',
+    texto: 'Uma pista pra te ajudar quando travar.',
+    cor: '#8B6000',
+    fundo: 'rgba(255,214,107,.28)',
+  },
+  {
+    emoji: '⭐',
+    titulo: 'Conquistas e moedas',
+    texto: 'Junte moedinhas a cada acerto.',
+    cor: 'var(--lilac-deep)',
+    fundo: 'rgba(183,157,255,.22)',
+  },
+];
+
+export default function HeroStep({ onStart }: HeroStepProps) {
   const router = useRouter();
   const { user, isLoading, logout } = useAuth();
 
@@ -85,61 +108,34 @@ export default function HeroStep({ onStart, onViewDisciplines }: HeroStepProps) 
               Simulados divertidos com feedback instantâneo, conquistas e dicas que ajudam você a brilhar a cada questão.
             </p>
 
-            {/* Botões */}
-            <div className="flex flex-col sm:flex-row gap-3 items-center w-full sm:w-auto">
-              <button className="btn btn--grass btn--lg w-full sm:w-auto" onClick={onStart}>
-                ✦ Vamos começar!
-              </button>
-              <button
-                className="btn w-full sm:w-auto"
-                style={{
-                  background: 'white',
-                  border: '2px solid var(--line)',
-                  color: 'var(--ink)',
-                  fontWeight: 700,
-                  borderRadius: 'var(--radius-pill)',
-                  padding: '12px 24px',
-                }}
-                onClick={onViewDisciplines}
-              >
-                Ver disciplinas
-              </button>
-            </div>
+            {/* Botão */}
+            <button className="btn btn--grass btn--lg w-full sm:w-auto" onClick={onStart}>
+              ✦ Vamos começar!
+            </button>
 
-            {/* Stats */}
-            <div className="flex flex-wrap gap-3 mt-10 pt-8 w-full justify-center md:justify-start"
+            {/* Destaques */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-10 pt-8 w-full"
                  style={{ borderTop: '1.5px solid var(--line)' }}>
-              <div className="flex items-center gap-3 rounded-2xl px-4 py-3"
-                   style={{ background: 'var(--cream)', minWidth: 130 }}>
-                <span className="text-xl">✅</span>
-                <span className="text-sm font-bold" style={{ color: 'var(--ink)' }}>Feedback<br/>na hora</span>
-              </div>
-              <div className="flex items-center gap-3 rounded-2xl px-4 py-3"
-                   style={{ background: 'var(--cream)', minWidth: 130 }}>
-                <span className="text-xl">💡</span>
-                <span className="text-sm font-bold" style={{ color: 'var(--ink)' }}>Dicas em<br/>cada questão</span>
-              </div>
-              <div className="flex items-center gap-3 rounded-2xl px-4 py-3"
-                   style={{ background: 'var(--cream)', minWidth: 130 }}>
-                <span className="text-xl">⭐</span>
-                <span className="text-sm font-bold" style={{ color: 'var(--ink)' }}>Conquistas<br/>e moedas</span>
-              </div>
-            </div>
-
-            {/* Números */}
-            <div className="flex gap-8 mt-4">
-              <div>
-                <div className="text-2xl font-bold" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>5</div>
-                <div className="text-xs font-semibold" style={{ color: 'var(--muted)' }}>Disciplinas</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>12+</div>
-                <div className="text-xs font-semibold" style={{ color: 'var(--muted)' }}>Simulados</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>100%</div>
-                <div className="text-xs font-semibold" style={{ color: 'var(--muted)' }}>Gratuito</div>
-              </div>
+              {DESTAQUES.map((destaque) => (
+                <div
+                  key={destaque.titulo}
+                  className="flex flex-col items-center md:items-start gap-2 rounded-2xl p-4 text-center md:text-left"
+                  style={{ background: 'white', border: '1.5px solid var(--line)', boxShadow: 'var(--shadow-1)' }}
+                >
+                  <span
+                    className="flex items-center justify-center rounded-full text-lg"
+                    style={{ width: 40, height: 40, background: destaque.fundo }}
+                  >
+                    {destaque.emoji}
+                  </span>
+                  <span className="text-sm font-extrabold leading-snug" style={{ color: destaque.cor }}>
+                    {destaque.titulo}
+                  </span>
+                  <span className="text-xs leading-snug" style={{ color: 'var(--muted)' }}>
+                    {destaque.texto}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
