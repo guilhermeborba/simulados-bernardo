@@ -64,17 +64,7 @@ export default function SelectionScreen() {
 
   if (step === 'hero') {
     return (
-      <HeroStep
-        onStart={() => requireAuth(() => setStep('selection'))}
-        onViewDisciplines={() =>
-          requireAuth(() => {
-            setSelectedYear('terceiro');
-            setSelectedBimestre('2');
-            setSelectedAssessment('AV2');
-            setStep('discipline');
-          })
-        }
-      />
+      <HeroStep onStart={() => requireAuth(() => setStep('selection'))} />
     );
   }
 
