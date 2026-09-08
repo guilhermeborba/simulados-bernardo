@@ -62,6 +62,8 @@ export interface ApiSimulation {
   schoolYear: number;
   bimester: number;
   assessment: string;
+  /** Eixo temático. Preenchido só em curso técnico, que não tem bimestre. */
+  topic: string | null;
   totalQuestions: number;
   maxScore: string;
   estimatedDurationMinutes: number | null;

@@ -148,8 +148,13 @@ export default function TrilhaStep({ onEscolher }: TrilhaStepProps) {
                     className="flex justify-between items-center pt-1.5 text-sm"
                     style={{ borderTop: '1px solid #F0EEEB', color: '#292524' }}
                   >
-                    <span>{simulacao.discipline.name}</span>
-                    <span className="text-xs" style={{ color: '#A8A29E' }}>
+                    <span>
+                      {simulacao.discipline.name}
+                      {simulacao.topic && (
+                        <span style={{ color: '#78716C' }}> · {simulacao.topic}</span>
+                      )}
+                    </span>
+                    <span className="text-xs whitespace-nowrap pl-2" style={{ color: '#A8A29E' }}>
                       {simulacao.totalQuestions} questões
                     </span>
                   </div>
