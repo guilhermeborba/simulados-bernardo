@@ -79,9 +79,15 @@ export default function DisciplineStep({ year, bimestre, assessment, onBack }: D
       {isLoading && <p className="text-center" style={{ color: 'var(--muted)' }}>Carregando disciplinas...</p>}
       {error && <p className="text-center" style={{ color: 'var(--bubble-deep)' }}>{error}</p>}
       {!isLoading && !error && simulations.length === 0 && (
-        <p className="text-center" style={{ color: 'var(--muted)' }}>
-          Nenhum simulado disponível para essa combinação ainda.
-        </p>
+        <div className="text-center" style={{ color: 'var(--muted)' }}>
+          <p>Nenhum simulado disponível para essa combinação ainda.</p>
+          {/* Alguns simulados são de turma: sem essa dica, quem tem o link do
+              convite no bolso não faz ideia de que precisa abri-lo. */}
+          <p className="text-sm mt-2">
+            Recebeu um link de convite de turma? Abra o link para liberar os
+            simulados dela.
+          </p>
+        </div>
       )}
 
       <div className="w-full max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">

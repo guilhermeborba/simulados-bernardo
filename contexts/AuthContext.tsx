@@ -20,7 +20,12 @@ interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    inviteToken?: string,
+  ) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -42,10 +47,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(loggedInUser);
   }, []);
 
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    const { user: registeredUser } = await apiRegister(name, email, password);
-    setUser(registeredUser);
-  }, []);
+  const register = useCallback(
+    async (name: string, email: string, password: string, inviteToken?: string) => {
+      const { user: registeredUser } = await apiRegister(
+        name,
+        email,
+        password,
+        inviteToken,
+      );
+      setUser(registeredUser);
+    },
+    [],
+  );
 
   const logout = useCallback(async () => {
     await apiLogout();

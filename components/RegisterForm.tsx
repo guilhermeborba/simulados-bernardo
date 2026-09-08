@@ -1,13 +1,20 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function RegisterForm() {
+interface RegisterFormProps {
+  /** Convite de turma, quando o cadastro veio por um link de convite. */
+  inviteToken?: string;
+}
+
+export default function RegisterForm({ inviteToken }: RegisterFormProps = {}) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { register } = useAuth();
+  const token = inviteToken ?? searchParams.get('convite') ?? undefined;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,7 +27,7 @@ export default function RegisterForm() {
     setIsSubmitting(true);
 
     try {
-      await register(name, email, password);
+      await register(name, email, password, token);
       router.push('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível criar a conta');
@@ -33,7 +40,19 @@ export default function RegisterForm() {
     <div className="page-shell flex items-center justify-center">
       <div className="max-w-md w-full">
         <div className="card card--hero">
-          <h1 className="text-3xl mb-6 text-center">✨ Criar conta</h1>
+          <h1 className="text-3xl mb-2 text-center">✨ Criar conta</h1>
+
+          {token ? (
+            <p
+              className="text-sm text-center mb-6 rounded-2xl px-4 py-3"
+              style={{ background: '#FFF8D6', color: '#6B4A00' }}
+            >
+              Você está entrando por um convite de turma. Ao criar a conta, os
+              simulados da turma aparecem para você.
+            </p>
+          ) : (
+            <div className="mb-6" />
+          )}
 
           <form onSubmit={handleSubmit}>
             <label className="block text-left text-sm font-bold mb-2">Nome</label>
@@ -83,7 +102,17 @@ export default function RegisterForm() {
 
           <p className="text-sm text-center mt-6" style={{ color: 'var(--muted)' }}>
             Já tem conta?{' '}
-            <Link href="/login" className="font-bold" style={{ color: 'var(--ink)' }}>
+            <Link
+              // Com convite, o login precisa voltar para cá — senão o aluno
+              // entra na conta e o convite se perde no caminho.
+              href={
+                token
+                  ? `/login?returnTo=${encodeURIComponent(`/convite?t=${token}`)}`
+                  : '/login'
+              }
+              className="font-bold"
+              style={{ color: 'var(--ink)' }}
+            >
               Entrar
             </Link>
           </p>
