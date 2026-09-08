@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Year, Bimestre, Assessment } from './SelectionStep';
-import { YEAR_TO_SCHOOL_YEAR } from './SelectionStep';
+import { YEAR_TO_SCHOOL_YEAR, YEAR_LABELS } from './SelectionStep';
 import { getAvailableSimulations, ApiSimulation } from '@/lib/apiClient';
 
 interface DisciplineStepProps {
@@ -13,10 +13,6 @@ interface DisciplineStepProps {
   onBack: () => void;
 }
 
-const YEAR_LABELS: Record<string, string> = {
-  primeiro: '1º Ano', segundo: '2º Ano', terceiro: '3º Ano', quarto: '4º Ano',
-  quinto: '5º Ano', sexto: '6º Ano', setimo: '7º Ano', oitavo: '8º Ano', nono: '9º Ano',
-};
 const BIM_LABELS: Record<string, string> = {
   '1': '1º Bimestre', '2': '2º Bimestre', '3': '3º Bimestre', '4': '4º Bimestre',
 };

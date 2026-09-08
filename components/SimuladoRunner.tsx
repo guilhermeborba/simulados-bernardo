@@ -72,7 +72,12 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
       setHeading(
         attemptTier === 'ludico' || !attempt.simulation
           ? 'Simulados Bernardo'
-          : [attempt.simulation.discipline.name, attempt.simulation.subtitle]
+          : // No curso técnico o eixo temático identifica o simulado melhor que
+            // o subtítulo, que repete o nome do curso.
+            [
+              attempt.simulation.discipline.name,
+              attempt.simulation.topic ?? attempt.simulation.subtitle,
+            ]
               .filter(Boolean)
               .join(' · '),
       );
