@@ -31,11 +31,34 @@ export function login(email: string, password: string) {
   });
 }
 
-export function register(name: string, email: string, password: string) {
+export function register(
+  name: string,
+  email: string,
+  password: string,
+  inviteToken?: string,
+) {
   return apiFetch<{ user: AuthUser }>('/api/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ name, email, password, inviteToken }),
   });
+}
+
+export interface ApiTurma {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+/** Entrada na turma para quem já tinha conta antes de receber o convite. */
+export function joinTurma(token: string) {
+  return apiFetch<{ turma: ApiTurma; alreadyMember: boolean }>(
+    '/api/backend/me/turmas/join',
+    { method: 'POST', body: JSON.stringify({ token }) },
+  );
+}
+
+export function getMyTurmas() {
+  return apiFetch<ApiTurma[]>('/api/backend/me/turmas');
 }
 
 export function logout() {
