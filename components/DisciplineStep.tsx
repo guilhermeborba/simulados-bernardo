@@ -123,7 +123,7 @@ export default function DisciplineStep({ year, bimestre, assessment, onBack }: D
               }}>
                 <span>📋 {simulation.totalQuestions} questões</span>
                 {simulation.estimatedDurationMinutes && <span>⏰ ~{simulation.estimatedDurationMinutes} min</span>}
-                <span>⚡ {simulation.maxScore} moedinhas</span>
+                <span>⚡ {simulation.maxScore} pontos</span>
               </div>
             </div>
           );

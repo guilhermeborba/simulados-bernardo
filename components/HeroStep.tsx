@@ -1,5 +1,7 @@
 'use client';
 
+import SeloDiasSeguidos from './SeloDiasSeguidos';
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,7 +28,7 @@ const DESTAQUES = [
   {
     emoji: '⭐',
     titulo: 'Conquistas e moedas',
-    texto: 'Junte moedinhas a cada acerto.',
+    texto: 'Junte pontos a cada acerto.',
     cor: 'var(--lilac-deep)',
     fundo: 'rgba(183,157,255,.22)',
   },
@@ -56,13 +58,17 @@ export default function HeroStep({ onStart }: HeroStepProps) {
           <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
             01 · SPLASH
           </span>
-          <div className="flex items-center gap-2 rounded-full px-4 py-2 font-bold text-sm"
-               style={{ background: '#FFF8D6', color: '#8B6000', boxShadow: 'var(--shadow-1)' }}>
-            <span className="text-base">7</span>
-            <span>Dias seguidos</span>
-          </div>
+          <SeloDiasSeguidos />
           {!isLoading && user && (
             <>
+              <Link
+                href="/ranking"
+                className="flex items-center gap-2 rounded-full px-4 py-2 font-bold text-sm"
+                style={{ background: 'var(--cream)', color: 'var(--ink)', boxShadow: 'var(--shadow-1)' }}
+              >
+                <span>🏆</span>
+                <span className="hidden sm:inline">Pontuação</span>
+              </Link>
               <Link
                 href="/historico"
                 className="flex items-center gap-2 rounded-full px-4 py-2 font-bold text-sm"

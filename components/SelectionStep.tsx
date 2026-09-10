@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getAvailableSimulations, ApiSimulation } from '@/lib/apiClient';
 import { TECNICO_SCHOOL_YEAR } from '@/lib/trilha';
+import SeloDiasSeguidos from './SeloDiasSeguidos';
 
 export type Year =
   | 'primeiro' | 'segundo' | 'terceiro' | 'quarto' | 'quinto'
@@ -173,11 +174,7 @@ export default function SelectionStep({
           <span className="text-xs font-bold uppercase tracking-widest hidden sm:block" style={{ color: 'var(--muted)' }}>
             02 · CONFIGURAÇÃO
           </span>
-          <div className="flex items-center gap-2 rounded-full px-4 py-2 font-bold text-sm"
-               style={{ background: '#FFF8D6', color: '#8B6000', boxShadow: 'var(--shadow-1)' }}>
-            <span>7</span>
-            <span>Dias seguidos</span>
-          </div>
+          <SeloDiasSeguidos />
         </div>
       </div>
 
