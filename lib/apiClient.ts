@@ -214,3 +214,38 @@ export interface ApiMyAttempt {
 export function getMyAttempts() {
   return apiFetch<ApiMyAttempt[]>('/api/backend/me/attempts');
 }
+
+export interface ApiMinhaPontuacao {
+  media: number;
+  simulados: number;
+  diasSeguidos: number;
+  melhorSimulado: { percentage: number; titulo: string; disciplina: string } | null;
+}
+
+export function getMinhaPontuacao() {
+  return apiFetch<ApiMinhaPontuacao>('/api/backend/me/pontuacao');
+}
+
+export interface ApiLinhaDoRanking {
+  posicao: number;
+  nome: string;
+  media: number;
+  simulados: number;
+  ehVoce: boolean;
+}
+
+export interface ApiRanking {
+  turma: { id: string; name: string };
+  totalClassificados: number;
+  minimoDeSimulados: number;
+  meusSimuladosNaTurma: number;
+  faltamParaORanking: number;
+  minhaPosicao: ApiLinhaDoRanking | null;
+  podio: ApiLinhaDoRanking[];
+  vizinhanca: ApiLinhaDoRanking[];
+  podioAte: number;
+}
+
+export function getRankingDaTurma(turmaId: string) {
+  return apiFetch<ApiRanking | null>(`/api/backend/me/turmas/${turmaId}/ranking`);
+}

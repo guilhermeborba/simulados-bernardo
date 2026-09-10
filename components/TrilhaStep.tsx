@@ -47,6 +47,14 @@ export default function TrilhaStep({ onEscolher }: TrilhaStepProps) {
         {!isLoading && user && (
           <div className="flex items-center gap-2">
             <Link
+              href="/ranking"
+              className="flex items-center gap-2 rounded-full px-4 py-2 font-bold text-sm"
+              style={{ background: 'var(--cream)', color: 'var(--ink)', boxShadow: 'var(--shadow-1)' }}
+            >
+              <span>🏆</span>
+              <span className="hidden sm:inline">Pontuação</span>
+            </Link>
+            <Link
               href="/historico"
               className="flex items-center gap-2 rounded-full px-4 py-2 font-bold text-sm"
               style={{ background: 'var(--cream)', color: 'var(--ink)', boxShadow: 'var(--shadow-1)' }}
