@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   getMinhaPontuacao,
   getMyTurmas,
@@ -15,12 +17,23 @@ import {
 const MEDALHAS = ['🥇', '🥈', '🥉'];
 
 export default function RankingView() {
+  const router = useRouter();
+  const { user, isLoading: carregandoSessao } = useAuth();
   const [pontuacao, setPontuacao] = useState<ApiMinhaPontuacao | null>(null);
   const [turmas, setTurmas] = useState<ApiTurma[] | null>(null);
   const [ranking, setRanking] = useState<ApiRanking | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
+  // A pontuação é de quem está logado. Sem sessão, mandar para o login é mais
+  // honesto que dizer "não foi possível carregar" — o problema não é uma falha.
   useEffect(() => {
+    if (carregandoSessao || user) return;
+    router.replace(`/login?returnTo=${encodeURIComponent('/ranking')}`);
+  }, [carregandoSessao, user, router]);
+
+  useEffect(() => {
+    if (carregandoSessao || !user) return;
+
     Promise.all([getMinhaPontuacao(), getMyTurmas()])
       .then(([minha, minhasTurmas]) => {
         setPontuacao(minha);
@@ -30,7 +43,7 @@ export default function RankingView() {
           : null;
       })
       .catch(() => setErro('Não foi possível carregar sua pontuação.'));
-  }, []);
+  }, [carregandoSessao, user]);
 
   return (
     <div className="page-shell flex flex-col px-4 py-6 md:py-8">
@@ -51,6 +64,10 @@ export default function RankingView() {
 
       <div className="w-full max-w-2xl mx-auto flex flex-col gap-5">
         {erro && <p style={{ color: 'var(--bubble-deep)' }}>{erro}</p>}
+
+        {!erro && !pontuacao && (
+          <p style={{ color: 'var(--muted)' }}>Carregando sua pontuação...</p>
+        )}
 
         {pontuacao && <MinhaPontuacao pontuacao={pontuacao} />}
 
