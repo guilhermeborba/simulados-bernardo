@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { bloquearTrocaDeTrilha, salvarTrilha } from '@/lib/trilha';
 
 interface RegisterFormProps {
   /** Convite de turma, quando o cadastro veio por um link de convite. */
@@ -28,6 +29,12 @@ export default function RegisterForm({ inviteToken }: RegisterFormProps = {}) {
 
     try {
       await register(name, email, password, token);
+      // Quem se cadastra por convite de turma vai direto para o ensino
+      // fundamental, sem ver a opção de curso técnico.
+      if (token) {
+        salvarTrilha('basica');
+        bloquearTrocaDeTrilha();
+      }
       router.push('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível criar a conta');

@@ -26,9 +26,9 @@ const DESTAQUES = [
     fundo: 'rgba(255,214,107,.28)',
   },
   {
-    emoji: '⭐',
-    titulo: 'Conquistas e moedas',
-    texto: 'Junte pontos a cada acerto.',
+    emoji: '🏆',
+    titulo: 'Ranking da turma',
+    texto: 'Veja como você está em relação aos colegas.',
     cor: 'var(--lilac-deep)',
     fundo: 'rgba(183,157,255,.22)',
   },

@@ -14,6 +14,7 @@ import {
   Trilha,
   TRILHA_LABELS,
   esquecerTrilha,
+  isTrocaDeTrilhaBloqueada,
   lerTrilhaSalva,
   salvarTrilha,
 } from '@/lib/trilha';
@@ -110,7 +111,9 @@ export default function SelectionScreen() {
   if (step === 'hero') {
     return (
       <>
-        {trilha && <TrilhaBar trilha={trilha} onTrocar={handleTrocarTrilha} />}
+        {trilha && !isTrocaDeTrilhaBloqueada() && (
+          <TrilhaBar trilha={trilha} onTrocar={handleTrocarTrilha} />
+        )}
         <HeroStep onStart={() => requireAuth(() => setStep('selection'))} />
       </>
     );

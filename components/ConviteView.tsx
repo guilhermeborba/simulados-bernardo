@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { joinTurma, ApiTurma } from '@/lib/apiClient';
+import { bloquearTrocaDeTrilha, salvarTrilha } from '@/lib/trilha';
 import RegisterForm from './RegisterForm';
 
 type State = 'checking' | 'joining' | 'joined' | 'error';
@@ -33,6 +34,10 @@ export default function ConviteView() {
 
     joinTurma(token)
       .then((result) => {
+        // Quem já tinha conta e entra pela turma também vai direto para o
+        // ensino fundamental, sem ver a opção de curso técnico.
+        salvarTrilha('basica');
+        bloquearTrocaDeTrilha();
         setTurma(result.turma);
         setState('joined');
       })

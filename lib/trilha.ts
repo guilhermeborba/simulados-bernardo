@@ -7,6 +7,7 @@ export type Trilha = 'basica' | 'tecnico';
 export const TECNICO_SCHOOL_YEAR = 0;
 
 const STORAGE_KEY = 'simulados:trilha';
+const BLOQUEIO_KEY = 'simulados:trilha:bloqueada';
 
 export function isTrilha(value: unknown): value is Trilha {
   return value === 'basica' || value === 'tecnico';
@@ -39,6 +40,28 @@ export function esquecerTrilha() {
     window.localStorage.removeItem(STORAGE_KEY);
   } catch {
     // idem
+  }
+}
+
+/**
+ * Quem entra por um convite de turma já é direcionado para a trilha básica
+ * e não deve ver a opção de trocar para o curso técnico.
+ */
+export function bloquearTrocaDeTrilha() {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(BLOQUEIO_KEY, '1');
+  } catch {
+    // idem
+  }
+}
+
+export function isTrocaDeTrilhaBloqueada(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.localStorage.getItem(BLOQUEIO_KEY) === '1';
+  } catch {
+    return false;
   }
 }
 
