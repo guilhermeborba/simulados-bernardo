@@ -16,6 +16,8 @@ import {
   TemplateQuestion,
 } from '@/lib/questionMapper';
 import { DEFAULT_TIER, Tier, tierForSchoolYear } from '@/lib/tier';
+import { isEducacaoInfantil } from '@/lib/trilha';
+import MascoteGuia from './MascoteGuia';
 
 interface SimuladoRunnerProps {
   simulationId: string;
@@ -35,10 +37,19 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
   const [result, setResult] = useState<ApiAttemptResult | null>(null);
   const [tier, setTier] = useState<Tier>(DEFAULT_TIER);
   const [heading, setHeading] = useState('Simulados Bernardo');
+  const [schoolYear, setSchoolYear] = useState<number | null>(null);
+  // Dica de ouro sob demanda, só na Educação Infantil — pergunta a pergunta,
+  // não fica salva entre uma questão e outra.
+  const [revealedTips, setRevealedTips] = useState<{ [questionId: string]: boolean }>({});
+  // Rodadas de 10 com pausa, só na Educação Infantil. roundsSeen evita pausar
+  // de novo se o aluno voltar e avançar pela mesma questão outra vez.
+  const [roundsSeen, setRoundsSeen] = useState<Set<number>>(new Set());
+  const [pauseRound, setPauseRound] = useState<1 | 2 | null>(null);
   // Respostas já gravadas no servidor, para não reenviar o que não mudou.
   const [savedAnswers, setSavedAnswers] = useState<{ [questionId: string]: unknown }>({});
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const isInfantil = isEducacaoInfantil(schoolYear);
 
   useEffect(() => {
     void loadAttempt();
@@ -61,6 +72,9 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
     setSavedAnswers({});
     setElapsed(0);
     setResult(null);
+    setRevealedTips({});
+    setRoundsSeen(new Set());
+    setPauseRound(null);
 
     try {
       const attempt = await startAttempt(simulationId);
@@ -69,6 +83,7 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
 
       const attemptTier = tierForSchoolYear(attempt.simulation?.schoolYear);
       setTier(attemptTier);
+      setSchoolYear(attempt.simulation?.schoolYear ?? null);
       setHeading(
         attemptTier === 'ludico' || !attempt.simulation
           ? 'Simulados Bernardo'
@@ -173,6 +188,20 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
 
     try {
       await persistAnswer(currentIndex);
+
+      const completedCount = currentIndex + 1;
+      const isRoundBoundary =
+        isInfantil &&
+        completedCount % 10 === 0 &&
+        completedCount < questions.length &&
+        !roundsSeen.has(completedCount);
+
+      if (isRoundBoundary) {
+        setRoundsSeen((prev) => new Set(prev).add(completedCount));
+        setPauseRound((completedCount / 10) as 1 | 2);
+        return;
+      }
+
       goToIndex(currentIndex + 1);
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Erro ao enviar resposta');
@@ -228,8 +257,21 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
         result={result}
         tier={tier}
         heading={heading}
+        isInfantil={isInfantil}
         onRetry={loadAttempt}
         onExit={() => router.push('/')}
+      />
+    );
+  }
+
+  if (pauseRound !== null) {
+    return (
+      <PausaRodada
+        round={pauseRound}
+        onContinue={() => {
+          setPauseRound(null);
+          goToIndex(currentIndex + 1);
+        }}
       />
     );
   }
@@ -284,6 +326,21 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
         </div>
 
         <p className="sim-statement">{question.text}</p>
+
+        {isInfantil && question.tip && (
+          <div className="mb-5">
+            {revealedTips[question.id] ? (
+              <div className="sim-tip">💛 {question.tip}</div>
+            ) : (
+              <button
+                className="sim-btn sim-btn--ghost text-sm"
+                onClick={() => setRevealedTips((prev) => ({ ...prev, [question.id]: true }))}
+              >
+                💛 Preciso de uma dica
+              </button>
+            )}
+          </div>
+        )}
 
         {question.type === 'multiple_choice' && question.options && (
           <div className="flex flex-col gap-2.5 mb-6">
@@ -463,6 +520,33 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
   );
 }
 
+const ATIVIDADES_PAUSA = [
+  'Hora de esticar como um gatinho! 🐱',
+  'Vamos dar três pulinhos bem altos? 🐇',
+  'Que tal um abraço apertado em quem está por perto? 🤗',
+  'Bebe uma aguinha e volta rapidinho! 💧',
+];
+
+/** Tela de transição entre rodadas de 10 perguntas, só na Educação Infantil. */
+function PausaRodada({ round, onContinue }: { round: 1 | 2; onContinue: () => void }) {
+  const atividade = ATIVIDADES_PAUSA[round % ATIVIDADES_PAUSA.length];
+
+  return (
+    <div className="page-shell flex items-center justify-center px-4 py-6">
+      <div className="max-w-md w-full text-center flex flex-col items-center gap-4">
+        <MascoteGuia celebrando size={160} />
+        <h2 className="text-2xl" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
+          Você terminou {round === 1 ? 'a primeira' : 'a segunda'} rodada! 🎉
+        </h2>
+        <p style={{ color: 'var(--muted)' }}>{atividade}</p>
+        <button className="btn btn--grass btn--lg mt-2" onClick={onContinue}>
+          ✦ Vamos continuar!
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /** Sem horas até 59:59; com horas a partir daí — prova longa passa de uma hora. */
 function formatDuration(totalSeconds: number) {
   const hours = Math.floor(totalSeconds / 3600);
@@ -485,12 +569,14 @@ function ResultScreen({
   result,
   tier,
   heading,
+  isInfantil,
   onRetry,
   onExit,
 }: {
   result: ApiAttemptResult;
   tier: Tier;
   heading: string;
+  isInfantil: boolean;
   onRetry: () => void;
   onExit: () => void;
 }) {
@@ -504,6 +590,12 @@ function ResultScreen({
   return (
     <div data-tier={tier} className="sim-shell page-shell">
       <div className="max-w-4xl mx-auto">
+        {isInfantil && (
+          <div className="flex justify-center mb-4">
+            <MascoteGuia celebrando size={140} />
+          </div>
+        )}
+
         <div className="flex justify-between items-center mb-8 gap-3">
           <span className="sim-brand text-xl font-bold truncate">
             {tier === 'ludico' ? '📚 Resultado' : heading}
@@ -559,6 +651,11 @@ function ResultScreen({
                     {!question.isCorrect && question.tip && (
                       <div className="sim-tip">
                         {tier === 'ludico' ? '💡 ' : ''}{question.tip}
+                      </div>
+                    )}
+                    {question.funFact && (
+                      <div className="sim-tip sim-tip--funfact">
+                        {tier === 'ludico' ? '🌟 Você sabia? ' : 'Você sabia? '}{question.funFact}
                       </div>
                     )}
                     {idx < result.questions.length - 1 && <div style={{ height: 1, background: 'var(--t-line)' }} />}

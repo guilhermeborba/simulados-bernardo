@@ -8,6 +8,7 @@ import SelectionStep from './SelectionStep';
 import DisciplineStep from './DisciplineStep';
 import TrilhaStep from './TrilhaStep';
 import TecnicoStep from './TecnicoStep';
+import InfantilStep from './InfantilStep';
 import type { Year, Bimestre, Assessment } from './SelectionStep';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -19,7 +20,7 @@ import {
   salvarTrilha,
 } from '@/lib/trilha';
 
-type Step = 'trilha' | 'hero' | 'selection' | 'discipline' | 'tecnico';
+type Step = 'trilha' | 'hero' | 'selection' | 'discipline' | 'tecnico' | 'infantil';
 
 export default function SelectionScreen() {
   // null enquanto o localStorage não foi lido: escolher um passo antes disso
@@ -36,7 +37,11 @@ export default function SelectionScreen() {
   useEffect(() => {
     const salva = lerTrilhaSalva();
     setTrilha(salva);
-    setStep(salva === 'tecnico' ? 'tecnico' : salva === 'basica' ? 'hero' : 'trilha');
+    setStep(
+      salva === 'tecnico' ? 'tecnico' :
+      salva === 'infantil' ? 'infantil' :
+      salva === 'basica' ? 'hero' : 'trilha',
+    );
   }, []);
 
   const requireAuth = (proceed: () => void) => {
@@ -53,7 +58,7 @@ export default function SelectionScreen() {
   const handleEscolherTrilha = (escolhida: Trilha) => {
     salvarTrilha(escolhida);
     setTrilha(escolhida);
-    setStep(escolhida === 'tecnico' ? 'tecnico' : 'hero');
+    setStep(escolhida === 'tecnico' ? 'tecnico' : escolhida === 'infantil' ? 'infantil' : 'hero');
   };
 
   const handleTrocarTrilha = () => {
@@ -106,6 +111,10 @@ export default function SelectionScreen() {
 
   if (step === 'tecnico') {
     return <TecnicoStep onBack={handleTrocarTrilha} />;
+  }
+
+  if (step === 'infantil') {
+    return <InfantilStep onBack={handleTrocarTrilha} />;
   }
 
   if (step === 'hero') {

@@ -24,6 +24,13 @@ export function tierForSchoolYear(schoolYear: number | null | undefined): Tier {
     return DEFAULT_TIER;
   }
 
+  // Educação Infantil (sentinelas negativos) usa o mesmo tratamento visual
+  // lúdico do Fundamental 1 — mas atenção: schoolYear === 0 (curso técnico)
+  // continua caindo no "exame" lá embaixo, isso é intencional e não muda.
+  if (schoolYear < 0) {
+    return 'ludico';
+  }
+
   if (schoolYear >= 1 && schoolYear <= 5) {
     return 'ludico';
   }

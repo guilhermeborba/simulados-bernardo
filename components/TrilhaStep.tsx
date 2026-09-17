@@ -178,6 +178,43 @@ export default function TrilhaStep({ onEscolher }: TrilhaStepProps) {
             </span>
           </button>
 
+          {/* Porta 3 — Educação Infantil, mediada por um adulto */}
+          <button
+            onClick={() => onEscolher('infantil')}
+            className="md:col-span-2 relative overflow-hidden text-left rounded-[1.75rem] p-6 flex flex-col gap-3"
+            style={{
+              background: 'white',
+              border: '2px solid #E2D9FF',
+              boxShadow: 'var(--shadow-2)',
+              cursor: 'pointer',
+            }}
+          >
+            <span
+              className="self-start rounded-full px-3 py-1 text-xs font-extrabold"
+              style={{ background: 'rgba(183,157,255,.22)', color: 'var(--lilac-deep)' }}
+            >
+              4 e 5 anos
+            </span>
+            <span className="text-2xl" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
+              Educação Infantil
+            </span>
+            <span className="text-sm" style={{ color: 'var(--muted)', lineHeight: 1.5, maxWidth: 420 }}>
+              Simulados por campo de experiência, no ritmo da criança, com um adulto por perto — dica de ouro sempre à mão e pausa pra respirar a cada 10 perguntas.
+            </span>
+            <span
+              className="self-start mt-1 rounded-full px-5 py-2.5 text-sm"
+              style={{
+                background: 'linear-gradient(180deg,#DCD0FF,#B79DFF 55%,#8B6DE0)',
+                color: 'white',
+                fontFamily: 'var(--font-fredoka)',
+                fontWeight: 700,
+                boxShadow: '0 3px 0 rgba(43,34,64,.14)',
+              }}
+            >
+              ✦ Vamos brincar!
+            </span>
+          </button>
+
           {/* Porta futura — sinaliza o rumo sem prometer data */}
           <div
             className="md:col-span-2 flex items-center justify-between gap-3 rounded-2xl px-5 py-4"

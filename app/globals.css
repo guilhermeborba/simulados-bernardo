@@ -643,6 +643,20 @@
   color: #6B4A00;
 }
 
+/* "Você sabia?" é recompensa, não correção — cor própria pra não confundir
+   com a dica (amarela) mostrada acima quando a questão foi errada. */
+.sim-tip--funfact {
+  background: rgba(183,157,255,.14);
+  border-color: #E2D9FF;
+  color: var(--lilac-deep, #8B6DE0);
+}
+
+[data-tier='ludico'] .sim-tip--funfact {
+  background: rgba(183,157,255,.18);
+  border-color: #E2D9FF;
+  color: var(--lilac-deep, #8B6DE0);
+}
+
 /* ---- ajustes estruturais: onde a faixa muda mais que um token ---- */
 
 /* No registro de prova a alternativa é uma linha, não um cartão. */
