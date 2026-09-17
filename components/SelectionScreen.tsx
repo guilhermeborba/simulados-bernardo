@@ -37,10 +37,14 @@ export default function SelectionScreen() {
   useEffect(() => {
     const salva = lerTrilhaSalva();
     setTrilha(salva);
+    // Sem trilha salva, "hero" funciona como a porta de entrada geral do site
+    // (explica o app e leva para a escolha de trilha) — não como o lar de
+    // quem já escolheu o ensino fundamental. Ver o branch `step === 'hero'`
+    // abaixo, que decide o destino do botão "Vamos começar!" a partir de
+    // `trilha`.
     setStep(
       salva === 'tecnico' ? 'tecnico' :
-      salva === 'infantil' ? 'infantil' :
-      salva === 'basica' ? 'hero' : 'trilha',
+      salva === 'infantil' ? 'infantil' : 'hero',
     );
   }, []);
 
@@ -118,12 +122,17 @@ export default function SelectionScreen() {
   }
 
   if (step === 'hero') {
+    // Sem trilha escolhida ainda (primeira visita), "Vamos começar!" leva para
+    // a escolha de trilha, não direto para a grade de anos do fundamental.
+    const onStart = trilha === 'basica'
+      ? () => requireAuth(() => setStep('selection'))
+      : () => setStep('trilha');
     return (
       <>
         {trilha && !isTrocaDeTrilhaBloqueada() && (
           <TrilhaBar trilha={trilha} onTrocar={handleTrocarTrilha} />
         )}
-        <HeroStep onStart={() => requireAuth(() => setStep('selection'))} />
+        <HeroStep onStart={onStart} />
       </>
     );
   }

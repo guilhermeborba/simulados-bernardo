@@ -462,10 +462,10 @@ function useCatalogoDoAluno() {
     getAvailableSimulations({})
       .then((todos) => {
         if (!ativo) return;
-        // Curso técnico não tem ano escolar e é gravado com schoolYear 0; ele
-        // tem tela própria e não entra na grade de anos.
+        // Curso técnico (schoolYear 0) e Educação Infantil (schoolYear < 0)
+        // não têm ano escolar e têm tela própria; não entram na grade de anos.
         setCatalogo(
-          todos.filter((simulacao) => simulacao.schoolYear !== TECNICO_SCHOOL_YEAR),
+          todos.filter((simulacao) => simulacao.schoolYear !== TECNICO_SCHOOL_YEAR && simulacao.schoolYear >= 0),
         );
       })
       .catch(() => {
