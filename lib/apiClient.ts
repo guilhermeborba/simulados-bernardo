@@ -140,6 +140,8 @@ export interface ApiQuestion {
   type: 'MULTIPLE_CHOICE' | 'TRUE_FALSE_MULTIPLE' | 'MATCHING' | 'CLASSIFICATION';
   statement: string;
   tip: string | null;
+  /** "Você sabia?" — curiosidade mostrada na tela de resultado, sempre. */
+  funFact: string | null;
   points: string;
   order: number;
   options: ApiQuestionOption[];
@@ -167,6 +169,7 @@ export interface ApiAttemptResultQuestion {
   type: ApiQuestion['type'];
   statement: string;
   tip: string | null;
+  funFact: string | null;
   points: string;
   order: number;
   answer: unknown;

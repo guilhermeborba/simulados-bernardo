@@ -1,4 +1,4 @@
-export type Trilha = 'basica' | 'tecnico';
+export type Trilha = 'basica' | 'tecnico' | 'infantil';
 
 /**
  * Curso técnico não tem ano escolar. O banco grava esses simulados com
@@ -6,11 +6,27 @@ export type Trilha = 'basica' | 'tecnico';
  */
 export const TECNICO_SCHOOL_YEAR = 0;
 
+/**
+ * Educação Infantil não tem ano escolar numérico (1..12): o banco grava
+ * esses simulados com valores negativos, reservados como sentinela — nunca
+ * confundir com "sem filtro" (undefined) nem com o técnico (0).
+ * Espelhado em FindAvailableSimulationsDto.schoolYear no backend (@Min(-2))
+ * e em prisma/seed.ts — os dois repositórios precisam concordar nesses
+ * valores.
+ */
+export const INFANTIL_4_SCHOOL_YEAR = -1;
+export const INFANTIL_5_SCHOOL_YEAR = -2;
+
+/** true para qualquer sentinela de Educação Infantil (schoolYear < 0). */
+export function isEducacaoInfantil(schoolYear: number | null | undefined): boolean {
+  return typeof schoolYear === 'number' && schoolYear < 0;
+}
+
 const STORAGE_KEY = 'simulados:trilha';
 const BLOQUEIO_KEY = 'simulados:trilha:bloqueada';
 
 export function isTrilha(value: unknown): value is Trilha {
-  return value === 'basica' || value === 'tecnico';
+  return value === 'basica' || value === 'tecnico' || value === 'infantil';
 }
 
 /** Trilha escolhida na última visita, para não perguntar de novo toda vez. */
@@ -68,4 +84,5 @@ export function isTrocaDeTrilhaBloqueada(): boolean {
 export const TRILHA_LABELS: Record<Trilha, string> = {
   basica: 'Ensino Fundamental e Médio',
   tecnico: 'Cursos Técnicos',
+  infantil: 'Educação Infantil',
 };
