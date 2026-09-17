@@ -88,7 +88,7 @@ export default function InfantilStep({ onBack }: InfantilStepProps) {
       {error && <p className="w-full max-w-3xl mx-auto" style={{ color: 'var(--bubble-deep)' }}>{error}</p>}
       {!isLoading && !error && campos.length === 0 && (
         <div className="w-full max-w-3xl mx-auto flex items-center gap-4 rounded-2xl p-6" style={{ background: 'white', border: '1.5px dashed var(--line)' }}>
-          <MascoteGuia size={72} />
+          <MascoteGuia variant="bolinha" size={72} />
           <p style={{ color: 'var(--muted)' }}>Nenhum simulado publicado ainda para essa idade.</p>
         </div>
       )}

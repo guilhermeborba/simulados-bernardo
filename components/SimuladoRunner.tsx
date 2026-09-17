@@ -44,7 +44,8 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
   // Rodadas de 10 com pausa, só na Educação Infantil. roundsSeen evita pausar
   // de novo se o aluno voltar e avançar pela mesma questão outra vez.
   const [roundsSeen, setRoundsSeen] = useState<Set<number>>(new Set());
-  const [pauseRound, setPauseRound] = useState<1 | 2 | null>(null);
+  // 0 = boas-vindas antes da 1ª questão; 1/2 = pausa após a 10ª/20ª.
+  const [pauseRound, setPauseRound] = useState<0 | 1 | 2 | null>(null);
   // Respostas já gravadas no servidor, para não reenviar o que não mudou.
   const [savedAnswers, setSavedAnswers] = useState<{ [questionId: string]: unknown }>({});
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -114,6 +115,12 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
       });
 
       const firstUnanswered = mapped.findIndex((question) => !(question.id in restored));
+
+      // Boas-vindas do Bolinha só na primeira vez — quem retoma uma tentativa
+      // já em andamento cai direto na questão em aberto, sem repetir o "oi".
+      if (isEducacaoInfantil(attempt.simulation?.schoolYear) && Object.keys(restored).length === 0) {
+        setPauseRound(0);
+      }
 
       setUserAnswers(restored);
       setSavedAnswers(restored);
@@ -269,8 +276,11 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
       <PausaRodada
         round={pauseRound}
         onContinue={() => {
+          const eraBoasVindas = pauseRound === 0;
           setPauseRound(null);
-          goToIndex(currentIndex + 1);
+          // Na tela de boas-vindas ainda não se respondeu a 1ª questão — só
+          // dispensa a tela, sem pular pra questão seguinte.
+          if (!eraBoasVindas) goToIndex(currentIndex + 1);
         }}
       />
     );
@@ -520,27 +530,43 @@ export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
   );
 }
 
-const ATIVIDADES_PAUSA = [
-  'Hora de esticar como um gatinho! 🐱',
-  'Vamos dar três pulinhos bem altos? 🐇',
-  'Que tal um abraço apertado em quem está por perto? 🤗',
-  'Bebe uma aguinha e volta rapidinho! 💧',
-];
+/**
+ * Falas do Bolinha nas pausas — hoje são fixas porque só existe um simulado
+ * de Educação Infantil; se um dia houver mascotes/falas por campo, isso vira
+ * conteúdo vindo da API em vez de texto fixo aqui.
+ */
+const FALAS_BOLINHA: Record<0 | 1 | 2, { titulo: string; texto: string; botao: string }> = {
+  0: {
+    titulo: 'Oi, oi! 🐶',
+    texto: 'Vamos brincar de responder um montão de perguntas sobre você e sua família?',
+    botao: '✦ Vamos começar!',
+  },
+  1: {
+    titulo: 'Você terminou a primeira rodada! 🎉',
+    texto: 'Vamos dar um pulinho e latir três vezes: au au au! Agora bora continuar!',
+    botao: '✦ Vamos continuar!',
+  },
+  2: {
+    titulo: 'Você terminou a segunda rodada! 🎉',
+    texto: 'Vamos esticar bem alto os bracinhos e respirar fundo três vezes! Ahhh, que bom!',
+    botao: '✦ Vamos continuar!',
+  },
+};
 
-/** Tela de transição entre rodadas de 10 perguntas, só na Educação Infantil. */
-function PausaRodada({ round, onContinue }: { round: 1 | 2; onContinue: () => void }) {
-  const atividade = ATIVIDADES_PAUSA[round % ATIVIDADES_PAUSA.length];
+/** Tela de boas-vindas (antes da 1ª questão) e de pausa entre rodadas — só na Educação Infantil. */
+function PausaRodada({ round, onContinue }: { round: 0 | 1 | 2; onContinue: () => void }) {
+  const fala = FALAS_BOLINHA[round];
 
   return (
     <div className="page-shell flex items-center justify-center px-4 py-6">
       <div className="max-w-md w-full text-center flex flex-col items-center gap-4">
-        <MascoteGuia celebrando size={160} />
+        <MascoteGuia variant="bolinha" celebrando={round !== 0} size={160} />
         <h2 className="text-2xl" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
-          Você terminou {round === 1 ? 'a primeira' : 'a segunda'} rodada! 🎉
+          {fala.titulo}
         </h2>
-        <p style={{ color: 'var(--muted)' }}>{atividade}</p>
+        <p style={{ color: 'var(--muted)' }}>{fala.texto}</p>
         <button className="btn btn--grass btn--lg mt-2" onClick={onContinue}>
-          ✦ Vamos continuar!
+          {fala.botao}
         </button>
       </div>
     </div>
@@ -591,8 +617,11 @@ function ResultScreen({
     <div data-tier={tier} className="sim-shell page-shell">
       <div className="max-w-4xl mx-auto">
         {isInfantil && (
-          <div className="flex justify-center mb-4">
-            <MascoteGuia celebrando size={140} />
+          <div className="flex flex-col items-center text-center mb-6 gap-2">
+            <MascoteGuia variant="bolinha" celebrando size={140} />
+            <p className="text-lg font-bold" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
+              Uau, você respondeu tudo! Você é super esperto(a)! Au au au de festa! 🐶🎉
+            </p>
           </div>
         )}
 
