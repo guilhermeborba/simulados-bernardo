@@ -9,12 +9,12 @@ export async function backendFetch(
   path: string,
   init: RequestInit = {},
 ): Promise<BackendResponse> {
+  const headers = new Headers(init.headers);
+  if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+
   const response = await fetch(`${BACKEND_API_URL}${path}`, {
     ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...init.headers,
-    },
+    headers,
     cache: 'no-store',
   });
 
