@@ -1,26 +1,29 @@
 import { Suspense } from 'react';
-import { IBM_Plex_Sans, Plus_Jakarta_Sans, Source_Serif_4 } from 'next/font/google';
+import localFont from 'next/font/local';
 import SimuladoRunner from '@/components/SimuladoRunner';
 
 // Fontes das faixas jovem e exame. Ficam declaradas aqui, e não no layout raiz,
 // para que só a rota do simulado pague o carregamento delas.
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
+const jakarta = localFont({
+  src: '../../fonts/plusjakartasans-latin.woff2',
+  weight: '500 700',
+  style: 'normal',
   variable: '--font-jakarta',
   display: 'swap',
 });
 
-const sourceSerif = Source_Serif_4({
-  subsets: ['latin'],
-  weight: ['400', '600'],
+const sourceSerif = localFont({
+  src: '../../fonts/sourceserif4-latin.woff2',
+  weight: '400 600',
+  style: 'normal',
   variable: '--font-serif',
   display: 'swap',
 });
 
-const plex = IBM_Plex_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
+const plex = localFont({
+  src: '../../fonts/ibmplexsans-latin.woff2',
+  weight: '400 600',
+  style: 'normal',
   variable: '--font-plex',
   display: 'swap',
 });

@@ -14,7 +14,13 @@
     "tests/auth-session.test.ts",
     "lib/authenticatedBackendClient.server.ts",
     "lib/authenticatedFetchCookies.server.ts",
-    "lib/serverCookies.ts"
+    "lib/serverCookies.ts",
+    "lib/questionMapper.ts",
+    "lib/apiClient.ts"
   ],
-  "exclude": ["node_modules", ".next", ".test-build"]
+  "exclude": [
+    "node_modules",
+    ".next",
+    ".test-build"
+  ]
 }

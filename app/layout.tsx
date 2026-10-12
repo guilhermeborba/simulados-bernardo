@@ -1,18 +1,20 @@
 import type { Metadata } from 'next'
-import { Fredoka, Nunito } from 'next/font/google'
+import localFont from 'next/font/local'
 import { AuthProvider } from '@/contexts/AuthContext'
 import './globals.css'
 
-const fredoka = Fredoka({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+const fredoka = localFont({
+  src: './fonts/fredoka-latin.woff2',
+  weight: '400 700',
+  style: 'normal',
   variable: '--font-fredoka',
   display: 'swap',
 })
 
-const nunito = Nunito({
-  subsets: ['latin'],
-  weight: ['500', '600', '700', '800'],
+const nunito = localFont({
+  src: './fonts/nunito-latin.woff2',
+  weight: '500 800',
+  style: 'normal',
   variable: '--font-nunito',
   display: 'swap',
 })
