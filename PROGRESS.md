@@ -1,6 +1,6 @@
 # Estado do Projeto — simulados-bernardo
 
-> Atualizado em: 2026-09-25
+> Atualizado em: 2026-10-12
 > Atualizar este arquivo ao concluir cada feature ou iniciativa relevante.
 
 ## Status geral
@@ -16,6 +16,7 @@ O frontend está **integrado com a API e em produção**. A migração dos dados
 | Integração com API (auth + simulados + tentativas) | ✅ Concluída | — |
 | BFF com cookies httpOnly (sb_access_token / sb_refresh_token) | ✅ Concluída | — |
 | Auto-refresh de token no proxy catch-all | ✅ Concluída | — |
+| Isolamento de renovação por sessão, 401 tardio e logout concorrente | ✅ Validado localmente em 12/10/2026 | — |
 | Tela de seleção com máquina de estados (trilha → hero → ano/bimestre/AV) | ✅ Concluída | — |
 | Porta de entrada com escolha de trilha (Fundamental, Técnico, Infantil) | ✅ Concluída | PR #30 |
 | Trilha de Educação Infantil (4 e 5 anos, mascote Bolinha) | ✅ Concluída | PR #36 |
@@ -29,6 +30,16 @@ O frontend está **integrado com a API e em produção**. A migração dos dados
 | Entrada na turma por link de convite | ✅ Concluída | PR #32 |
 | Middleware de proteção de rotas | ✅ Concluída | — |
 | Derivação de disponibilidade do catálogo da API | ✅ Concluída | PR #33 |
+
+---
+
+## Correção de sessão — lote 01 da evolução
+
+Renovação compartilhada somente por hash do refresh token, com retenção curta e proteção de requisições já em andamento. Falhas temporárias preservam cookies; logout invalida o coordenador antes de revogar a sessão na API e impede regravar tokens na resposta pendente. O estado local do usuário é limpo mesmo em falha de logout.
+
+Validação local: npm run test:auth passou 25 testes. Smoke HTTP nas rotas Next compiladas confirmou duas contas independentes, um refresh para chamadas da mesma sessão entre rotas e logout concorrente, incluindo cookies HttpOnly/Secure/SameSite. Build completo passou com fixture temporária de fontes locais; build comum falhou no loader Google Fonts de Source Serif 4 em código não alterado. O download real não foi validado; o build com fixture não é um artefato para deploy.
+
+[ADR 006 — Renovação isolada por sessão](docs/decisions/006-renovacao-isolada-por-sessao.md) registra implementação e limites: coordenação local a um processo e access JWT válido até expirar. Definir coordenação/recuperação antes de ampliar réplicas do BFF. Não houve deploy.
 
 ---
 
@@ -55,7 +66,7 @@ O `SimuladoRunner` já tem a infraestrutura (`pauseRound`, `roundsSeen`) para pa
 
 - **Deploy:** não configurado (verificar `.claude/launch.json` para config de preview local)
 - **CI:** não configurado
-- **Testes:** nenhum framework — verificação via `tsc --noEmit`, `next lint` e testes manuais
+- **Testes:** `npm run test:auth` usa node:test para sessão/cookies; compilação de testes em `.test-build/` (ignorado). Build e TypeScript complementam a validação.
 - **Backend esperado em:** `BACKEND_API_URL` (padrão: `http://localhost:3333`)
 
 ---

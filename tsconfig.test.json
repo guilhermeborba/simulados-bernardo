@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "noEmit": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "outDir": ".test-build",
+    "rootDir": "."
+  },
+  "include": [
+    "tests/auth-session.test.ts",
+    "lib/authenticatedBackendClient.server.ts",
+    "lib/authenticatedFetchCookies.server.ts",
+    "lib/serverCookies.ts"
+  ],
+  "exclude": ["node_modules", ".next", ".test-build"]
+}

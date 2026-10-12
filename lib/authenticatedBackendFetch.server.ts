@@ -1,78 +1,29 @@
-import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { backendFetch } from './backendFetch.server';
-import {
-  ACCESS_TOKEN_COOKIE,
-  REFRESH_TOKEN_COOKIE,
-  AuthTokens,
-  setAuthCookies,
-  clearAuthCookies,
-} from './serverCookies';
+import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from './serverCookies';
+import { createAuthenticatedBackendClient } from './authenticatedBackendClient.server';
 
-export interface AuthenticatedFetchResult {
-  status: number;
-  body: unknown;
-  refreshedTokens?: AuthTokens;
-  shouldClearCookies?: boolean;
-}
+export type { AuthenticatedFetchResult } from './authenticatedBackendClient.server';
+export { applyAuthenticatedFetchCookies } from './authenticatedFetchCookies.server';
 
-let refreshPromise: Promise<{ status: number; body: unknown }> | null = null;
+// Next can load route modules separately; share one coordinator per process.
+const processState = globalThis as typeof globalThis & {
+  simuladosAuthBackendClient?: ReturnType<typeof createAuthenticatedBackendClient>;
+};
+const client = (processState.simuladosAuthBackendClient ??=
+  createAuthenticatedBackendClient(backendFetch));
 
 export async function authenticatedBackendFetch(
   path: string,
   init: RequestInit = {},
-): Promise<AuthenticatedFetchResult> {
+) {
   const cookieStore = cookies();
-  const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
-
-  const attempt = (token: string | undefined) =>
-    backendFetch(path, {
-      ...init,
-      headers: {
-        ...init.headers,
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-
-  const first = await attempt(accessToken);
-
-  if (first.status !== 401) {
-    return first;
-  }
-
-  const refreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
-
-  if (!refreshToken) {
-    return { ...first, shouldClearCookies: true };
-  }
-
-  if (!refreshPromise) {
-    refreshPromise = backendFetch('/auth/refresh', {
-      method: 'POST',
-      body: JSON.stringify({ refreshToken }),
-    }).finally(() => {
-      refreshPromise = null;
-    });
-  }
-  const refreshResult = await refreshPromise;
-
-  if (refreshResult.status !== 200) {
-    return { ...first, shouldClearCookies: true };
-  }
-
-  const refreshedTokens = refreshResult.body as AuthTokens;
-  const retried = await attempt(refreshedTokens.accessToken);
-
-  return { ...retried, refreshedTokens };
+  return client.fetch(path, init, {
+    accessToken: cookieStore.get(ACCESS_TOKEN_COOKIE)?.value,
+    refreshToken: cookieStore.get(REFRESH_TOKEN_COOKIE)?.value,
+  });
 }
 
-export function applyAuthenticatedFetchCookies(
-  response: NextResponse,
-  result: AuthenticatedFetchResult,
-): void {
-  if (result.refreshedTokens) {
-    setAuthCookies(response, result.refreshedTokens);
-  } else if (result.shouldClearCookies) {
-    clearAuthCookies(response);
-  }
+export async function logoutBackendSession(refreshToken?: string) {
+  return client.logout(refreshToken);
 }
