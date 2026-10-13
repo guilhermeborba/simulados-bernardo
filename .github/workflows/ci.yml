@@ -49,7 +49,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: guilhermeborba/simulados-bernardo-api
-          ref: cfd058c3bf2807e59e42ffe414e94173a78f26f5
+          ref: e0b19669723de7d67c778fcc08a3f300b0003fa1
           path: api
           persist-credentials: false
       - name: Setup Node

@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { once } from 'node:events';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
+import { createServer as createHttpServer } from 'node:http';
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
@@ -25,6 +26,39 @@ let containerName;
 let prisma;
 let cleanupPromise;
 let runFailure;
+let mailServer;
+// Captured delivery data exists only in memory, for synthetic .test recipients.
+const mailMessages = [];
+const failedMailRecipients = new Set();
+async function mailCapture() {
+  mailServer = createHttpServer(async (request, response) => {
+    const path = new URL(request.url, 'http://127.0.0.1');
+    response.setHeader('Content-Type', 'application/json');
+    const send = (status, payload) => { response.statusCode = status; response.end(JSON.stringify(payload)); };
+    if (request.method === 'GET' && path.pathname === '/messages') {
+      const email = path.searchParams.get('email');
+      return send(200, mailMessages.filter(message => !email || [].concat(message.to).includes(email)));
+    }
+    let raw = '';
+    for await (const part of request) { raw += part; if (raw.length > 20000) return send(413, { error: 'Synthetic message too long.' }); }
+    let body;
+    try { body = JSON.parse(raw); } catch { return send(400, { error: 'Invalid synthetic payload.' }); }
+    if (request.method === 'POST' && path.pathname === '/control') {
+      if (!/@example\.test$/.test(body.email)) return send(400, { error: 'Synthetic recipients only.' });
+      if (body.fail) failedMailRecipients.add(body.email); else failedMailRecipients.delete(body.email);
+      return send(200, { success: true });
+    }
+    if (request.method === 'POST' && path.pathname === '/emails') {
+      const recipients = [].concat(body.to || []);
+      if (!recipients.length || recipients.some(email => !/@example\.test$/.test(email))) return send(400, { error: 'Synthetic recipients only.' });
+      mailMessages.push(body);
+      return recipients.some(email => failedMailRecipients.has(email)) ? send(503, { message: 'Synthetic delivery unavailable.' }) : send(200, { id: `synthetic-message-${mailMessages.length}` });
+    }
+    return send(404, { error: 'Synthetic endpoint not found.' });
+  });
+  mailServer.listen(0, '127.0.0.1'); await once(mailServer, 'listening');
+  return `http://127.0.0.1:${mailServer.address().port}`;
+}
 
 function command(binary, args, options = {}) {
   const result = spawnSync(binary, args, { encoding: 'utf8', ...options });
@@ -73,6 +107,7 @@ function cleanup() {
       catch (cause) { errors.push(new Error(label, { cause })); }
     }
     await Promise.all([...children].map((child) => attempt('Stopping test process failed', () => stop(child))));
+    if (mailServer) await attempt('Stopping synthetic mail capture failed', () => new Promise((done, reject) => mailServer.close(error => error ? reject(error) : done())));
     if (prisma) {
       await attempt('Removing the isolated schema failed', async () => {
         // Only this run's random schema is removed. Existing schemas are untouched.
@@ -124,10 +159,11 @@ try {
   const webPort = await unusedPort();
   const apiUrl = `http://127.0.0.1:${apiPort}`;
   const webUrl = `http://127.0.0.1:${webPort}`;
+  const mailUrl = await mailCapture();
   const apiEnvironment = {
     ...process.env, DATABASE_URL: url.href, NODE_ENV: 'test', PORT: String(apiPort), FRONTEND_URL: webUrl,
     JWT_ACCESS_SECRET: 'synthetic-access-secret-web-regression', JWT_REFRESH_SECRET: 'synthetic-refresh-secret-web-regression',
-    JWT_ACCESS_EXPIRES_IN: '15m', JWT_REFRESH_EXPIRES_IN: '7d', RATE_LIMIT_MAX: '10000', API_DOCS_ENABLED: 'false',
+    JWT_ACCESS_EXPIRES_IN: '15m', JWT_REFRESH_EXPIRES_IN: '7d', PASSWORD_RESET_ENABLED: 'true', RESEND_API_KEY: 'synthetic-test-key', MAIL_FROM: 'synthetic@example.test', RESEND_API_URL: `${mailUrl}/emails`, RATE_LIMIT_MAX: '10000', API_DOCS_ENABLED: 'false',
   };
   prisma = new PrismaClient({ datasources: { db: { url: url.href } } });
   command(process.execPath, [requireApi.resolve('prisma/build/index.js'), 'migrate', 'deploy'], { cwd: apiRoot, env: apiEnvironment });
@@ -144,9 +180,9 @@ try {
   console.log('Testing production Next → BFF → real Nest API → isolated PostgreSQL schema.');
   const testArguments = process.argv.includes('--browser')
     ? [requireWeb.resolve('@playwright/test/cli'), 'test', '--config', 'playwright.config.ts']
-    : ['--test', 'tests/e2e/regression.test.mjs', 'tests/e2e/quiz-regression.test.mjs', 'tests/e2e/learning-home-regression.test.mjs', 'tests/e2e/collection-regression.test.mjs', 'tests/e2e/progress-review-regression.test.mjs'];
+    : ['--test', 'tests/e2e/regression.test.mjs', 'tests/e2e/quiz-regression.test.mjs', 'tests/e2e/learning-home-regression.test.mjs', 'tests/e2e/collection-regression.test.mjs', 'tests/e2e/progress-review-regression.test.mjs', 'tests/e2e/oversight-recovery-regression.test.mjs'];
   const tests = start(process.execPath, testArguments, {
-    cwd: webRoot, stdio: 'inherit', env: { ...process.env, E2E_WEB_URL: webUrl, E2E_FIXTURE_PATH: fixturePath },
+    cwd: webRoot, stdio: 'inherit', env: { ...process.env, E2E_WEB_URL: webUrl, E2E_API_URL: apiUrl, E2E_FIXTURE_PATH: fixturePath, E2E_MAIL_URL: mailUrl },
   });
   const [code] = await once(tests, 'exit');
   if (code !== 0) throw new Error(`${process.argv.includes('--browser') ? 'Browser' : 'HTTP'} regression failed with exit code ${code}; see the test output above.`);

@@ -77,6 +77,7 @@ test('retomar pela home mantém resposta confirmada, concede XP uma vez e atuali
   await home(page);
   await page.getByRole('link', { name: 'Começar atividade: Quiz sintético jornada-web', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Qual balão é vermelho?', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\?attempt=/);
   const id = new URL(page.url()).searchParams.get('attempt')!;
   await page.getByRole('radio', { name: 'O balão vermelho', exact: true }).check();
   await page.getByRole('button', { name: 'Confirmar resposta', exact: true }).click();

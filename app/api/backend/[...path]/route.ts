@@ -4,6 +4,7 @@ import {
   applyAuthenticatedFetchCookies,
 } from '@/lib/authenticatedBackendFetch.server';
 import { isQuizMediaPath } from '@/lib/quizMedia';
+import { hasSameOrigin } from '@/lib/requestOrigin.server';
 
 const ALLOWED_PREFIXES = ['disciplines', 'simulations', 'attempts', 'me'];
 
@@ -14,22 +15,13 @@ async function handle(
   const path = `/${params.path.join('/')}`;
   const quizRoute = (request.method === 'GET' && path === '/quizzes/available')
     || (request.method === 'POST' && /^\/quizzes\/[A-Za-z0-9_-]+\/attempts$/.test(path));
-  if (!ALLOWED_PREFIXES.includes(params.path[0]) && !quizRoute) {
+  const oversightRoute = request.method === 'GET' && (/^\/students\/[A-Za-z0-9_-]+\/learning-progress$/.test(path) || /^\/reports\/student\/[A-Za-z0-9_-]+\/(summary|by-discipline)$/.test(path));
+  if ((path === '/me/oversight-students' && request.method !== 'GET') || (!ALLOWED_PREFIXES.includes(params.path[0]) && !quizRoute && !oversightRoute)) {
     return NextResponse.json({ message: 'Not found' }, { status: 404 });
   }
 
   if ((request.method === 'PATCH' && path === '/me/avatar') || (request.method === 'POST' && path === '/me/review-attempts')) {
-    const origin = request.headers.get('origin');
-    const forwardedProtocol = request.headers.get('x-forwarded-proto');
-    const protocol = forwardedProtocol === 'https' || forwardedProtocol === 'http' ? `${forwardedProtocol}:` : request.nextUrl.protocol;
-    // Next may use its listen address in nextUrl; Host retains the browser's origin.
-    const host = request.headers.get('host') ?? request.nextUrl.host;
-    let sameOrigin = !origin;
-    if (origin) {
-      try { sameOrigin = new URL(origin).origin === new URL(`${protocol}//${host}`).origin; }
-      catch { sameOrigin = false; }
-    }
-    if (!sameOrigin || request.headers.get('sec-fetch-site') === 'cross-site') {
+    if (!hasSameOrigin(request)) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
   }
@@ -57,6 +49,7 @@ async function handle(
     response.headers.set('Content-Security-Policy', "default-src 'none'; sandbox");
     if (result.binary) response.headers.set('Content-Disposition', `inline; filename="quiz-${path.endsWith('/image') ? 'image.svg' : 'audio.wav'}"`);
   }
+  if (oversightRoute || path === '/me/oversight-students') response.headers.set('Cache-Control', 'private, no-store');
   applyAuthenticatedFetchCookies(response, result);
   return response;
 }

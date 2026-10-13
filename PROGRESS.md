@@ -5,7 +5,7 @@
 
 ## Status geral
 
-O frontend de simulados está **integrado com a API e em produção**. A migração dos dados estáticos (`data/*.ts`) para a API está concluída. O app cobre login, seleção, realização, resultado, histórico e ranking de turma. Os lotes 06 a 09 acrescentam a jornada web de quizzes, Aprender hoje, missões, XP, coleção pessoal, progresso por habilidade e revisão; não houve deploy dessas entregas. A revisão e publicação do catálogo editorial de quizzes continuam pendentes.
+O frontend de simulados está **integrado com a API e em produção**. A migração dos dados estáticos (`data/*.ts`) para a API está concluída. O app cobre login, seleção, realização, resultado, histórico e ranking de turma. Os lotes 06 a 10 acrescentam a jornada web de quizzes, Aprender hoje, missões, XP, coleção pessoal, progresso/revisão, acompanhamento por vínculo e recuperação com Resend; não houve deploy dessas entregas. A revisão e publicação do catálogo editorial de quizzes continuam pendentes.
 
 ---
 
@@ -156,4 +156,17 @@ Falhas de consulta/criação permitem retry, inclusive após perder a resposta d
 
 **Validação:** typecheck/build, 30 testes de sessão, 39 jornadas HTTP Next/BFF/API e 64 Chromium desktop/mobile emulado passaram. Incluem as 15 faixas, evidências separadas, perguntas inéditas/praticadas, confirmação, retomada, resultado/histórico, acesso, falhas/retry, requisições GET/POST atrasadas entre contas, cookies, teclado, Axe e ausência de overflow. API: 571 unitários e 368 casos PostgreSQL, incluindo migration com histórico e importação editorial atômica. O workflow fixa o commit compatível da API.
 
-[ADR 010](docs/decisions/010-progresso-e-revisao.md) e [guia de CI](docs/guia-ci-regressao.md) descrevem os fluxos e limites. O catálogo proposto mantém 45 quizzes/213 perguntas e 45 habilidades/classificações PENDING; os 30 rascunhos de missão aguardam curadoria. Atribuir revisão ao responsável não aprovou conteúdo. Não houve importação em base existente ou deploy; pessoas, leitores de tela e aparelhos físicos seguem pendentes. Próxima tarefa técnica: **lote 10 — acesso docente/responsável e recuperação de senha**.
+[ADR 010](docs/decisions/010-progresso-e-revisao.md) e [guia de CI](docs/guia-ci-regressao.md) descrevem os fluxos e limites. O catálogo proposto mantém 45 quizzes/213 perguntas e 45 habilidades/classificações PENDING; os 30 rascunhos de missão aguardam curadoria. Atribuir revisão ao responsável não aprovou conteúdo. Não houve importação em base existente ou deploy; pessoas, leitores de tela e aparelhos físicos seguem pendentes. Na conclusão do lote 09, a próxima tarefa era o lote 10, entregue abaixo.
+
+
+---
+
+## Acompanhamento e recuperação — lote 10
+
+/acompanhamento permite a responsável, professor ou ADMIN escolher os alunos autorizados e consultar simulados concluídos e evidências por habilidade em seções separadas. A API valida vínculos/status/papel atuais e limita o docente a atividades públicas e turmas atribuídas. A web cancela respostas quando muda aluno/conta, lida com vínculos revogados e não permite iniciar atividade em nome do aluno. Login e navegação encaminham esses perfis ao acompanhamento; alunos mantêm sua jornada pessoal.
+
+/esqueci-senha solicita o link de recuperação com mensagem uniforme; /redefinir-senha captura o token do fragmento, remove-o da URL e mantém-o somente em memória. Confirmação de senha, falhas e links inválidos/usados são tratados sem login automático. Rotas públicas BFF validam origem, retornam no-store e não alteram cookies de outra conta. A API invalida sessões anteriores ao trocar senha. Novas senhas exigem oito caracteres Unicode e até 72 bytes UTF-8.
+
+**Validação técnica:** typecheck/build, 30 testes de sessão, 48 jornadas HTTP/6 suites e 78 testes Chromium desktop/mobile passaram. Os 14 cenários novos de navegador cobrem permissões, teclado/Axe/overflow, revogação, separação de métricas, fragmento removido, sessões invalidadas, Unicode/72 bytes, links ausentes/usados, falhas/retry, conta atrasada e resposta de reset anterior retida durante abertura de outro link. Novos fixtures públicos também exercitam a paginação real do catálogo. API: 688 unitários/39 suites e 395 casos Nest/PostgreSQL/21 suites passaram, com CI verde na PR #213. A CI web fixa o commit compatível e0b19669723de7d67c778fcc08a3f300b0003fa1.
+
+[ADR 011](docs/decisions/011-acompanhamento-e-recuperacao.md) e [guia de CI](docs/guia-ci-regressao.md) documentam o lote. Resend foi escolhido pelo usuário; ativação real exige chave e remetente verificado configurados fora do chat. O limite de 20/min usa IP imediato da API: usuários do mesmo BFF compartilham o orçamento; política de proxy/perímetro deve ser definida antes de ampliar uso. Os testes usam transporte sintético e PostgreSQL descartável. Não houve migration em base existente, seed editorial, e-mail externo ou deploy. Quizzes/habilidades/classificações e missões continuam pendentes de revisão/publicação. Avaliação com pessoas, leitor de tela e aparelhos físicos segue pendente. Próxima tarefa técnica: **lote 11 — prova e planejamento mobile**.
