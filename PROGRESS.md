@@ -5,7 +5,7 @@
 
 ## Status geral
 
-O frontend está **integrado com a API e em produção**. A migração dos dados estáticos (`data/*.ts`) para a API está concluída. O app cobre o fluxo completo do aluno: login, seleção, execução do simulado, resultado, histórico e ranking de turma.
+O frontend de simulados está **integrado com a API e em produção**. A migração dos dados estáticos (`data/*.ts`) para a API está concluída. O app cobre login, seleção, realização, resultado, histórico e ranking de turma. O lote 06 acrescenta a jornada web de quizzes; não houve deploy deste lote. A revisão e publicação do catálogo editorial de quizzes continuam pendentes.
 
 ---
 
@@ -32,6 +32,12 @@ O frontend está **integrado com a API e em produção**. A migração dos dados
 | Derivação de disponibilidade do catálogo da API | ✅ Concluída | PR #33 |
 | CI com tipos, sessão, build e regressão HTTP Next/API/PostgreSQL | ✅ Implementada e validada localmente em 12/10/2026 | — |
 | Cinco famílias de fontes originais locais com licença OFL | ✅ Build normal validado | — |
+| Entrada com escolha entre quizzes e simulados | ✅ Implementada no lote 06 | — |
+| Catálogo de quizzes por segmento, ano/idade, disciplina e tema | ✅ Implementado no lote 06 | — |
+| Confirmação com feedback imediato, retomada, resultado e histórico de quizzes | ✅ Implementados no lote 06 | — |
+| Preferências de quizzes por conta: filtros, áudio e movimento | ✅ Implementadas no lote 06 | — |
+| SVG/WAV autenticados pelo BFF, descrição e transcrição em falha | ✅ Implementados no lote 06 | — |
+| Regressão de interface com Chromium desktop/mobile e axe | ✅ 24 testes passaram no lote 06 | — |
 
 ---
 
@@ -47,15 +53,33 @@ Validação local: npm run test:auth passou 25 testes. Smoke HTTP nas rotas Next
 
 ## Inventário, regressão e CI — lote 02 da evolução
 
-GitHub Actions executa instalação pelos lockfiles, checagem de tipos, testes de sessão, build normal e regressão HTTP com o servidor Next de produção, BFF, Nest e PostgreSQL real descartável. A API na CI é fixada no commit público `8f1b47b0708e23d6876cd15d1374b0f45e8e4768` da `main`, com rotação de refresh já integrada. Nenhum seed editorial ou banco existente é utilizado.
+No lote 02, GitHub Actions passou a executar instalação pelos lockfiles, checagem de tipos, testes de sessão, build normal e regressão HTTP com o servidor Next de produção, BFF, Nest e PostgreSQL real descartável. A API foi fixada inicialmente no commit público `8f1b47b0708e23d6876cd15d1374b0f45e8e4768` da `main`, com rotação de refresh já integrada. A revisão atual de contratos é identificada pelo `ref` no workflow. Nenhum seed editorial ou banco existente é utilizado.
 
 Validação local: `npm run typecheck`, 25 testes de sessão, build normal e 8 jornadas HTTP passaram, inclusive contra o commit exato da API usado na CI. As jornadas verificam registro/login, convites, catálogo por faixa/turma, quatro tipos de questão, início/retomada, edição, conclusão, resultado/histórico, acesso entre contas e cookies de sessão. São testes HTTP; cliques, layout e acessibilidade ainda exigem validação de interface.
 
 As fontes Fredoka, Nunito, Plus Jakarta Sans, Source Serif 4 e IBM Plex Sans são arquivos WOFF2 originais locais, com pesos/variáveis CSS e escopo por rota preservados. Licenças e origem estão em [fontes locais](app/fonts/README.md). O build não depende mais de baixar fontes do Google; a limitação do lote 01 foi resolvida sem fixture substituta.
 
-O inventário da API registra 584 arquivos, 588 simulados publicáveis e 17.684 questões; 192 simulados da 2ª/3ª série do Médio ficam no backlog editorial explícito. Conteúdo local em produção foi preservado. Quizzes, missões e mobile continuam pendentes; a próxima tarefa técnica é a migração aditiva e os contratos de quiz (lote 03).
+O inventário da API registra 584 arquivos, 588 simulados publicáveis e 17.684 questões; 192 simulados da 2ª/3ª série do Médio ficam no backlog editorial explícito. Conteúdo local em produção foi preservado. Na conclusão do lote 02, a próxima tarefa técnica era a migração aditiva e os contratos de quiz (lote 03), posteriormente entregues pela API nos lotes 03–05. Missões e mobile seguem no plano de evolução.
 
 Guia de execução e limites: [CI e regressão](docs/guia-ci-regressao.md). Nenhum deploy foi feito.
+
+---
+
+## Jornada web de quizzes — lote 06 da evolução
+
+A página inicial oferece quizzes curtos e os simulados existentes. `/quizzes` apresenta os quizzes publicados e autorizados pela API, com filtros de segmento, ano/idade, disciplina e tema. Atende às 15 faixas previstas: Infantil de 4/5 anos, 1º ao 9º ano, três séries do Médio e Técnico em Enfermagem. A apresentação segue as faixas lúdica, jovem e exame; Infantil recebe o Bolinha e mídia acessível. Catálogos vazios não são preenchidos com atividades fictícias.
+
+`/quiz/:quizId` apresenta uma pergunta por vez: a seleção ainda pode mudar antes de confirmar, a confirmação vem do servidor e libera a explicação, e a resposta confirmada permanece bloqueada. A tentativa fica identificada na URL, pode ser retomada e abre o resultado gravado quando já estiver concluída. Falhas preservam a escolha e permitem repetir a confirmação/conclusão. `/quizzes/historico` separa as rodadas de quizzes; sua paginação de oito itens acontece no cliente, pois o endpoint atual retorna a lista completa.
+
+Filtros de segmento/ano, áudio e movimento são preferências autenticadas da API, isoladas por conta. O frontend serializa alterações, ignora respostas de contas anteriores e mostra falhas sem trocar o valor que havia sido salvo. As escolhas da jornada de quizzes não usam armazenamento local compartilhado entre contas; o fluxo legado de simulados mantém sua trilha existente. Áudio é opcional e nunca inicia sozinho; redução de movimento respeita a conta e a configuração do dispositivo.
+
+Imagens SVG e áudio WAV atravessam o BFF autenticado, incluindo requests de `Range`, sem tokens expostos na URL ou no JSON. Mídia indisponível tem descrição/transcrição e não impede responder. O runner não calcula gabaritos, XP ou recompensas locais.
+
+**Situação editorial:** o acervo inicial da API tem 45 quizzes e 213 questões preparados, todos com revisão `PENDING`. Este lote não os aprova nem publica. A disponibilidade real continua dependendo da revisão e publicação explícita pela equipe.
+
+**Validação local:** tipos, builds, **30 testes de sessão, 16 jornadas HTTP e 24 testes Chromium desktop/mobile emulado** passaram. A suíte cobre os cinco segmentos, filtros das 15 faixas, teclado, axe, confirmação, resposta incorreta, recarga, resultado/histórico, perda de respostas HTTP, fallback de mídia e troca de conta, incluindo cookies atrasados. Os quatro bundles de páginas de quiz foram inspecionados sem gabaritos, identificadores privados de mídia ou fixtures sintéticas. Não houve avaliação com leitores de tela, pessoas ou aparelhos físicos.
+
+[ADR 007 — Jornada web de quizzes](docs/decisions/007-jornada-web-de-quizzes.md) documenta os contratos, isolamento, recuperação de falhas e limites. [CI e regressão](docs/guia-ci-regressao.md) traz os comandos reproduzíveis. O próximo lote técnico é o **07 — missões, XP e progressão**, em paralelo à revisão editorial do catálogo. Não houve seed em banco existente nem deploy.
 
 ---
 
@@ -81,8 +105,8 @@ O `SimuladoRunner` já tem a infraestrutura (`pauseRound`, `roundsSeen`) para pa
 ## Infraestrutura
 
 - **Deploy:** não configurado (verificar `.claude/launch.json` para config de preview local)
-- **CI:** GitHub Actions em `.github/workflows/ci.yml`; tipos, sessão, build normal e regressão HTTP com API/PostgreSQL descartável
-- **Testes:** `npm run test:auth` (25 testes de sessão/cookies), `npm run test:e2e` (8 jornadas HTTP), `npm run typecheck` e build normal. Compilação de testes em `.test-build/` (ignorado).
+- **CI:** GitHub Actions em `.github/workflows/ci.yml`; a API é fixada em commit compatível. Tipos, sessão, build normal e regressão integrada usam PostgreSQL descartável.
+- **Testes:** `npm run test:auth` (sessão/cookies), `npm run test:e2e` (HTTP Next/BFF/Nest/PostgreSQL), `npm run test:browser` (Chromium, teclado, viewport mobile e axe), `npm run typecheck` e build normal. Compilação em `.test-build/` e artefatos de navegador são ignorados pelo Git.
 - **Backend esperado em:** `BACKEND_API_URL` (padrão: `http://localhost:3333`)
 
 ---

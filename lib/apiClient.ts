@@ -5,23 +5,46 @@ export interface AuthUser {
   role: string;
 }
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
-    ...init,
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
-  });
-
-  const body = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const rawMessage = (body as { message?: string | string[] } | null)?.message;
-    const message = Array.isArray(rawMessage)
-      ? rawMessage.join(', ')
-      : rawMessage ?? 'Erro inesperado';
-    throw new Error(message);
+export class ApiError extends Error {
+  constructor(message: string, public readonly status: number) {
+    super(message);
+    this.name = 'ApiError';
   }
+}
 
-  return body as T;
+let sessionRequests = new AbortController();
+
+/** Called synchronously before login/register/logout changes the browser's cookies. */
+export function cancelPendingSessionRequests() {
+  sessionRequests.abort();
+  sessionRequests = new AbortController();
+}
+
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const authenticated = path === '/api/auth/me' || path.startsWith('/api/backend/');
+  const signals = [authenticated ? sessionRequests.signal : null, init?.signal].filter((signal): signal is AbortSignal => Boolean(signal));
+  const request = new AbortController();
+  const cancel = () => request.abort();
+  for (const signal of signals) {
+    if (signal.aborted) cancel();
+    else signal.addEventListener('abort', cancel, { once: true });
+  }
+  try {
+    const response = await fetch(path, {
+      ...init, signal: request.signal,
+      headers: { 'Content-Type': 'application/json', ...init?.headers },
+    });
+    const body = await response.json().catch(() => null);
+    if (request.signal.aborted) throw new DOMException('Session request cancelled', 'AbortError');
+    if (!response.ok) {
+      const rawMessage = (body as { message?: string | string[] } | null)?.message;
+      const message = Array.isArray(rawMessage) ? rawMessage.join(', ') : rawMessage ?? 'Erro inesperado';
+      throw new ApiError(message, response.status);
+    }
+    return body as T;
+  } finally {
+    for (const signal of signals) signal.removeEventListener('abort', cancel);
+  }
 }
 
 export function login(email: string, password: string) {
@@ -65,8 +88,8 @@ export function logout() {
   return apiFetch<{ success: true }>('/api/auth/logout', { method: 'POST' });
 }
 
-export function getMe() {
-  return apiFetch<AuthUser>('/api/auth/me');
+export function getMe(signal?: AbortSignal) {
+  return apiFetch<AuthUser>('/api/auth/me', { signal });
 }
 
 export interface ApiDiscipline {
@@ -251,4 +274,142 @@ export interface ApiRanking {
 
 export function getRankingDaTurma(turmaId: string) {
   return apiFetch<ApiRanking | null>(`/api/backend/me/turmas/${turmaId}/ranking`);
+}
+
+
+export { quizMediaUrl } from './quizMedia';
+
+export type LearningSegment = 'INFANTIL' | 'FUNDAMENTAL_I' | 'FUNDAMENTAL_II' | 'MEDIO' | 'ENFERMAGEM';
+
+export interface ApiLearningPreferences {
+  segment: LearningSegment | null;
+  schoolYear: number | null;
+  audioEnabled: boolean;
+  motionEnabled: boolean;
+}
+
+export interface ApiQuiz {
+  id: string;
+  activityKind: 'QUIZ';
+  activityKey: string;
+  contentVersion: number;
+  title: string;
+  subtitle: string | null;
+  slug: string;
+  schoolYear: number;
+  topic: string | null;
+  totalQuestions: number;
+  maxScore: string;
+  estimatedDurationMinutes: number | null;
+  turmaId: string | null;
+  discipline: ApiDiscipline;
+}
+
+/** Result metadata has a narrower projection than catalog/start/history. */
+export type ApiQuizSummary = Pick<ApiQuiz, 'id' | 'activityKind' | 'activityKey' | 'contentVersion' | 'title' | 'subtitle' | 'slug' | 'schoolYear' | 'topic' | 'turmaId'> & {
+  discipline: Pick<ApiDiscipline, 'id' | 'name' | 'slug'> & Partial<ApiDiscipline>;
+} & Partial<Pick<ApiQuiz, 'totalQuestions' | 'maxScore' | 'estimatedDurationMinutes'>>;
+
+export interface ApiQuizAttempt {
+  id: string;
+  status: 'IN_PROGRESS' | 'FINISHED' | 'ABANDONED' | 'EXPIRED';
+  simulationId: string;
+  activityKey: string;
+  contentVersion: number;
+  score: string | null;
+  maxScore: string;
+  percentage: string | null;
+  correctCount: number | null;
+  wrongCount: number | null;
+  startedAt: string;
+  createdAt: string;
+  finishedAt: string | null;
+  simulation: ApiQuizSummary;
+}
+
+export interface ApiQuizFeedback {
+  isCorrect: boolean;
+  pointsEarned: number;
+  explanation: string;
+  funFact: string | null;
+}
+
+export interface ApiQuizQuestion {
+  id: string;
+  originKey: string;
+  type: 'MULTIPLE_CHOICE';
+  statement: string;
+  tip: string | null;
+  points: string;
+  order: number;
+  options: ApiQuestionOption[];
+  answer: { optionKey: string } | null;
+  confirmedAt: string | null;
+  feedback: ApiQuizFeedback | null;
+  media?: {
+    image?: { url: string; alt: string };
+    audio?: { url: string; transcript: string };
+  };
+}
+
+export interface ApiQuizConfirmation {
+  id: string;
+  attemptId: string;
+  questionId: string;
+  answer: { optionKey: string };
+  confirmedAt: string;
+  feedback: ApiQuizFeedback;
+}
+
+export interface ApiQuizResult {
+  attempt: ApiQuizAttempt;
+  questions: Array<ApiQuizQuestion & { isCorrect: boolean; pointsEarned: number }>;
+}
+
+export function getAvailableQuizzes(params: { schoolYear?: number; discipline?: string; topic?: string } = {}) {
+  const query = new URLSearchParams();
+  if (params.schoolYear !== undefined) query.set('schoolYear', String(params.schoolYear));
+  if (params.discipline) query.set('discipline', params.discipline);
+  if (params.topic) query.set('topic', params.topic);
+  return apiFetch<ApiQuiz[]>(`/api/backend/quizzes/available?${query.toString()}`);
+}
+
+export function startQuizAttempt(quizId: string) {
+  return apiFetch<ApiQuizAttempt>(`/api/backend/quizzes/${encodeURIComponent(quizId)}/attempts`, { method: 'POST' });
+}
+
+export function getQuizAttempt(attemptId: string) {
+  return apiFetch<ApiQuizAttempt>(`/api/backend/attempts/${encodeURIComponent(attemptId)}`);
+}
+
+export function getQuizAttemptQuestions(attemptId: string) {
+  return apiFetch<ApiQuizQuestion[]>(`/api/backend/attempts/${encodeURIComponent(attemptId)}/questions`);
+}
+
+export function confirmQuizAnswer(attemptId: string, questionId: string, optionKey: string) {
+  return apiFetch<ApiQuizConfirmation>(`/api/backend/attempts/${encodeURIComponent(attemptId)}/questions/${encodeURIComponent(questionId)}/answer`, {
+    method: 'POST', body: JSON.stringify({ answer: { optionKey } }),
+  });
+}
+
+export function finishQuizAttempt(attemptId: string) {
+  return apiFetch<ApiQuizResult>(`/api/backend/attempts/${encodeURIComponent(attemptId)}/finish`, { method: 'POST' });
+}
+
+export function getQuizAttemptResult(attemptId: string) {
+  return apiFetch<ApiQuizResult>(`/api/backend/attempts/${encodeURIComponent(attemptId)}/result`);
+}
+
+export function getMyQuizAttempts() {
+  return apiFetch<ApiQuizAttempt[]>('/api/backend/me/quiz-attempts');
+}
+
+export function getLearningPreferences() {
+  return apiFetch<ApiLearningPreferences>('/api/backend/me/learning-preferences');
+}
+
+export function updateLearningPreferences(preferences: Partial<ApiLearningPreferences>) {
+  return apiFetch<ApiLearningPreferences>('/api/backend/me/learning-preferences', {
+    method: 'PATCH', body: JSON.stringify(preferences),
+  });
 }

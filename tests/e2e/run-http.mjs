@@ -131,7 +131,7 @@ try {
   };
   prisma = new PrismaClient({ datasources: { db: { url: url.href } } });
   command(process.execPath, [requireApi.resolve('prisma/build/index.js'), 'migrate', 'deploy'], { cwd: apiRoot, env: apiEnvironment });
-  const fixture = await createFixture(prisma, hash);
+  const fixture = await createFixture(prisma, hash, { apiRoot });
   const fixturePath = resolve(temporaryDirectory, 'fixture.json');
   writeFileSync(fixturePath, JSON.stringify(fixture), { mode: 0o600 });
   const api = start(process.execPath, [resolve(apiRoot, 'dist/src/main.js')], { cwd: apiRoot, env: apiEnvironment });
@@ -142,11 +142,14 @@ try {
   });
   await waitForReady(`${webUrl}/login`, web);
   console.log('Testing production Next → BFF → real Nest API → isolated PostgreSQL schema.');
-  const tests = start(process.execPath, ['--test', 'tests/e2e/regression.test.mjs'], {
+  const testArguments = process.argv.includes('--browser')
+    ? [requireWeb.resolve('@playwright/test/cli'), 'test', '--config', 'playwright.config.ts']
+    : ['--test', 'tests/e2e/regression.test.mjs', 'tests/e2e/quiz-regression.test.mjs'];
+  const tests = start(process.execPath, testArguments, {
     cwd: webRoot, stdio: 'inherit', env: { ...process.env, E2E_WEB_URL: webUrl, E2E_FIXTURE_PATH: fixturePath },
   });
   const [code] = await once(tests, 'exit');
-  if (code !== 0) throw new Error(`HTTP regression failed with exit code ${code}; see the TAP output above.`);
+  if (code !== 0) throw new Error(`${process.argv.includes('--browser') ? 'Browser' : 'HTTP'} regression failed with exit code ${code}; see the test output above.`);
 } catch (error) {
   runFailure = error;
 } finally {

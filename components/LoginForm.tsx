@@ -21,7 +21,8 @@ export default function LoginForm() {
 
     try {
       await login(email, password);
-      router.push(searchParams.get('returnTo') || '/');
+      const destination = searchParams.get('returnTo');
+      router.push(destination?.startsWith('/') && !destination.startsWith('//') && !destination.includes('\\') ? destination : '/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível entrar');
     } finally {
@@ -36,9 +37,11 @@ export default function LoginForm() {
           <h1 className="text-3xl mb-6 text-center">📚 Entrar</h1>
 
           <form onSubmit={handleSubmit}>
-            <label className="block text-left text-sm font-bold mb-2">E-mail</label>
+            <label htmlFor="login-email" className="block text-left text-sm font-bold mb-2">E-mail</label>
             <input
+              id="login-email"
               type="email"
+              autoComplete="username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seu@email.com"
@@ -46,9 +49,11 @@ export default function LoginForm() {
               required
             />
 
-            <label className="block text-left text-sm font-bold mb-2">Senha</label>
+            <label htmlFor="login-password" className="block text-left text-sm font-bold mb-2">Senha</label>
             <input
+              id="login-password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Sua senha"

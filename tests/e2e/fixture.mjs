@@ -1,7 +1,9 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 /** Synthetic content only; the editorial seed is never imported. */
-export async function createFixture(prisma, hashPassword) {
+export async function createFixture(prisma, hashPassword, { apiRoot } = {}) {
   const admin = await prisma.user.create({
     data: {
       name: 'Administrador de teste',
@@ -85,9 +87,69 @@ export async function createFixture(prisma, hashPassword) {
     });
     segments[schoolYear] = row.id;
   }
+  const registry = JSON.parse(readFileSync(resolve(apiRoot, 'src/modules/quizzes/media/assets/manifest.json'), 'utf8'));
+  const registered = (id) => {
+    const asset = registry.find((entry) => entry.id === id);
+    if (!asset) throw new Error('Synthetic quiz asset fixture is missing.');
+    return { assetId: id, sha256: asset.sha256 };
+  };
+  const media = {
+    image: { ...registered('infantil-4-cores-e-formas.cor-vermelha.image.v3'), alt: 'Três balões: azul, vermelho e amarelo.' },
+    audio: { ...registered('infantil-4-cores-e-formas.cor-vermelha.audio'), transcript: 'Qual balão é vermelho? A: O balão azul. B: O balão vermelho. C: O balão amarelo.' },
+  };
+  const quizQuestions = [
+    {
+      originKey: 'cores', statement: 'Qual balão é vermelho?', explanation: 'O balão do meio é vermelho.',
+      points: 1, media,
+      options: [{ optionKey: 'A', text: 'O balão azul' }, { optionKey: 'B', text: 'O balão vermelho' }, { optionKey: 'C', text: 'O balão amarelo' }],
+      correctAnswer: 'B',
+    },
+    {
+      originKey: 'soma', statement: 'Quanto é 2 + 3?', explanation: 'Dois mais três formam cinco.',
+      points: 2,
+      options: [{ optionKey: 'A', text: '4' }, { optionKey: 'B', text: '5' }, { optionKey: 'C', text: '6' }],
+      correctAnswer: 'B',
+    },
+  ];
+  async function quiz(key, schoolYear, overrides = {}, content = quizQuestions) {
+    return prisma.simulation.create({
+      data: {
+        activityKind: 'QUIZ', activityKey: key, contentVersion: 1,
+        title: `Quiz sintético ${key}`, slug: `quiz-${key}`, schoolYear,
+        bimester: null, assessment: null, topic: 'Cores e números de teste',
+        disciplineId: discipline.id, createdById: admin.id, status: 'PUBLISHED', publishedAt: new Date(),
+        totalQuestions: content.length, maxScore: content.reduce((sum, row) => sum + row.points, 0), estimatedDurationMinutes: 3,
+        ...overrides,
+        questions: {
+          create: content.map((question, index) => ({
+            originKey: question.originKey, type: 'MULTIPLE_CHOICE', statement: question.statement,
+            explanation: question.explanation, sortOrder: index + 1, points: question.points,
+            tip: 'Observe as alternativas.', funFact: 'Curiosidade sintética depois de confirmar.',
+            ...(question.media ? { media: question.media } : {}),
+            options: { create: question.options.map((option, order) => ({ ...option, sortOrder: order + 1 })) },
+            answers: { create: [{ answerKey: 'correctAnswer', answerValue: question.correctAnswer }] },
+          })),
+        },
+      },
+    });
+  }
+  const oldQuiz = await quiz('jornada-web', 3, { slug: 'quiz-jornada-web-v1' });
+  const publicQuiz = await quiz('jornada-web', 3, { contentVersion: 2, slug: 'quiz-jornada-web-v2' });
+  const privateQuiz = await quiz('privado-web', 3, { turmaId: turma.id });
+  const draftQuiz = await quiz('rascunho-web', 3, { status: 'DRAFT', publishedAt: null });
+  const archivedQuiz = await quiz('arquivado-web', 3, { status: 'ARCHIVED' });
+  const deletedQuiz = await quiz('excluido-web', 3, { deletedAt: new Date() });
+  const quizSegments = {};
+  for (const schoolYear of [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
+    const row = await quiz(`faixa-web-${schoolYear < 0 ? `menos-${Math.abs(schoolYear)}` : schoolYear}`, schoolYear);
+    quizSegments[schoolYear] = row.id;
+  }
   return {
     publicSimulation: publicSimulation.id, privateSimulation: privateSimulation.id,
     draft: draft.id, archived: archived.id, deleted: deleted.id,
     turmaId: turma.id, inviteToken, segments,
+    publicQuiz: publicQuiz.id, privateQuiz: privateQuiz.id, oldQuiz: oldQuiz.id,
+    draftQuiz: draftQuiz.id, archivedQuiz: archivedQuiz.id, deletedQuiz: deletedQuiz.id,
+    quizSegments, quizAnswers: quizQuestions.map((question) => question.correctAnswer),
   };
 }

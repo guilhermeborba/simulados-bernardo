@@ -772,3 +772,13 @@
   color: var(--t-muted);
   font-variant-numeric: tabular-nums;
 }
+
+/* Honor motion choices across the application, including existing simulation screens. */
+html[data-learning-motion='off'], html[data-learning-motion='off'] *, html[data-learning-motion='off'] *::before, html[data-learning-motion='off'] *::after {
+  scroll-behavior: auto !important;
+  animation: none !important;
+  transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html, html *, html *::before, html *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+}
