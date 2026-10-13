@@ -69,7 +69,7 @@ O áudio nunca deve possuir `autoplay`; a suíte verifica reprodução pausada e
 
 ## Limites e fontes
 
-Os testes não são de carga, infraestrutura com várias réplicas, dispositivos reais ou revisão editorial. A coordenação de refresh continua local a um processo, conforme o ADR 006. Quizzes não alteram a regra de edição antes da finalização dos simulados e ainda não oferecem missões ou XP.
+Os testes não são de carga, infraestrutura com várias réplicas, dispositivos reais ou revisão editorial. A coordenação de refresh continua local a um processo, conforme o ADR 006. Quizzes preservam a regra de edição antes da finalização dos simulados. Missões e XP são validados a partir do lote 07; revisões do lote 09 não concedem recompensas.
 
 As cinco famílias da aplicação são arquivos WOFF2 locais reais licenciados sob SIL OFL 1.1. O build não depende da disponibilidade do Google Fonts nem de respostas mockadas. Famílias, pesos, variáveis CSS, `display: swap` e escopo por rota foram preservados. Fontes latinas incluem as letras acentuadas do português; fallbacks continuam disponíveis para outros subconjuntos.
 
@@ -91,3 +91,11 @@ A CI usa o commit da API identificado em `.github/workflows/ci.yml`, com a migra
 `tests/e2e/collection-regression.test.mjs` valida autenticação, DTO estrito, Origin, itens bloqueados/liberados, temas normalizados, versão/repetição, notas e XP, missão após teto diário e seleção persistida em outra sessão. `tests/browser/collections.spec.ts` verifica as 15 faixas e os estilos automáticos/explicitos, teclado, bloqueio de itens, salvar/reabrir em outro navegador, retry de leitura/gravação, troca de conta com respostas GET/PATCH atrasadas, cookies, Axe e overflow.
 
 Execute `E2E_API_DIR=/caminho/da/api npm run test:e2e` e `E2E_API_DIR=/caminho/da/api npm run test:browser` após compilar API e web. `QUIZ_SCREENSHOT_DIR=/diretorio/temporario` salva capturas de fixtures sintéticas durante os testes de interface. Não reconstrua `.next` enquanto o servidor de regressão estiver executando.
+
+## Habilidades e revisão — lote 09
+
+`tests/e2e/progress-review-regression.test.mjs` verifica progresso nas 15 faixas, primeira resposta/repetição/revisão, perguntas inéditas em revisão que depois contam como repetição NORMAL, snapshots, retomada por modo, idempotência e ausência de XP/missão/itens em REVIEW. Também cobre DTO estrito, origem do POST no BFF, outra conta, turma revogada e conteúdo indisponível.
+
+`tests/browser/progress-review.spec.ts` verifica cartões de evidência insuficiente, sugestões, teclado, confirmação, feedback, recarga e retomada, resultado, filtros de histórico, falhas/retry e respostas GET/POST atrasadas durante troca de conta. Axe e ausência de overflow são verificados em desktop e mobile emulado. `QUIZ_SCREENSHOT_DIR=/tmp/capturas` salva referências sintéticas.
+
+Compile a API e a web antes de `E2E_API_DIR=/caminho/da/api npm run test:e2e` e `E2E_API_DIR=/caminho/da/api npm run test:browser`. A CI fixa o commit compatível da API com skills/review e aplica migrations apenas em PostgreSQL descartável. As propostas editoriais permanecem PENDING; nenhum seed em base existente é necessário.

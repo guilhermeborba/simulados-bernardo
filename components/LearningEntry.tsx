@@ -125,7 +125,7 @@ function LearningHome() {
     </>}
 
     <ExploreActivities />
-    <div className={styles.footer}><Link href="/quizzes/historico" className={styles.history}>Meu histórico de quizzes →</Link><p>Uma pausa também faz parte de aprender. Seu progresso fica salvo na conta.</p></div>
+    <div className={styles.footer}><Link href="/progresso" className={styles.history}>Habilidades e revisão →</Link><Link href="/quizzes/historico" className={styles.history}>Meu histórico de quizzes →</Link><p>Uma pausa também faz parte de aprender. Seu progresso fica salvo na conta.</p></div>
   </section>;
 }
 

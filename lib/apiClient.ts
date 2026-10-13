@@ -312,6 +312,7 @@ export type ApiQuizSummary = Pick<ApiQuiz, 'id' | 'activityKind' | 'activityKey'
 
 export interface ApiQuizAttempt {
   id: string;
+  practiceMode: 'NORMAL' | 'REVIEW';
   status: 'IN_PROGRESS' | 'FINISHED' | 'ABANDONED' | 'EXPIRED';
   simulationId: string;
   activityKey: string;
@@ -337,6 +338,7 @@ export interface ApiQuizFeedback {
 export interface ApiQuizQuestion {
   id: string;
   originKey: string;
+  practicedBefore: boolean;
   type: 'MULTIPLE_CHOICE';
   statement: string;
   tip: string | null;
@@ -363,7 +365,7 @@ export interface ApiQuizConfirmation {
 
 export interface ApiQuizReward {
   xpAwarded: number;
-  reason: 'AWARDED' | 'ALREADY_REWARDED' | 'DAILY_LIMIT' | 'LEGACY';
+  reason: 'AWARDED' | 'ALREADY_REWARDED' | 'DAILY_LIMIT' | 'LEGACY' | 'REVIEW';
   day: string | null;
 }
 
@@ -407,8 +409,8 @@ export function getQuizAttemptResult(attemptId: string) {
   return apiFetch<ApiQuizResult>(`/api/backend/attempts/${encodeURIComponent(attemptId)}/result`);
 }
 
-export function getMyQuizAttempts() {
-  return apiFetch<ApiQuizAttempt[]>('/api/backend/me/quiz-attempts');
+export function getMyQuizAttempts(signal?: AbortSignal) {
+  return apiFetch<ApiQuizAttempt[]>('/api/backend/me/quiz-attempts', { signal });
 }
 
 export function getLearningPreferences() {
@@ -504,4 +506,46 @@ export function getMyAvatar(signal?: AbortSignal) {
 
 export function updateMyAvatar(patch: Partial<ApiAvatarSelection>, signal?: AbortSignal) {
   return apiFetch<ApiMyAvatar>('/api/backend/me/avatar', { method: 'PATCH', body: JSON.stringify(patch), signal });
+}
+
+
+export interface ApiSkillProgress {
+  code: string;
+  version: number;
+  title: string;
+  discipline: { slug: string; name: string };
+  schoolYear: number;
+  firstResponse: { questions: number; correct: number };
+  repeat: { responses: number; correct: number };
+  review: { responses: number; correct: number; differentQuestions: number };
+  distinctQuestions: number;
+  evidence: 'INSUFFICIENT' | 'OBSERVED';
+  lastPracticedAt: string | null;
+}
+export interface ApiReviewSuggestion {
+  quizId: string;
+  activityKey: string;
+  contentVersion: number;
+  title: string;
+  schoolYear: number;
+  questionCount: number;
+  skillTitles: string[];
+  hasRepeatedQuestions: boolean;
+}
+export interface ApiLearningProgress {
+  schoolYear: number | null;
+  unclassifiedQuestions: number;
+  skills: ApiSkillProgress[];
+  reviewSuggestions: ApiReviewSuggestion[];
+  inProgressReview: ApiQuizAttempt | null;
+}
+
+export function getLearningProgress(schoolYear?: number, signal?: AbortSignal) {
+  return apiFetch<ApiLearningProgress>(`/api/backend/me/learning-progress${learningYearQuery(schoolYear)}`, { signal });
+}
+
+export function startReviewAttempt(quizId: string, signal?: AbortSignal) {
+  return apiFetch<ApiQuizAttempt>('/api/backend/me/review-attempts', {
+    method: 'POST', body: JSON.stringify({ quizId }), signal,
+  });
 }
