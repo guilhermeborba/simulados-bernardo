@@ -6,6 +6,23 @@ As Actions oficiais são fixadas por SHA completo, com permissão apenas de leit
 
 Referências oficiais verificadas em 12/10/2026: [checkout v7.0.1](https://github.com/actions/checkout/releases/tag/v7.0.1), [setup-node v7.1.0](https://github.com/actions/setup-node/releases/tag/v7.1.0) e [sintaxe de versão Node](https://github.com/actions/setup-node#supported-version-syntax).
 
+## Estado da validação
+
+A consolidação de 13/10/2026 registra os lotes 01–10 integrados à `main`. A validação final do lote 10 passou:
+
+| Camada | Resultado |
+|---|---|
+| Web: tipos e build de produção | Passou |
+| Web: sessão/cookies | 30 testes |
+| Web: HTTP Next/BFF/Nest/PostgreSQL | 48 casos em 6 suítes |
+| Web: Chromium desktop/mobile emulado | 78 testes |
+| API: unitários | 688 testes em 39 suítes |
+| API: integração Nest/PostgreSQL | 395 casos em 21 suítes |
+
+As PRs [API #213](https://github.com/guilhermeborba/simulados-bernardo-api/pull/213) e [web #45](https://github.com/guilhermeborba/simulados-bernardo/pull/45) foram integradas em 13/10/2026, com [CI da API aprovada](https://github.com/guilhermeborba/simulados-bernardo-api/actions/runs/38438311892) e [CI web aprovada](https://github.com/guilhermeborba/simulados-bernardo/actions/runs/38439597355). O SHA compatível da API é `e0b19669723de7d67c778fcc08a3f300b0003fa1`; permanece fixado no workflow até uma mudança coordenada de contrato.
+
+As suítes atuais cobrem simulados, quizzes, missões/XP, coleção, progresso/revisão, acompanhamento por vínculo e recuperação. Os totais históricos por lote estão em [PROGRESS.md](../PROGRESS.md). Aprovação técnica não publica conteúdo editorial, ativa Resend, aplica migrations em uma base existente ou valida aparelhos físicos.
+
 ## Rodar localmente
 
 Instalar as dependências nos dois repositórios, gerar Prisma e compilar a API. O runner exige os builds de API e web já existentes.
@@ -39,7 +56,7 @@ E2E_API_DIR=/caminho/para/simulados-bernardo-api npm run test:e2e
 
 Cada execução aplica migrations em um schema aleatório próprio, cria dados sintéticos e remove somente esse schema ao terminar. O runner não usa `DATABASE_URL` como fallback, não carrega `.env` da aplicação web e nunca executa o seed editorial. Segredos JWT são valores sintéticos definidos apenas nos processos de teste. A CI fornece um PostgreSQL descartável por job. Se o processo for encerrado à força, o container com prefixo `simulados-web-regression-` poderá exigir limpeza manual; remover somente o container criado pelo teste.
 
-Os fixtures incluem quizzes de todas as 15 faixas, versões e estados diferentes, mídia genérica registrada e uma turma privada. São atividades sintéticas, sem importação/publicação dos 45 quizzes e 213 questões editoriais que continuam com revisão `PENDING`.
+Os fixtures incluem quizzes de todas as 15 faixas, versões e estados diferentes, mídia genérica registrada e uma turma privada. São atividades sintéticas, sem importação/publicação dos 45 quizzes/213 perguntas, 45 habilidades/213 classificações e 30 rascunhos de missão editoriais, que continuam com revisão `PENDING`. Atribuir a revisão ao responsável pelo projeto não aprovou conteúdo.
 
 ## Sessão e contratos HTTP
 
@@ -55,6 +72,11 @@ Os fixtures incluem quizzes de todas as 15 faixas, versões e estados diferentes
 - Histórico de quizzes separado do histórico de simulados, acesso entre contas e revogação da participação na turma.
 - Preferências persistidas por conta, valores padrão, filtros incompatíveis e validação de tipos/campos.
 - SVG/WAV autenticados, MIME, cache privado, ranges, caminhos inválidos e ausência de tokens em query.
+- Aprender hoje, missões nas 15 faixas, teto diário de XP e conclusões concorrentes/idempotentes.
+- Conquistas, itens bloqueados/liberados e personalização persistida por conta, sem alterar notas ou XP.
+- Evidências de primeiras respostas/repetições/revisões, retomada por modo e ausência de recompensas em REVIEW.
+- Acompanhamento por responsável/docente/ADMIN, revogação de vínculos e separação entre simulados e prática.
+- Recuperação com captura sintética de e-mail, consumo único, concorrência, revogação de sessões e validação de origem/DTO.
 - Ausência de tokens, hashes de senha, identificadores internos de assets e gabaritos oficiais nos JSONs verificados.
 
 ## Interface, teclado e acessibilidade automatizada
@@ -69,7 +91,7 @@ O áudio nunca deve possuir `autoplay`; a suíte verifica reprodução pausada e
 
 ## Limites e fontes
 
-Os testes não são de carga, infraestrutura com várias réplicas, dispositivos reais ou revisão editorial. A coordenação de refresh continua local a um processo, conforme o ADR 006. Quizzes preservam a regra de edição antes da finalização dos simulados. Missões e XP são validados a partir do lote 07; revisões do lote 09 não concedem recompensas.
+Os testes não são de carga, infraestrutura com várias réplicas, dispositivos reais ou revisão editorial. A coordenação de refresh continua local a um processo, conforme o ADR 006. Quizzes preservam a regra de edição antes da finalização dos simulados. A suíte inclui missões/XP, coleção, revisões e acompanhamento/recuperação entregues nos lotes 07–10. Revisões não concedem recompensas; resultados de simulados e prática são verificados separadamente.
 
 As cinco famílias da aplicação são arquivos WOFF2 locais reais licenciados sob SIL OFL 1.1. O build não depende da disponibilidade do Google Fonts nem de respostas mockadas. Famílias, pesos, variáveis CSS, `display: swap` e escopo por rota foram preservados. Fontes latinas incluem as letras acentuadas do português; fallbacks continuam disponíveis para outros subconjuntos.
 
@@ -80,7 +102,7 @@ Consultar [fontes e licenças](../app/fonts/README.md) para origem e hashes. Nen
 
 A regressão HTTP inclui home/XP, duas missões sintéticas em cada uma das 15 faixas, evolução de etapas, reenvio de conclusão, teto diário sob finalizações concorrentes, acesso por turma e fallback do perfil. Chromium verifica a home em desktop/mobile, navegação entre etapas e resultado, seleção das faixas, recuperação de consulta, troca de conta com resposta atrasada e axe.
 
-Execute `E2E_API_DIR=/caminho/da/api npm run test:e2e` e `E2E_API_DIR=/caminho/da/api npm run test:browser` depois dos builds de produção web/API e da geração Prisma. O harness cria PostgreSQL e schema descartáveis, aplica as migrations e remove as fixtures ao terminar. Não utilizar URL de banco existente: as mesmas proteções de banco isolado do lote 06 continuam aplicadas.
+Use os comandos da seção [Rodar localmente](#rodar-localmente), após os builds de produção web/API e a geração Prisma. O harness cria PostgreSQL e schema descartáveis, aplica as migrations e remove as fixtures ao terminar. Não utilizar URL de banco existente: as mesmas proteções de banco isolado do lote 06 continuam aplicadas.
 
 Os rascunhos editoriais de missão são validados na API com `npm run seed:missions:dry-run`; o exportador offline não publica conteúdo nem acessa banco. A atualização do commit da API no CI acompanha cada mudança do contrato.
 
@@ -90,7 +112,7 @@ A CI usa o commit da API identificado em `.github/workflows/ci.yml`, com a migra
 
 `tests/e2e/collection-regression.test.mjs` valida autenticação, DTO estrito, Origin, itens bloqueados/liberados, temas normalizados, versão/repetição, notas e XP, missão após teto diário e seleção persistida em outra sessão. `tests/browser/collections.spec.ts` verifica as 15 faixas e os estilos automáticos/explicitos, teclado, bloqueio de itens, salvar/reabrir em outro navegador, retry de leitura/gravação, troca de conta com respostas GET/PATCH atrasadas, cookies, Axe e overflow.
 
-Execute `E2E_API_DIR=/caminho/da/api npm run test:e2e` e `E2E_API_DIR=/caminho/da/api npm run test:browser` após compilar API e web. `QUIZ_SCREENSHOT_DIR=/diretorio/temporario` salva capturas de fixtures sintéticas durante os testes de interface. Não reconstrua `.next` enquanto o servidor de regressão estiver executando.
+Use os comandos da seção [Rodar localmente](#rodar-localmente), após compilar API e web. `QUIZ_SCREENSHOT_DIR=/diretorio/temporario` salva capturas de fixtures sintéticas durante os testes de interface. Não reconstrua `.next` enquanto o servidor de regressão estiver executando.
 
 ## Habilidades e revisão — lote 09
 
@@ -98,7 +120,7 @@ Execute `E2E_API_DIR=/caminho/da/api npm run test:e2e` e `E2E_API_DIR=/caminho/d
 
 `tests/browser/progress-review.spec.ts` verifica cartões de evidência insuficiente, sugestões, teclado, confirmação, feedback, recarga e retomada, resultado, filtros de histórico, falhas/retry e respostas GET/POST atrasadas durante troca de conta. Axe e ausência de overflow são verificados em desktop e mobile emulado. `QUIZ_SCREENSHOT_DIR=/tmp/capturas` salva referências sintéticas.
 
-Compile a API e a web antes de `E2E_API_DIR=/caminho/da/api npm run test:e2e` e `E2E_API_DIR=/caminho/da/api npm run test:browser`. A CI fixa o commit compatível da API com skills/review e aplica migrations apenas em PostgreSQL descartável. As propostas editoriais permanecem PENDING; nenhum seed em base existente é necessário.
+Compile API e web conforme a seção [Rodar localmente](#rodar-localmente). A CI fixa o commit compatível da API com skills/review e aplica migrations apenas em PostgreSQL descartável. As propostas editoriais permanecem PENDING; nenhum seed em base existente é necessário.
 
 ## Acompanhamento e recuperação de senha — lote 10
 
@@ -112,7 +134,7 @@ As telas públicas são `/esqueci-senha` e `/redefinir-senha`. O link sintético
 
 A interface `/acompanhamento` seleciona somente alunos autorizados, consulta resumo/disciplinas de simulados e prática por habilidade, e não inicia tentativas nem revisões. Os caminhos GET de progresso/relatório permitidos no BFF são exatos; respostas de acompanhamento têm cache privado desabilitado. Troca de aluno, de faixa ou de sessão cancela consultas e descarta respostas atrasadas. Falhas de acesso retiram os registros e permitem atualizar a lista de alunos.
 
-Execute os mesmos comandos `E2E_API_DIR=/caminho/da/api npm run test:e2e` e `E2E_API_DIR=/caminho/da/api npm run test:browser`, após os builds dos dois projetos. Não reconstrua `.next` com os servidores do harness em execução. Os totais e resultados finais são registrados em PROGRESS.md. A captura local valida o contrato; ativar o envio real depende de chave e remetente verificado configurados fora do chat, URL pública correta e habilitação na API. Entrega real, reputação do domínio, caixa de entrada/spam e aparelhos físicos continuam pendentes.
+Use os comandos da seção [Rodar localmente](#rodar-localmente), após os builds dos dois projetos. Não reconstrua `.next` com os servidores do harness em execução. Os totais e resultados finais são registrados em PROGRESS.md. A captura local valida o contrato; Resend permanece desativado por padrão na API. Ativar o envio real depende de chave e remetente verificado configurados fora do chat, URL pública correta e habilitação na API. Entrega real, reputação do domínio, caixa de entrada/spam e aparelhos físicos continuam pendentes.
 
 [ADR 011](decisions/011-acompanhamento-e-recuperacao.md) registra contratos e decisões. As referências de segurança e integração são o [guia OWASP de recuperação](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html) e a [API Send Email do Resend](https://resend.com/docs/api-reference/emails/send-email).
 
