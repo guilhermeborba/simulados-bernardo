@@ -10,7 +10,11 @@
     "test:auth": "tsc -p tsconfig.test.json && node --test .test-build/tests/auth-session.test.js",
     "typecheck": "tsc --noEmit",
     "test:e2e": "tsc -p tsconfig.test.json && node tests/e2e/run-http.mjs",
-    "test:browser": "node tests/e2e/run-http.mjs --browser"
+    "test:browser": "node tests/e2e/run-http.mjs --browser",
+    "mobile:start": "npm --prefix mobile run start",
+    "mobile:check": "npm --prefix mobile run typecheck",
+    "mobile:test": "npm --prefix mobile run test",
+    "mobile:test:integration": "npm --prefix mobile run test:integration"
   },
   "dependencies": {
     "next": "^14.0.0",

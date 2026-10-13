@@ -7,7 +7,7 @@
 
 Os **lotes 01–10 estão implementados e integrados à `main`**. O frontend legado de simulados já estava integrado à API e em produção, com seleção, realização, resultado, histórico e ranking de turma. A evolução acrescentou quizzes, Aprender hoje, missões/XP, coleção, progresso/revisão, acompanhamento por vínculo e recuperação de senha. **Não houve deploy dos novos lotes durante este trabalho**, migration/importação em banco existente ou publicação editorial.
 
-O lote 10 foi integrado em 13/10/2026 nas PRs [API #213](https://github.com/guilhermeborba/simulados-bernardo-api/pull/213) e [web #45](https://github.com/guilhermeborba/simulados-bernardo/pull/45). CI aprovada: [API](https://github.com/guilhermeborba/simulados-bernardo-api/actions/runs/38438311892) e [web](https://github.com/guilhermeborba/simulados-bernardo/actions/runs/38439597355). O [plano canônico da evolução](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-12-evolucao-quizzes-gamificacao-mobile-plan.md) fica no repositório da API; a próxima tarefa é o **lote 11 — prova e planejamento mobile**. Lotes 11 e 12 ainda não foram iniciados.
+O lote 10 foi integrado em 13/10/2026 nas PRs [API #213](https://github.com/guilhermeborba/simulados-bernardo-api/pull/213) e [web #45](https://github.com/guilhermeborba/simulados-bernardo/pull/45). CI aprovada: [API](https://github.com/guilhermeborba/simulados-bernardo-api/actions/runs/38438311892) e [web](https://github.com/guilhermeborba/simulados-bernardo/actions/runs/38439597355). O [plano canônico da evolução](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-12-evolucao-quizzes-gamificacao-mobile-plan.md) fica no repositório da API; o **lote 11 está em andamento**, com protótipo e prova automatizada; aparelhos reais continuam pendentes. O lote 12 ainda não foi iniciado.
 
 ## Entregas por lote
 
@@ -23,7 +23,7 @@ O lote 10 foi integrado em 13/10/2026 nas PRs [API #213](https://github.com/guil
 | 08 | Coleção pessoal, cinco conquistas, seis itens e personalização | Implementado; ADR 009 |
 | 09 | Progresso por habilidade e prática de revisão separada | Implementado; ADR 010; revisão das habilidades/classificações pendente |
 | 10 | Acompanhamento por vínculo e recuperação com Resend | Implementado; ADR 011; envio real pendente |
-| 11 | Prova técnica e planejamento mobile | Não iniciado |
+| 11 | Prova técnica e planejamento mobile | Protótipo e prova automatizada; aceite físico pendente |
 | 12 | Implementação do app e beta | Não iniciado |
 
 A jornada de quizzes contempla **15 faixas** desde o desenho inicial: Infantil de 4/5 anos, 1º ao 9º ano, três séries do Médio e Técnico em Enfermagem. Catálogos vazios permanecem vazios até haver conteúdo publicado e autorizado.
@@ -55,7 +55,20 @@ O workflow web fixa o commit compatível da API `e0b19669723de7d67c778fcc08a3f30
 | Limites de recuperação | Os 20 pedidos/minuto por endpoint usam o IP imediato da API; usuários do mesmo BFF compartilham o orçamento. Definir política real de proxy/perímetro antes de ampliar uso |
 | Usabilidade/acessibilidade | Avaliar com pessoas de cada segmento, leitores de tela e aparelhos físicos, incluindo as pausas legadas de Infantil após a 10ª/20ª questão |
 | Publicação técnica | Planejar migrations e deploy da API compatível antes da web, no processo de implantação autorizado |
-| Mobile | Executar o lote 11 para produzir prova técnica e plano; framework e app/beta do lote 12 ainda não foram definidos/implementados |
+| Mobile | Lote 11 com protótipo Expo e plano preliminar; decisão provisória até aparelhos reais. Prioridade Android/iOS e aparelhos aguardam resposta; lote 12 não iniciado |
+
+
+## Prova mobile — lote 11 em andamento
+
+O protótipo [mobile/](mobile/README.md) usa Expo 57.0.28, React Native 0.86.3, React 19.2.3, Expo Router e módulos nativos compatíveis. Dependências ficam isoladas do Next/React 18; a web importa/reexporta os 39 tipos públicos extraídos para [packages/api-contracts](packages/api-contracts/README.md), preservando seu cliente BFF. A API não precisou de novos endpoints para esta prova.
+
+Telas conectadas: login/Aprender hoje, catálogo de quizzes por faixa, runner NORMAL/REVIEW com confirmação/feedback/mídia/resultado, histórico, progresso, perfil/preferências/itens, acompanhamento e recuperação/entrada de link. Simulados aparecem no catálogo e abrem a web sem transferir credenciais; cadastro e runner nativo dos quatro tipos ficam no beta.
+
+Sessão usa access em memória, refresh em SecureStore, marcador de instalação em cache, renovação única e escrita ordenada. Expo Fetch recusa redirects/omite cookies; JSON tem orçamento de 2 MiB e cancelamento/timeout durante o corpo. SVG/WAV autenticados têm MIME/limites, fallback, cache temporário e limpeza explícita. Links secretos ficam em memória, com origem/path estritos; associação automática HTTPS permanece para o beta.
+
+**Validação local da prova:** 57 testes do núcleo/adaptadores/links (34/20/3), 7 testes de telas e 12 casos reais cliente/Nest/PostgreSQL passaram; typecheck, compatibilidade SDK, bundles Android/iOS e prebuild têm registro no [guia](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/guia-prova-mobile.md). Auditoria dos arquivos de mídia validou 40 SVGs/18 WAVs, sem comprovar renderização/reprodução nativa. A regressão web de tipos/build, 30 testes de sessão e 48 HTTP passou após a extração dos tipos; os totais Chromium acima são o fechamento histórico do lote 10 até a CI desta entrega.
+
+**O lote 11 permanece aberto:** nenhum APK/IPA assinado ou aparelho físico foi validado. AVD Pixel_10a disponível não foi executado; iOS local exige macOS/Xcode ou um processo de build assinado definido. Prioridade e disponibilidade dos aparelhos aguardam resposta do usuário. A [matriz física e plano preliminar do beta](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-13-mobile-proof-and-beta-plan.md) precisam dessas evidências antes de confirmar a escolha Expo/reestimar. Não houve cloud build, distribuição, seed editorial, deploy ou envio real de e-mail.
 
 ## Funcionalidades implementadas
 

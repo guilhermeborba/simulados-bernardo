@@ -140,3 +140,20 @@ Use os comandos da seção [Rodar localmente](#rodar-localmente), após os build
 
 
 O teste de limite da API mede o IP do chamador imediato. O BFF não encaminha IP de navegador e a API não configura confiança em proxies: usuários do mesmo BFF compartilham os 20 pedidos/minuto por endpoint. Cooldown por conta permanece compartilhado no banco. Ajuste de perímetro/IP confiável exige a política real de deploy e não foi presumido pelo teste.
+
+## Prova mobile — lote 11
+
+O job separado **Mobile bundles and direct API contracts** instala somente `mobile/package-lock.json` e a API compatível, verifica tipos e testes do núcleo/adaptadores/links e das telas com Jest Expo/RNTL, exporta bundles Android/iOS, gera prebuild e executa a integração direta com Bearer contra Nest/PostgreSQL descartável. Ele não inicia Next, não aplica migrations em banco existente e não compila/distribui APK/IPA. O job legado mantém sua regressão de BFF e Chromium.
+
+```bash
+npm ci --prefix mobile
+npm run typecheck --prefix mobile
+npm test --prefix mobile
+npm run test:ui --prefix mobile
+npm run export:android --prefix mobile
+npm run export:ios --prefix mobile
+npm run prebuild --prefix mobile
+E2E_API_DIR=/caminho/para/api npm run test:integration --prefix mobile
+```
+
+As 12 integrações usam schema `mobile_regression_<sufixo>` próprio, transporte de e-mail local sintético e a fixture existente dos cinco segmentos/15 faixas. Sem configuração de teste explícita, a execução falha. Testes de storage/mídia usam portas controladas e não comprovam Keychain/Keystore, reprodução nativa ou acessibilidade física. Execução e limites no [README mobile](../mobile/README.md); o [plano canônico](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-13-mobile-proof-and-beta-plan.md) mantém o lote 11 aberto até os aparelhos reais.

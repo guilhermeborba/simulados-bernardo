@@ -80,3 +80,73 @@ jobs:
         run: npm run test:e2e
       - name: Test keyboard, media fallback and account isolation in Chromium
         run: npm run test:browser
+
+  mobile-proof:
+    name: Mobile bundles and direct API contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: simulados_regression_test
+          POSTGRES_PASSWORD: synthetic-test-password
+          POSTGRES_DB: simulados_regression_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U simulados_regression_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: web/mobile
+    env:
+      CI: '1'
+      EXPO_NO_TELEMETRY: '1'
+      E2E_API_DIR: ${{ github.workspace }}/api
+      TEST_DATABASE_URL: postgresql://simulados_regression_test:synthetic-test-password@127.0.0.1:5432/simulados_regression_test
+    steps:
+      - name: Checkout web and mobile proof
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: web
+          persist-credentials: false
+      - name: Checkout the compatible API
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: guilhermeborba/simulados-bernardo-api
+          ref: e0b19669723de7d67c778fcc08a3f300b0003fa1
+          path: api
+          persist-credentials: false
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22.23.2'
+          cache: npm
+          cache-dependency-path: |
+            web/mobile/package-lock.json
+            api/package-lock.json
+      - name: Install API dependencies
+        run: npm ci --prefix ../../api
+      - name: Generate Prisma client
+        run: npm run prisma:generate --prefix ../../api
+      - name: Build API
+        run: npm run build --prefix ../../api
+      - name: Install the isolated mobile dependency tree
+        run: npm ci
+      - name: Check native TypeScript
+        run: npm run typecheck
+      - name: Test session, storage, media and link boundaries
+        run: npm run test
+      - name: Test native screen interactions with controlled adapters
+        run: npm run test:ui
+      - name: Bundle Android
+        run: npm run export:android
+      - name: Bundle iOS
+        run: npm run export:ios
+      - name: Validate generated native configuration without an APK or IPA
+        run: npm run prebuild
+      - name: Test direct Bearer contracts against real Nest and disposable PostgreSQL
+        run: npm run test:integration

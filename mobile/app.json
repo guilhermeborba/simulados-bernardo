@@ -1,0 +1,8 @@
+{
+  "plugins": [
+    "expo-router",
+    "expo-secure-store",
+    "expo-audio",
+    "expo-status-bar"
+  ]
+}
