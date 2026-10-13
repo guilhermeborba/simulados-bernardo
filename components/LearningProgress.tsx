@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLearningPreferences } from '@/contexts/LearningPreferencesContext';
-import { ApiError, getLearningProgress, startReviewAttempt, type ApiLearningProgress, type ApiSkillProgress } from '@/lib/apiClient';
+import { ApiError, getLearningProgress, startReviewAttempt, type ApiLearningProgress } from '@/lib/apiClient';
 import { QUIZ_SEGMENTS, quizSegmentForYear, quizTierForPreferences, quizYearLabel, quizYearPatch } from '@/lib/quiz-segments';
 import MascoteGuia from './MascoteGuia';
 import QuizNavigation from './QuizNavigation';
+import SkillProgressCard from './SkillProgressCard';
 import styles from './LearningProgress.module.css';
 
 export default function LearningProgress() {
@@ -110,7 +111,7 @@ function StudentProgress() {
             {data.unclassifiedQuestions > 0 && <p className={styles.hint}>{data.unclassifiedQuestions} {data.unclassifiedQuestions === 1 ? 'pergunta praticada ainda não tem' : 'perguntas praticadas ainda não têm'} classificação de habilidade. Esses registros não foram atribuídos a uma habilidade por suposição.</p>}
             {data.skills.length === 0 ? <div className={styles.empty}><h3>{effectiveYear === null ? 'Vamos escolher sua faixa?' : 'Ainda não há registros classificados nesta faixa.'}</h3>{effectiveYear !== null && <span className={styles.status}>Evidência insuficiente</span>}<p>As habilidades aparecem quando você confirma respostas em perguntas classificadas. Seu histórico de quizzes continua disponível.</p><Link href="/quizzes" className={styles.link}>Explorar quizzes →</Link></div>
               : <><dl className={styles.stats}><div><dt>Primeiras respostas</dt><dd>{data.skills.reduce((total, skill) => total + skill.firstResponse.questions, 0)}</dd></div><div><dt>Repetições</dt><dd>{data.skills.reduce((total, skill) => total + skill.repeat.responses, 0)}</dd></div><div><dt>Respostas em revisão</dt><dd>{data.skills.reduce((total, skill) => total + skill.review.responses, 0)}</dd></div></dl>
-                <div className={styles.grid}>{data.skills.map(skill => <SkillCard key={`${skill.code}:${skill.version}`} skill={skill} />)}</div></>}
+                <div className={styles.grid}>{data.skills.map(skill => <SkillProgressCard key={`${skill.code}:${skill.version}`} skill={skill} />)}</div></>}
           </section>
           <section className={styles.section} aria-labelledby="review-title">
             <div className={styles.sectionHeading}><h2 id="review-title">{infant ? 'Vamos revisitar uma descoberta?' : 'Revisar dificuldades recentes'}</h2><p>Uma revisão tem até cinco perguntas de um único quiz disponível para sua conta. Perguntas diferentes da mesma habilidade têm prioridade; as já respondidas são identificadas como prática.</p><p>Esta revisão não registra XP, missões ou itens. Ela fica no histórico de prática.</p></div>
@@ -129,14 +130,4 @@ function StudentProgress() {
         </>}
     </main>
   </div>;
-}
-
-function SkillCard({ skill }: { skill: ApiSkillProgress }) {
-  return <article className={styles.skill} aria-labelledby={`skill-${skill.code}-${skill.version}`}>
-    <p className={styles.skillMeta}>{skill.discipline.name} · {quizYearLabel(skill.schoolYear)}</p><h3 id={`skill-${skill.code}-${skill.version}`}>{skill.title}</h3>
-    <span className={styles.status}>{skill.evidence === 'INSUFFICIENT' ? 'Evidência insuficiente' : 'Registros iniciais'}</span>
-    <dl className={styles.counts}><div><dt>Primeiras respostas</dt><dd>{skill.firstResponse.correct} / {skill.firstResponse.questions} corretas</dd></div><div><dt>Repetições</dt><dd>{skill.repeat.correct} / {skill.repeat.responses} corretas</dd></div><div><dt>Revisões</dt><dd>{skill.review.correct} / {skill.review.responses} corretas</dd></div></dl>
-    <p className={styles.evidence}>{skill.firstResponse.questions} perguntas diferentes com primeira resposta · {skill.review.differentQuestions} perguntas diferentes praticadas em revisão. {skill.evidence === 'INSUFFICIENT' ? 'Ainda precisamos de mais primeiras respostas para reunir registros iniciais.' : 'Os registros mostram esta prática, sem comprovar domínio da habilidade.'}</p>
-    {skill.lastPracticedAt && <p className={styles.hint}>Última prática: {new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Sao_Paulo' }).format(new Date(skill.lastPracticedAt))}</p>}
-  </article>;
 }

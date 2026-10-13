@@ -16,6 +16,17 @@ async function openQuiz(page: Page, quizId = fixture.publicQuiz) {
   await expect(page.getByRole('heading', { name: 'Qual balão é vermelho?' })).toBeVisible();
   await expect(page).toHaveURL(/\?attempt=/);
 }
+async function revealCatalogQuiz(page: Page, quizId: string) {
+  await expect(page.getByLabel('Ano ou idade')).toBeEnabled();
+  await expect(page.getByText(/^\d+ quiz(?:zes)? disponíve(?:l|is)/)).toBeVisible();
+  const target = page.locator(`a[href="/quiz/${quizId}"]`);
+  for (let index = 0; index < 10 && !(await target.count()); index++) {
+    const more = page.getByRole('button', { name: 'Mostrar mais quizzes', exact: true });
+    if (!(await more.count())) break;
+    await more.click();
+  }
+  await expect(target).toBeVisible();
+}
 async function confirmFirst(page: Page) {
   await page.getByRole('radio', { name: 'O balão vermelho', exact: true }).check();
   await page.getByRole('button', { name: 'Confirmar resposta', exact: true }).click();
@@ -42,6 +53,7 @@ test('selecionar, confirmar, recarregar, concluir e consultar o histórico prese
   await page.goto('/quizzes');
   await expect(page.getByLabel('Ano ou idade')).toBeEnabled();
   await page.getByLabel('Ano ou idade').selectOption('3');
+  await revealCatalogQuiz(page, fixture.publicQuiz);
   await page.getByRole('link', { name: 'Começar quiz: Quiz sintético jornada-web', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Qual balão é vermelho?' })).toBeVisible();
   await expect(page).toHaveURL(/\?attempt=/);
@@ -147,7 +159,7 @@ test('catálogo cobre as 15 faixas, filtros persistem e uma segunda conta conser
     await page.getByRole('button', { name: /Todas as faixas/ }).click();
     await expect(page.getByLabel('Ano ou idade')).toBeEnabled();
     await page.getByLabel('Ano ou idade').selectOption(String(year));
-    await expect(page.locator(`a[href="/quiz/${fixture.quizSegments[String(year)]}"]`)).toBeVisible();
+    await revealCatalogQuiz(page, fixture.quizSegments[String(year)]);
     expect(await (await page.request.get('/api/backend/me/learning-preferences')).json()).toMatchObject({ schoolYear: year });
   }
   await assertAccessible(page);

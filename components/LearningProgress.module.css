@@ -70,3 +70,10 @@
   .counts { gap: 9px; }
 }
 @media (max-width: 370px) { .heroMark { display: none; } .stats { grid-template-columns: 1fr; } }
+
+.recentHeading { font-size: 1.1rem; margin-top: 24px; margin-bottom: 14px; }
+.attemptList { list-style: none; }
+.attemptList li { display: flex; justify-content: space-between; gap: 18px; align-items: center; padding: 16px 0; border-top: 1px solid #e5eaf2; }
+.attemptList li > div { min-width: 0; overflow-wrap: anywhere; }
+.attemptList li > span { flex-shrink: 0; font-size: 1.05rem; font-weight: 800; color: #355d86; }
+.attemptList p { font-size: .82rem; }

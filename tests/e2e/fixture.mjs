@@ -214,6 +214,55 @@ export async function createFixture(prisma, hashPassword, { apiRoot } = {}) {
   const reviewDraft = await classifiedQuiz('revisao-rascunho-web', 3, progressSkillId, { status: 'DRAFT', publishedAt: null });
   const reviewArchived = await classifiedQuiz('revisao-arquivada-web', 3, progressSkillId, { status: 'ARCHIVED' });
   const reviewDeleted = await classifiedQuiz('revisao-excluida-web', 3, progressSkillId, { deletedAt: new Date() });
+  // Task 10 actors and records are synthetic and isolated per HTTP/browser project.
+  const oversight = {};
+  async function oversightAccount(label, role) {
+    return prisma.user.create({ data: { name: `${label} de acompanhamento`, email: `${label}@example.test`,
+      passwordHash: await hashPassword('Synthetic-password-42', 4), role, status: 'ACTIVE',
+      ...(role === 'STUDENT' ? { studentProfile: { create: { schoolYear: 3 } } } : {}),
+    } });
+  }
+  for (const family of ['http', 'desktop', 'mobile', 'late-desktop', 'late-mobile']) {
+    const learner = await oversightAccount(`aluno-${family}`, 'STUDENT');
+    const guardian = await oversightAccount(`responsavel-${family}`, 'GUARDIAN');
+    const teacher = await oversightAccount(`professor-${family}`, 'TEACHER');
+    const outsideGuardian = await oversightAccount(`outro-responsavel-${family}`, 'GUARDIAN');
+    const assigned = await prisma.turma.create({ data: { name: `Turma acompanhada ${family}`, slug: `acompanhada-${family}`, schoolYear: 3 } });
+    const hidden = await prisma.turma.create({ data: { name: `Turma privada externa ${family}`, slug: `privada-externa-${family}`, schoolYear: 3 } });
+    await prisma.teacherTurma.create({ data: { teacherId: teacher.id, turmaId: assigned.id } });
+    await prisma.turmaMembership.createMany({ data: [{ userId: learner.id, turmaId: assigned.id }, { userId: learner.id, turmaId: hidden.id }] });
+    await prisma.guardianStudent.create({ data: { guardianId: guardian.id, studentId: learner.id, relationship: 'Responsável sintético' } });
+    const activities = [];
+    for (const [scope, groupId] of [['publico', null], ['turma', assigned.id], ['externo', hidden.id]]) {
+      const skill = await prisma.learningSkill.create({ data: {
+        code: `acompanhamento.${family}.${scope}`, title: scope === 'externo' ? `Habilidade privada externa ${family}` : `Reconhecer quantidades ${family} ${scope}`,
+        description: 'Apenas uma classificação sintética para validar autorização atual.', disciplineId: discipline.id, schoolYear: 3,
+        status: 'PUBLISHED', publishedAt: new Date(), reviewedAt: new Date(), reviewedBy: admin.id,
+      } });
+      const activity = await classifiedQuiz(`acompanhamento-${family}-${scope}`, 3, skill.id, { turmaId: groupId, title: `Quiz acompanhamento ${family} ${scope}` });
+      const assessed = await simulation(`acompanhamento-${family}-${scope}`, { turmaId: groupId });
+      for (const source of [activity, assessed]) {
+        const rows = await prisma.question.findMany({ where: { simulationId: source.id }, orderBy: { sortOrder: 'asc' } });
+        const isQuiz = source.activityKind === 'QUIZ';
+        const attempt = await prisma.attempt.create({ data: {
+          studentId: learner.id, simulationId: source.id, activityKey: isQuiz ? source.activityKey : null, contentVersion: isQuiz ? source.contentVersion : null,
+          status: 'FINISHED', finishedAt: new Date(), maxScore: source.maxScore, score: source.maxScore, percentage: 100, correctCount: rows.length,
+          answers: { create: rows.map(question => ({ questionId: question.id, answer: { optionKey: isQuiz ? 'B' : 'A' }, isCorrect: true, pointsEarned: question.points,
+            ...(isQuiz ? { confirmedAt: new Date(), feedback: { isCorrect: true, pointsEarned: Number(question.points), explanation: 'Explicação de teste.', funFact: null } } : {}),
+          })) },
+          ...(isQuiz ? { questionSnapshots: { create: rows.map(question => ({ questionId: question.id, originKey: question.originKey,
+            type: 'MULTIPLE_CHOICE', statement: question.statement, explanation: question.explanation, points: question.points, sortOrder: question.sortOrder,
+            options: [{ optionKey: 'A', text: 'Azul de teste' }, { optionKey: 'B', text: 'Vermelho de teste' }, { optionKey: 'C', text: 'Amarelo de teste' }],
+            officialAnswers: [{ answerKey: 'correctAnswer', answerValue: 'B' }], skillCode: skill.code, skillVersion: 1, skillTitle: skill.title, skillDisciplineSlug: discipline.slug, skillSchoolYear: 3,
+          })) } } : {}),
+        } });
+        if (isQuiz) activities.push({ scope, id: source.id, attemptId: attempt.id });
+      }
+    }
+    const accountView = row => ({ id: row.id, name: row.name, email: row.email });
+    oversight[family] = { student: accountView(learner), guardian: accountView(guardian), teacher: accountView(teacher), outsideGuardian: accountView(outsideGuardian),
+      turma: { id: assigned.id, name: assigned.name, slug: assigned.slug }, privateTurma: { id: hidden.id, name: hidden.name }, activities };
+  }
   // Mission curation is synthetic and lives only in this run's disposable schema.
   // Determine the Monday using the Brazilian civil date, not the UTC weekday.
   const brazilParts = new Intl.DateTimeFormat('en-CA', {
@@ -259,6 +308,7 @@ export async function createFixture(prisma, hashPassword, { apiRoot } = {}) {
     publishedAt: new Date(monday.getTime() - 7 * 24 * 60 * 60 * 1000),
   });
   return {
+    admin: { id: admin.id, email: admin.email }, oversight,
     publicSimulation: publicSimulation.id, privateSimulation: privateSimulation.id,
     draft: draft.id, archived: archived.id, deleted: deleted.id,
     turmaId: turma.id, inviteToken, segments,

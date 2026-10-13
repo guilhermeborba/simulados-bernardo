@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,11 +8,19 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
+  const [completed, setCompleted] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!completed || !user) return;
+    const destination = searchParams.get('returnTo');
+    const fallback = ['GUARDIAN', 'TEACHER', 'ADMIN'].includes(user.role) ? '/acompanhamento' : '/';
+    router.push(destination?.startsWith('/') && !destination.startsWith('//') && !destination.includes('\\') ? destination : fallback);
+  }, [completed, user, searchParams, router]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -21,8 +29,7 @@ export default function LoginForm() {
 
     try {
       await login(email, password);
-      const destination = searchParams.get('returnTo');
-      router.push(destination?.startsWith('/') && !destination.startsWith('//') && !destination.includes('\\') ? destination : '/');
+      setCompleted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível entrar');
     } finally {
@@ -73,6 +80,8 @@ export default function LoginForm() {
               {isSubmitting ? 'Entrando...' : '✨ Entrar'}
             </button>
           </form>
+
+          <p className="text-sm text-center mt-6"><Link href="/esqueci-senha" className="font-bold" style={{ color: 'var(--ink)' }}>Esqueci minha senha</Link></p>
 
           <p className="text-sm text-center mt-6" style={{ color: 'var(--muted)' }}>
             Não tem conta?{' '}

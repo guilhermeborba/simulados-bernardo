@@ -13,6 +13,7 @@ import styles from './LearningEntry.module.css';
 export default function LearningEntry() {
   const { user, isLoading, getSessionGeneration } = useAuth();
   if (isLoading) return <section className={styles.entry} aria-label="Aprender hoje"><p role="status">Carregando sua conta…</p></section>;
+  if (user && ['GUARDIAN', 'TEACHER', 'ADMIN'].includes(user.role)) return <section className={styles.entry} aria-labelledby="oversight-entry-title"><p className={styles.eyebrow}>Registros de aprendizagem</p><h2 id="oversight-entry-title">Acompanhe seus alunos</h2><p>Consulte simulados e prática por habilidade dos alunos disponíveis para sua conta.</p><Link className={styles.history} href="/acompanhamento">Abrir acompanhamento →</Link></section>;
   if (!user || user.role !== 'STUDENT') return <PublicLearningEntry />;
   // Replacing the child immediately prevents the previous account's progress from appearing.
   return <LearningHome key={`${user.id}:${getSessionGeneration()}`} />;

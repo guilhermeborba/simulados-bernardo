@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { REFRESH_TOKEN_COOKIE } from '@/lib/serverCookies';
 
-const PROTECTED_PREFIXES = ['/simulado/', '/historico', '/quiz/', '/quizzes', '/colecao', '/progresso'];
+const PROTECTED_PREFIXES = ['/simulado/', '/historico', '/quiz/', '/quizzes', '/colecao', '/progresso', '/acompanhamento'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -23,5 +23,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/simulado/:path*', '/historico', '/quiz/:path*', '/quizzes/:path*', '/colecao/:path*', '/progresso/:path*'],
+  matcher: ['/simulado/:path*', '/historico', '/quiz/:path*', '/quizzes/:path*', '/colecao/:path*', '/progresso/:path*', '/acompanhamento/:path*'],
 };

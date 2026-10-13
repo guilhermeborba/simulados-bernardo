@@ -549,3 +549,56 @@ export function startReviewAttempt(quizId: string, signal?: AbortSignal) {
     method: 'POST', body: JSON.stringify({ quizId }), signal,
   });
 }
+
+
+export function requestPasswordRecovery(email: string, signal?: AbortSignal) {
+  return apiFetch<{ message: string }>('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }), signal });
+}
+
+export function resetPassword(token: string, password: string, signal?: AbortSignal) {
+  return apiFetch<{ success: true }>('/api/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password }), signal });
+}
+
+export interface ApiOversightStudent {
+  id: string;
+  name: string;
+  schoolYear: number | null;
+  turmas: ApiTurma[];
+}
+export interface ApiStudentLearningProgress {
+  schoolYear: number | null;
+  unclassifiedQuestions: number;
+  skills: ApiSkillProgress[];
+}
+export interface ApiStudentSummary {
+  studentId: string;
+  totalFinishedAttempts: number;
+  averagePercentage: number;
+  bestPercentage: number;
+  bestScore: number;
+  lastAttempts: {
+    id: string;
+    percentage: string | null;
+    finishedAt: string | null;
+    simulation: { title: string; discipline: { name: string } };
+  }[];
+}
+export interface ApiStudentDisciplineSummary {
+  disciplineId: string;
+  discipline: string;
+  attempts: number;
+  averagePercentage: number;
+  bestPercentage: number;
+}
+export function getOversightStudents(signal?: AbortSignal) {
+  return apiFetch<ApiOversightStudent[]>('/api/backend/me/oversight-students', { signal });
+}
+export function getStudentLearningProgress(studentId: string, schoolYear?: number, signal?: AbortSignal) {
+  return apiFetch<ApiStudentLearningProgress>(`/api/backend/students/${encodeURIComponent(studentId)}/learning-progress${learningYearQuery(schoolYear)}`, { signal });
+}
+export function getStudentSummary(studentId: string, signal?: AbortSignal) {
+  return apiFetch<ApiStudentSummary>(`/api/backend/reports/student/${encodeURIComponent(studentId)}/summary`, { signal });
+}
+export function getStudentDisciplineSummary(studentId: string, signal?: AbortSignal) {
+  return apiFetch<ApiStudentDisciplineSummary[]>(`/api/backend/reports/student/${encodeURIComponent(studentId)}/by-discipline`, { signal });
+}
