@@ -5,7 +5,7 @@
 
 ## Status geral
 
-O frontend de simulados está **integrado com a API e em produção**. A migração dos dados estáticos (`data/*.ts`) para a API está concluída. O app cobre login, seleção, realização, resultado, histórico e ranking de turma. Os lotes 06 a 08 acrescentam a jornada web de quizzes, Aprender hoje, missões, XP e coleção pessoal; não houve deploy dessas entregas. A revisão e publicação do catálogo editorial de quizzes continuam pendentes.
+O frontend de simulados está **integrado com a API e em produção**. A migração dos dados estáticos (`data/*.ts`) para a API está concluída. O app cobre login, seleção, realização, resultado, histórico e ranking de turma. Os lotes 06 a 09 acrescentam a jornada web de quizzes, Aprender hoje, missões, XP, coleção pessoal, progresso por habilidade e revisão; não houve deploy dessas entregas. A revisão e publicação do catálogo editorial de quizzes continuam pendentes.
 
 ---
 
@@ -141,4 +141,19 @@ Ownership, concessões e contadores vêm da API. Itens bloqueados não podem ser
 
 **Validação:** typecheck/build, 30 testes de sessão, 30 jornadas HTTP Next/BFF/API e 52 Chromium desktop/mobile emulado passaram. Incluem as 15 faixas, itens bloqueados, liberação, estilo explícito, persistência em outro navegador autenticado, versões/repetição, teto de XP e missões, outra conta, teclado, falhas/retry, respostas GET/PATCH atrasadas, cookies, Axe da coleção/home e ausência de overflow. A API passou 513 unitários e 309 casos PostgreSQL, inclusive backfill de progresso do lote 07 e rollback atômico. O workflow fixa o commit compatível da API.
 
-[ADR 009](docs/decisions/009-avatar-colecoes-e-conquistas.md) registra decisões e limites. Conquistas/itens não modificam notas ou XP, não têm compras e não são retirados por pausa. Revisão/publicação dos 45 quizzes e curadoria dos 30 rascunhos de missão continuam pendentes; o responsável pelo projeto assumiu a revisão sem aprovar conteúdo. Não houve seed, migration em base existente ou deploy. Sessões com pessoas, leitor de tela e aparelhos reais seguem pendentes. Próxima tarefa técnica: **lote 09 — habilidades e revisão**.
+[ADR 009](docs/decisions/009-avatar-colecoes-e-conquistas.md) registra decisões e limites. Conquistas/itens não modificam notas ou XP, não têm compras e não são retirados por pausa. Revisão/publicação dos 45 quizzes e curadoria dos 30 rascunhos de missão continuam pendentes; o responsável pelo projeto assumiu a revisão sem aprovar conteúdo. Não houve seed, migration em base existente ou deploy. Sessões com pessoas, leitor de tela e aparelhos reais seguem pendentes. Na conclusão do lote 08, a próxima tarefa era o lote 09, entregue abaixo.
+
+
+---
+
+## Progresso e revisão — lote 09
+
+A rota protegida /progresso apresenta evidências da própria conta nas 15 faixas: primeiras respostas, repetições e revisões com contagens separadas e indicação de evidência insuficiente. Cinco primeiras respostas distintas permitem registros iniciais disponíveis, sem declarar domínio. Preferências sincronizadas selecionam ano/idade, com fallback ao cadastro; a apresentação acompanha Infantil, Fundamental, Médio e Enfermagem. Home, navegação e resultado oferecem acesso ao progresso.
+
+Começar revisão envia apenas quizId; a API seleciona até cinco perguntas de um quiz autorizado sobre dificuldades recentes da mesma habilidade, priorizando perguntas diferentes e identificando as praticadas. O runner usa practiceMode persistido, confirmação/feedback, retomada após recarga e resultado salvo. REVIEW não concede XP, missões ou itens. Histórico permite filtrar quizzes/revisões e permanece separado de simulados. Uma pergunta vista primeiro em revisão conta como repetição ao reaparecer em quiz normal.
+
+Falhas de consulta/criação permitem retry, inclusive após perder a resposta de um início já salvo. Troca de conta cancela GET/POST e isola estado/navegação pela geração de sessão; respostas atrasadas não restauram dados ou cookies anteriores. O novo POST verifica Origin no BFF.
+
+**Validação:** typecheck/build, 30 testes de sessão, 39 jornadas HTTP Next/BFF/API e 64 Chromium desktop/mobile emulado passaram. Incluem as 15 faixas, evidências separadas, perguntas inéditas/praticadas, confirmação, retomada, resultado/histórico, acesso, falhas/retry, requisições GET/POST atrasadas entre contas, cookies, teclado, Axe e ausência de overflow. API: 571 unitários e 368 casos PostgreSQL, incluindo migration com histórico e importação editorial atômica. O workflow fixa o commit compatível da API.
+
+[ADR 010](docs/decisions/010-progresso-e-revisao.md) e [guia de CI](docs/guia-ci-regressao.md) descrevem os fluxos e limites. O catálogo proposto mantém 45 quizzes/213 perguntas e 45 habilidades/classificações PENDING; os 30 rascunhos de missão aguardam curadoria. Atribuir revisão ao responsável não aprovou conteúdo. Não houve importação em base existente ou deploy; pessoas, leitores de tela e aparelhos físicos seguem pendentes. Próxima tarefa técnica: **lote 10 — acesso docente/responsável e recuperação de senha**.

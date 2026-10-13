@@ -66,3 +66,7 @@
 .reward h3 { color: #2c4d81; margin-bottom: 8px; }
 .reward p { color: #465a73; line-height: 1.6; font-size: .92rem; }
 .reward a { display: inline-flex; align-items: center; min-height: 44px; margin-top: 10px; font-size: .92rem; font-weight: 800; }
+
+.reviewNotice { padding: 16px 18px; margin-bottom: 22px; border: 1px solid #c4d5ed; border-radius: 13px; background: #f3f7ff; color: #465a73; font-size: .9rem; line-height: 1.65; }
+.practiceLabel { display: inline-block; padding: 8px 11px; margin-top: 12px; border-radius: 9px; background: #eef3fb; color: #40587b; font-size: .82rem; line-height: 1.6; }
+.reward { display: flex; flex-direction: column; align-items: flex-start; }

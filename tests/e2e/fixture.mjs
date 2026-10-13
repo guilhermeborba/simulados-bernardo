@@ -163,6 +163,57 @@ export async function createFixture(prisma, hashPassword, { apiRoot } = {}) {
   const collectionNewVersion = await quiz('colecao-web-1', 3, {
     contentVersion: 2, slug: 'quiz-colecao-web-1-v2', topic: 'Novo tema na mesma atividade de teste',
   });
+  // Reviewed classifications below are synthetic fixtures, never editorial approval.
+  const infantProgressDiscipline = await prisma.discipline.create({ data: {
+    name: 'Traços, sons, cores e formas de teste', slug: 'infantil-tracos-sons-cores-formas', icon: '🎨', themeColor: '#3070ab',
+  } });
+  const nursingProgressDiscipline = await prisma.discipline.create({ data: {
+    name: 'Enfermagem de teste', slug: 'enfermagem', icon: '🩺', themeColor: '#3070ab',
+  } });
+  const progressQuizzes = {};
+  const progressSkills = {};
+  const progressContent = [
+    { originKey: 'cor-inicial-a', statement: 'Qual cor aparece nesta pergunta de teste?', explanation: 'A alternativa B representa a cor vermelha neste exemplo sintético.', points: 1,
+      options: [{ optionKey: 'A', text: 'Azul de teste' }, { optionKey: 'B', text: 'Vermelho de teste' }, { optionKey: 'C', text: 'Amarelo de teste' }], correctAnswer: 'B' },
+    { originKey: 'cor-inicial-b', statement: 'Qual alternativa representa o vermelho de teste?', explanation: 'A alternativa B representa a cor vermelha neste exemplo sintético.', points: 1,
+      options: [{ optionKey: 'A', text: 'Azul de teste' }, { optionKey: 'B', text: 'Vermelho de teste' }, { optionKey: 'C', text: 'Amarelo de teste' }], correctAnswer: 'B' },
+  ];
+  async function classifiedQuiz(key, schoolYear, skillId, overrides = {}, content = progressContent) {
+    const row = await quiz(key, schoolYear, overrides, content);
+    const classified = await prisma.question.findMany({ where: { simulationId: row.id }, select: { id: true } });
+    for (const question of classified) await prisma.questionSkill.create({ data: { questionId: question.id, skillId } });
+    return row;
+  }
+  for (const schoolYear of [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
+    const label = schoolYear < 0 ? `menos-${Math.abs(schoolYear)}` : String(schoolYear);
+    const progressDiscipline = schoolYear < 0 ? infantProgressDiscipline : schoolYear === 0 ? nursingProgressDiscipline : discipline;
+    const skill = await prisma.learningSkill.create({ data: {
+      code: `cores-teste-${label}`, version: 1, title: `Reconhecer cores de teste — faixa ${schoolYear}`,
+      description: 'Classificação revisada apenas para esta base sintética descartável.',
+      disciplineId: progressDiscipline.id, schoolYear, status: 'PUBLISHED',
+      publishedAt: new Date(), reviewedBy: admin.id, reviewedAt: new Date(),
+    } });
+    progressSkills[schoolYear] = { id: skill.id, code: skill.code, title: skill.title, version: skill.version };
+    const row = await classifiedQuiz(`progresso-web-${label}`, schoolYear, skill.id, { title: `Prática sintética de cores — faixa ${schoolYear}`, disciplineId: progressDiscipline.id });
+    progressQuizzes[schoolYear] = row.id;
+  }
+  const progressSkillId = progressSkills['3'].id;
+  const reviewOld = await classifiedQuiz('revisao-web', 3, progressSkillId, {
+    slug: 'quiz-revisao-web-v1', title: 'Prática sintética de cores — revisão',
+  });
+  const novelProgressContent = Array.from({ length: 5 }, (_, index) => ({
+    ...progressContent[0], originKey: `cor-nova-${index + 1}`,
+    statement: `Qual cor aparece na nova imagem de teste ${index + 1}?`,
+  }));
+  const reviewCurrent = await classifiedQuiz('revisao-web', 3, progressSkillId, {
+    slug: 'quiz-revisao-web-v2', contentVersion: 2, title: 'Prática sintética de cores — revisão',
+  }, [...progressContent, ...novelProgressContent]);
+  const reviewPrivate = await classifiedQuiz('revisao-privada-web', 3, progressSkillId, {
+    turmaId: turma.id, title: 'Revisão privada sintética',
+  });
+  const reviewDraft = await classifiedQuiz('revisao-rascunho-web', 3, progressSkillId, { status: 'DRAFT', publishedAt: null });
+  const reviewArchived = await classifiedQuiz('revisao-arquivada-web', 3, progressSkillId, { status: 'ARCHIVED' });
+  const reviewDeleted = await classifiedQuiz('revisao-excluida-web', 3, progressSkillId, { deletedAt: new Date() });
   // Mission curation is synthetic and lives only in this run's disposable schema.
   // Determine the Monday using the Brazilian civil date, not the UTC weekday.
   const brazilParts = new Intl.DateTimeFormat('en-CA', {
@@ -218,5 +269,9 @@ export async function createFixture(prisma, hashPassword, { apiRoot } = {}) {
     expiredMission: expiredMission.id, missionWeek: { startsAt: monday.toISOString(), endsAt: nextMonday.toISOString() },
     profileStudent: { id: profileStudent.id, email: profileStudent.email, schoolYear: 10 },
     collectionQuizzes: collectionQuizzes.map(row => row.id), collectionNewVersion: collectionNewVersion.id,
+    progressQuizzes, progressSkills,
+    reviewOld: reviewOld.id, reviewCurrent: reviewCurrent.id, reviewPrivate: reviewPrivate.id,
+    reviewDraft: reviewDraft.id, reviewArchived: reviewArchived.id, reviewDeleted: reviewDeleted.id,
+    reviewTitle: reviewCurrent.title,
   };
 }

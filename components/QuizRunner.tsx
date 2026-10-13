@@ -19,7 +19,7 @@ import styles from './QuizRunner.module.css';
 type State = 'loading' | 'ready' | 'finished' | 'error';
 
 export default function QuizRunner({ quizId }: { quizId: string }) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, getSessionGeneration } = useAuth();
   const search = useSearchParams();
   const requestedAttempt = search.get('attempt');
   const router = useRouter();
@@ -36,7 +36,7 @@ export default function QuizRunner({ quizId }: { quizId: string }) {
     <Link href="/quizzes">Voltar ao catálogo</Link>
   </main>;
 
-  return <ActiveQuizRunner key={`${user.id}:${quizId}`} quizId={quizId} requestedAttempt={requestedAttempt} />;
+  return <ActiveQuizRunner key={`${user.id}:${getSessionGeneration()}:${quizId}`} quizId={quizId} requestedAttempt={requestedAttempt} />;
 }
 
 function ActiveQuizRunner({ quizId, requestedAttempt }: { quizId: string; requestedAttempt: string | null }) {
@@ -156,9 +156,11 @@ function ActiveQuizRunner({ quizId, requestedAttempt }: { quizId: string; reques
   const tier = tierForSchoolYear(year);
   const infant = typeof year === 'number' && year < 0;
   const confirmed = questions.filter(q => q.confirmedAt).length;
+  const review = attempt?.practiceMode === 'REVIEW';
   return <main className={styles.shell} data-tier={tier} data-motion={preferences.motionEnabled ? 'on' : 'off'}>
     <nav className={styles.navigation} aria-label="Navegação do quiz">
       <Link href="/quizzes">← Catálogo de quizzes</Link>
+      <Link href="/progresso">Habilidades e revisão</Link>
       <Link href="/quizzes/historico">Meu histórico de quizzes</Link>
     </nav>
     {state === 'loading' && <p role="status">Carregando quiz...</p>}
@@ -168,18 +170,20 @@ function ActiveQuizRunner({ quizId, requestedAttempt }: { quizId: string; reques
       <Link className={styles.historyLink} href={`/login?returnTo=${encodeURIComponent(`/quiz/${quizId}${requestedAttempt ? `?attempt=${requestedAttempt}` : ''}`)}`}>Entrar novamente</Link>
     </section>}
     {attempt && <header className={styles.header}>
-      <div><p className={styles.eyebrow}>{attempt.simulation.discipline.name} · Quiz rápido</p><h1>{attempt.simulation.title}</h1>
+      <div><p className={styles.eyebrow}>{attempt.simulation.discipline.name} · {review ? 'Revisão orientada' : 'Quiz rápido'}</p><h1>{attempt.simulation.title}</h1>
         <p>{attempt.simulation.topic}</p></div>
       <QuizPreferencesControls />
     </header>}
     {state === 'finished' && result && <QuizResult result={result} infant={infant} onRetry={() => router.push(`/quiz/${encodeURIComponent(quizId)}`)} />}
     {state === 'ready' && question && <>
+      {review && <p className={styles.reviewNotice}>Esta revisão não registra XP, missões ou itens. Ela fica no histórico de prática. Você pode parar e continuar depois.</p>}
       <div className={styles.progress}><span>{confirmed} de {questions.length} respostas confirmadas</span>
         <progress value={confirmed} max={questions.length} aria-label="Respostas confirmadas" /></div>
       <section className={styles.card} aria-labelledby="quiz-question-title">
         {infant && <div className={styles.guide}><MascoteGuia variant="bolinha" size={76} />
           <p>Vamos descobrir juntos! Escolha uma opção e toque em confirmar.</p></div>}
         <p className={styles.eyebrow}>Pergunta {index + 1} de {questions.length}</p>
+        {review && <p className={styles.practiceLabel}>{question.practicedBefore ? 'Pergunta já praticada · repetir ajuda a revisar e não conta como uma primeira resposta.' : 'Pergunta diferente nesta revisão · registrada como prática de revisão.'}</p>}
         <h2 id="quiz-question-title" ref={titleRef} tabIndex={-1} className={styles.statement}>{question.statement}</h2>
         <QuizMedia key={question.id} media={question.media} audioEnabled={preferences.audioEnabled} />
         {question.tip && <details className={styles.tip}><summary>Preciso de uma dica</summary><p>{question.tip}</p></details>}
@@ -206,7 +210,7 @@ function ActiveQuizRunner({ quizId, requestedAttempt }: { quizId: string; reques
           {!question.confirmedAt ? <button className={styles.primary} disabled={!drafts[question.id] || busy} onClick={() => void confirm()}>
             {busy ? 'Confirmando...' : 'Confirmar resposta'}</button> : index < questions.length - 1 ?
             <button className={styles.primary} disabled={busy} onClick={() => { setIndex(n => n + 1); setError(''); }}>Próxima pergunta</button> :
-            <button className={styles.primary} disabled={busy || confirmed !== questions.length} onClick={() => void finish()}>{busy ? 'Concluindo...' : 'Concluir quiz'}</button>}
+            <button className={styles.primary} disabled={busy || confirmed !== questions.length} onClick={() => void finish()}>{busy ? 'Concluindo...' : review ? 'Concluir revisão' : 'Concluir quiz'}</button>}
         </div>
       </section>
       <nav className={styles.questionNav} aria-label="Ir para uma pergunta">
@@ -259,33 +263,37 @@ function QuizMedia({ media, audioEnabled }: { media: ApiQuizQuestion['media']; a
 function QuizResult({ result, infant, onRetry }: { result: ApiQuizResult; infant: boolean; onRetry: () => void }) {
   const title = useRef<HTMLHeadingElement>(null);
   useEffect(() => { title.current?.focus(); }, []);
+  const review = result.attempt.practiceMode === 'REVIEW';
   return <section className={styles.card}>
     {infant && <MascoteGuia variant="bolinha" size={92} celebrando />}
     <p className={styles.eyebrow}>Prática concluída</p>
-    <h2 ref={title} tabIndex={-1}>Quiz concluído</h2>
-    <p className={styles.resultIntro}>Você respondeu todas as perguntas. Veja as explicações e escolha como continuar.</p>
+    <h2 ref={title} tabIndex={-1}>{review ? 'Revisão concluída' : 'Quiz concluído'}</h2>
+    <p className={styles.resultIntro}>{review ? 'Você concluiu esta prática de revisão. Veja as explicações; estes acertos ficam separados das primeiras respostas e não comprovam domínio.' : 'Você respondeu todas as perguntas. Veja as explicações e escolha como continuar.'}</p>
     <div className={styles.resultStats}>
-      <div><strong>{result.attempt.correctCount ?? 0} / {result.questions.length}</strong><span>respostas corretas</span></div>
-      <div><strong>{Number(result.attempt.percentage ?? 0).toLocaleString('pt-BR')}%</strong><span>de aproveitamento</span></div>
+      <div><strong>{result.attempt.correctCount ?? 0} / {result.questions.length}</strong><span>{review ? 'respostas corretas nesta revisão' : 'respostas corretas'}</span></div>
+      <div><strong>{Number(result.attempt.percentage ?? 0).toLocaleString('pt-BR')}%</strong><span>{review ? 'acertos nesta prática' : 'de aproveitamento'}</span></div>
     </div>
     <section className={styles.reward} aria-labelledby="quiz-reward-title">
       <h3 id="quiz-reward-title">{result.reward.xpAwarded > 0 ? `+${result.reward.xpAwarded} XP pela prática` : 'Prática registrada'}</h3>
-      <p>{result.reward.reason === 'AWARDED' ? 'Este XP já está salvo na sua conta. Cada quiz pode registrar XP uma vez por dia, até o limite diário.'
+      <p>{result.reward.reason === 'REVIEW' ? 'Esta revisão não registra XP, missões ou itens. Ela fica no histórico de prática.'
+        : result.reward.reason === 'AWARDED' ? 'Este XP já está salvo na sua conta. Cada quiz pode registrar XP uma vez por dia, até o limite diário.'
         : result.reward.reason === 'ALREADY_REWARDED' ? 'Este quiz já registrou XP no dia desta conclusão. Praticar novamente ajuda a revisar o que você aprendeu.'
         : result.reward.reason === 'DAILY_LIMIT' ? 'O limite diário de XP já tinha sido registrado no dia desta conclusão. Suas respostas e este resultado continuam salvos.'
         : 'Este resultado foi concluído antes do registro de XP. Você pode consultar sua prática no histórico.'}</p>
       <Link href="/">Ver missões e progresso em Aprender hoje →</Link>
       <Link href="/colecao">Ver minha coleção e conquistas →</Link>
+      <Link href="/progresso">Consultar habilidades e sugestões de revisão →</Link>
     </section>
     <div className={styles.resultQuestions}>{result.questions.map((question, index) => <details key={question.id}>
       <summary>Pergunta {index + 1} · {question.isCorrect ? 'Resposta correta' : 'Revisar explicação'}</summary>
       <p>{question.statement}</p>
+      {review && <p className={styles.practiceLabel}>{question.practicedBefore ? 'Pergunta já praticada · resposta registrada em revisão' : 'Pergunta diferente · resposta registrada em revisão'}</p>}
       <p><strong>Sua escolha:</strong> {question.options.find(option => option.optionKey === question.answer?.optionKey)?.text}</p>
       <p>{question.feedback?.explanation}</p>
       {question.feedback?.funFact && <p><strong>Você sabia?</strong> {question.feedback.funFact}</p>}
     </details>)}</div>
     <div className={styles.actions}><Link className={styles.secondary} href="/quizzes">Escolher outro quiz</Link>
-      <button className={styles.primary} onClick={onRetry}>Praticar novamente</button></div>
+      <button className={styles.primary} onClick={onRetry}>{review ? 'Praticar quiz completo' : 'Praticar novamente'}</button></div>
     <p className={styles.footer}>Você também pode fazer uma pausa. Seu progresso fica salvo.</p>
     <Link className={styles.historyLink} href="/quizzes/historico">Ver meu histórico de quizzes</Link>
   </section>;

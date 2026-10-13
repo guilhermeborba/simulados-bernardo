@@ -18,7 +18,7 @@ async function handle(
     return NextResponse.json({ message: 'Not found' }, { status: 404 });
   }
 
-  if (request.method === 'PATCH' && path === '/me/avatar') {
+  if ((request.method === 'PATCH' && path === '/me/avatar') || (request.method === 'POST' && path === '/me/review-attempts')) {
     const origin = request.headers.get('origin');
     const forwardedProtocol = request.headers.get('x-forwarded-proto');
     const protocol = forwardedProtocol === 'https' || forwardedProtocol === 'http' ? `${forwardedProtocol}:` : request.nextUrl.protocol;
