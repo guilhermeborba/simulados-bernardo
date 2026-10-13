@@ -55,7 +55,7 @@ O workflow web fixa o commit compatível da API `e0b19669723de7d67c778fcc08a3f30
 | Limites de recuperação | Os 20 pedidos/minuto por endpoint usam o IP imediato da API; usuários do mesmo BFF compartilham o orçamento. Definir política real de proxy/perímetro antes de ampliar uso |
 | Usabilidade/acessibilidade | Avaliar com pessoas de cada segmento, leitores de tela e aparelhos físicos, incluindo as pausas legadas de Infantil após a 10ª/20ª questão |
 | Publicação técnica | Planejar migrations e deploy da API compatível antes da web, no processo de implantação autorizado |
-| Mobile | Lote 11 com protótipo Expo e plano preliminar; decisão provisória até aparelhos reais. Prioridade Android/iOS e aparelhos aguardam resposta; lote 12 não iniciado |
+| Mobile | Lote 11 com protótipo Expo e plano preliminar; decisão provisória até aparelhos reais. Android primeiro confirmado; aparelhos ainda aguardam resposta; lote 12 não iniciado |
 
 
 ## Prova mobile — lote 11 em andamento
@@ -68,7 +68,7 @@ Sessão usa access em memória, refresh em SecureStore, marcador de instalação
 
 **Validação local da prova:** 57 testes do núcleo/adaptadores/links (34/20/3), 7 testes de telas e 12 casos reais cliente/Nest/PostgreSQL passaram; typecheck, compatibilidade SDK, bundles Android/iOS e prebuild têm registro no [guia](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/guia-prova-mobile.md). Auditoria dos arquivos de mídia validou 40 SVGs/18 WAVs, sem comprovar renderização/reprodução nativa. A regressão web de tipos/build, 30 testes de sessão e 48 HTTP passou após a extração dos tipos; os totais Chromium acima são o fechamento histórico do lote 10 até a CI desta entrega.
 
-**O lote 11 permanece aberto:** nenhum APK/IPA assinado ou aparelho físico foi validado. AVD Pixel_10a disponível não foi executado; iOS local exige macOS/Xcode ou um processo de build assinado definido. Prioridade e disponibilidade dos aparelhos aguardam resposta do usuário. A [matriz física e plano preliminar do beta](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-13-mobile-proof-and-beta-plan.md) precisam dessas evidências antes de confirmar a escolha Expo/reestimar. Não houve cloud build, distribuição, seed editorial, deploy ou envio real de e-mail.
+**O lote 11 permanece aberto:** nenhum APK/IPA assinado ou aparelho físico foi validado. AVD Pixel_10a disponível não foi executado; iOS local exige macOS/Xcode ou um processo de build assinado definido. O usuário confirmou Android primeiro; a disponibilidade dos aparelhos ainda aguarda resposta. A matriz física Android é o aceite prioritário do lote 11, e iPhone fica para antes do beta iOS. A [matriz física e plano preliminar do beta](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-13-mobile-proof-and-beta-plan.md) precisam dessas evidências antes de confirmar a escolha Expo/reestimar. Não houve cloud build, distribuição, seed editorial, deploy ou envio real de e-mail.
 
 ## Funcionalidades implementadas
 
