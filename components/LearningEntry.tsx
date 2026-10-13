@@ -7,6 +7,7 @@ import { useLearningPreferences } from '@/contexts/LearningPreferencesContext';
 import { ApiError, getLearningHome, type ApiLearningHome, type ApiLearningMission } from '@/lib/apiClient';
 import { QUIZ_SEGMENTS, quizSegmentForYear, quizTierForPreferences, quizYearLabel, quizYearPatch } from '@/lib/quiz-segments';
 import MascoteGuia from './MascoteGuia';
+import LearningCollectionSummary from './LearningCollectionSummary';
 import styles from './LearningEntry.module.css';
 
 export default function LearningEntry() {
@@ -99,6 +100,8 @@ function LearningHome() {
         <p className={styles.xpRule}>{data.xp.perQuiz} XP na primeira conclusão de cada quiz no dia, até {data.xp.dailyLimit} XP por dia. O dia segue o horário de Brasília.</p>
         {data.xp.today >= data.xp.dailyLimit && <p className={styles.notice}>O XP de hoje já foi registrado até o limite. Você pode continuar praticando no seu ritmo.</p>}
       </section>
+
+      <LearningCollectionSummary segment={effectiveSegment} />
 
       {data.inProgress && <section className={styles.resume} aria-labelledby="learning-resume-title">
         <div><p className={styles.eyebrow}>Continue de onde parou</p><h3 id="learning-resume-title">{data.inProgress.simulation.title}</h3>
