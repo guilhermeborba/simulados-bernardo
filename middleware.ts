@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { REFRESH_TOKEN_COOKIE } from '@/lib/serverCookies';
 
-const PROTECTED_PREFIXES = ['/simulado/', '/historico'];
+const PROTECTED_PREFIXES = ['/simulado/', '/historico', '/quiz/', '/quizzes'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -18,10 +18,10 @@ export function middleware(request: NextRequest) {
   }
 
   const loginUrl = new URL('/login', request.url);
-  loginUrl.searchParams.set('returnTo', pathname);
+  loginUrl.searchParams.set('returnTo', `${pathname}${request.nextUrl.search}`);
   return NextResponse.redirect(loginUrl);
 }
 
 export const config = {
-  matcher: ['/simulado/:path*', '/historico'],
+  matcher: ['/simulado/:path*', '/historico', '/quiz/:path*', '/quizzes/:path*'],
 };

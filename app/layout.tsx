@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { LearningPreferencesProvider } from '@/contexts/LearningPreferencesContext'
 import './globals.css'
 
 const fredoka = localFont({
@@ -32,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${fredoka.variable} ${nunito.variable}`}>
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider><LearningPreferencesProvider>{children}</LearningPreferencesProvider></AuthProvider>
       </body>
     </html>
   )

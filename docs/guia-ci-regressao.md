@@ -1,49 +1,76 @@
 # CI e regressão da aplicação web
 
-O workflow `.github/workflows/ci.yml` roda em PRs, pushes na main e execução manual. Usa Node 22.23.2, npm ci com os dois lockfiles, checagem de TypeScript, os testes de sessão, build normal de produção e regressão HTTP integrada.
+O workflow `.github/workflows/ci.yml` roda em PRs, pushes na main e execução manual. Usa Node 22.23.2, `npm ci` com os dois lockfiles, checagem de TypeScript, testes de sessão, build normal e regressão integrada com Next/BFF, Nest e PostgreSQL.
 
-As Actions oficiais são fixadas por SHA completo, com permissão apenas de leitura e sem persistir credenciais Git. A API pública é fixada no commit `8f1b47b0708e23d6876cd15d1374b0f45e8e4768`, que já contém a rotação de sessão do lote 01. Atualizar esse SHA em uma PR quando houver mudanças coordenadas de contrato; a CI não depende de branches de trabalho ou do seed editorial da API.
+As Actions oficiais são fixadas por SHA completo, com permissão apenas de leitura e sem persistir credenciais Git. O campo `ref` do checkout da API no workflow identifica o commit compatível. A jornada de quizzes requer os contratos de quiz, mídia e preferências; atualizar esse SHA na PR quando houver mudanças coordenadas de contrato. A CI não deve depender de uma branch de trabalho em movimento nem do seed editorial da API.
 
 Referências oficiais verificadas em 12/10/2026: [checkout v7.0.1](https://github.com/actions/checkout/releases/tag/v7.0.1), [setup-node v7.1.0](https://github.com/actions/setup-node/releases/tag/v7.1.0) e [sintaxe de versão Node](https://github.com/actions/setup-node#supported-version-syntax).
 
 ## Rodar localmente
 
-Após instalar as dependências nos dois repositórios, gerar Prisma e compilar a API:
+Instalar as dependências nos dois repositórios, gerar Prisma e compilar a API. O runner exige os builds de API e web já existentes.
 
 ```bash
+npm ci --prefix /caminho/para/simulados-bernardo-api
 npm run prisma:generate --prefix /caminho/para/simulados-bernardo-api
 npm run build --prefix /caminho/para/simulados-bernardo-api
+npm ci
 npm run typecheck
 npm run test:auth
 npm run build
 E2E_API_DIR=/caminho/para/simulados-bernardo-api npm run test:e2e
 ```
 
-O runner exige os builds de API e web já existentes. Sem TEST_DATABASE_URL, cria seu próprio PostgreSQL 16 em Docker, com armazenamento tmpfs, porta aleatória somente em 127.0.0.1 e usuário/banco de teste. Remove o container ao terminar. Com TEST_DATABASE_URL, aceita somente um host loopback, porta explícita e usuário/banco `simulados_regression_test`, sem parâmetros adicionais na URL:
+Para a suíte de interface, instalar o Chromium usado pelo Playwright e executar o runner de navegador:
+
+```bash
+npx playwright install chromium
+E2E_API_DIR=/caminho/para/simulados-bernardo-api npm run test:browser
+```
+
+Em um Linux sem dependências de sistema do navegador, a instalação correspondente usa `npx playwright install --with-deps chromium`. O runner `test:browser` inicia os mesmos servidores reais e o mesmo isolamento de banco do runner HTTP; configura automaticamente `E2E_WEB_URL` e `E2E_FIXTURE_PATH`. Executar `playwright test` diretamente sem esse contexto não prepara o ambiente.
+
+Sem `TEST_DATABASE_URL`, cada execução cria seu próprio PostgreSQL 16 em Docker, com armazenamento tmpfs, porta aleatória somente em `127.0.0.1` e usuário/banco de teste. Remove o container ao terminar. Com `TEST_DATABASE_URL`, aceita somente host loopback, porta explícita e usuário/banco `simulados_regression_test`, sem parâmetros adicionais na URL:
 
 ```bash
 TEST_DATABASE_URL=postgresql://simulados_regression_test:senha_de_teste@127.0.0.1:5432/simulados_regression_test \
 E2E_API_DIR=/caminho/para/simulados-bernardo-api npm run test:e2e
 ```
 
-Cada execução aplica migrations em um schema aleatório próprio, cria dados sintéticos e remove somente esse schema ao terminar. O runner não usa DATABASE_URL como fallback, não carrega `.env` da aplicação web e nunca executa o seed editorial. Segredos de JWT são valores sintéticos, definidos apenas nos processos de teste. A CI fornece um PostgreSQL descartável por job. Se o processo for encerrado à força, o container com prefixo `simulados-web-regression-` poderá exigir limpeza manual; nunca remover containers/bancos que não pertençam ao teste.
+Cada execução aplica migrations em um schema aleatório próprio, cria dados sintéticos e remove somente esse schema ao terminar. O runner não usa `DATABASE_URL` como fallback, não carrega `.env` da aplicação web e nunca executa o seed editorial. Segredos JWT são valores sintéticos definidos apenas nos processos de teste. A CI fornece um PostgreSQL descartável por job. Se o processo for encerrado à força, o container com prefixo `simulados-web-regression-` poderá exigir limpeza manual; remover somente o container criado pelo teste.
 
-## Cobertura e limites
+Os fixtures incluem quizzes de todas as 15 faixas, versões e estados diferentes, mídia genérica registrada e uma turma privada. São atividades sintéticas, sem importação/publicação dos 45 quizzes e 213 questões editoriais que continuam com revisão `PENDING`.
 
-A suíte inicia o servidor Next compilado e a aplicação Nest real. Todas as chamadas passam pelas rotas web/BFF e são persistidas/corrigidas pela API no PostgreSQL. Verifica:
+## Sessão e contratos HTTP
+
+`npm run test:auth` compila os testes em `.test-build/` e usa `node:test` para o coordenador de sessão, cookies e proxy. Inclui duas contas simultâneas, compartilhamento por sessão, 401 tardio, falhas temporárias, logout e encaminhamento validado de mídia binária.
+
+`npm run test:e2e` inicia o servidor Next compilado e a aplicação Nest real. Todas as chamadas passam pelas rotas web/BFF e são persistidas/corrigidas pela API no PostgreSQL. Verifica:
 
 - Registro, login, cookies HttpOnly/Secure/SameSite, contas distintas, renovação concorrente e logout.
-- Middleware de páginas protegidas, renderização HTTP de páginas e arquivos WOFF2 reais servidos localmente.
-- Catálogo, filtros/sentinelas de Infantil, Técnico, Fundamental e Médio; rascunhos, arquivados, exclusão lógica e turma privada.
-- Início/retomada, mapeamento dos quatro tipos de questão, edição/persistência das respostas e correção somente na finalização.
-- Resultado, histórico, pontuação, proteção de tentativa alheia e bloqueio de edição após finalizar.
-- Entrada por convite, repetição sem duplicar vínculo e liberação de conteúdo apenas ao membro.
-- Ausência de tokens, hashes de senha e gabaritos oficiais nos JSONs verificados.
+- Middleware de páginas protegidas, páginas renderizadas por HTTP e arquivos WOFF2 reais servidos localmente.
+- Catálogos, filtros/sentinelas de Infantil, Técnico, Fundamental e Médio; rascunhos, arquivados, exclusão lógica e turma privada.
+- Simulados: início/retomada, quatro tipos de questão, edição/persistência, correção ao finalizar, resultado, histórico e pontuação.
+- Quizzes: versão publicada mais recente, snapshots, confirmação com feedback apenas após responder, repetição idempotente, conflito de alteração após confirmar e resultado completo.
+- Histórico de quizzes separado do histórico de simulados, acesso entre contas e revogação da participação na turma.
+- Preferências persistidas por conta, valores padrão, filtros incompatíveis e validação de tipos/campos.
+- SVG/WAV autenticados, MIME, cache privado, ranges, caminhos inválidos e ausência de tokens em query.
+- Ausência de tokens, hashes de senha, identificadores internos de assets e gabaritos oficiais nos JSONs verificados.
 
-São testes HTTP integrados, sem substituir API, banco ou rotas Next por mocks. Eles não automatizam cliques, hidratação React, interações de teclado, layout ou acessibilidade; esses aspectos continuam exigindo teste de interface. Alterações futuras de UX podem acrescentar uma suíte de navegador. Não são testes de carga ou de múltiplas réplicas do BFF.
+## Interface, teclado e acessibilidade automatizada
 
-## Fontes e build
+`npm run test:browser` executa Chromium com duas configurações: desktop de 1280 × 900 e mobile de 390 × 844 com toque emulado. Usa a aplicação de produção, o BFF e a API/banco reais. Exercita seleção, confirmação, recarregamento, retomada, conclusão e histórico; verifica persistência de filtros e isolamento entre contas. Também injeta falhas controladas de transporte e mídia para verificar que a seleção, descrição ou transcrição permitem continuar.
 
-As cinco famílias utilizadas pela aplicação são arquivos WOFF2 locais reais, licenciados sob SIL OFL 1.1. O build não depende da disponibilidade do Google Fonts nem de respostas mockadas. Famílias, pesos, variáveis CSS, display swap e escopo por rota foram preservados. Fontes latinas incluem as letras acentuadas do português; fallbacks continuam disponíveis para caracteres de outros subconjuntos.
+A suíte verifica interação por teclado, foco e ausência de overflow horizontal nos estados avaliados. As checagens axe usam regras WCAG A/AA de 2.0 e 2.1 nas telas inspecionadas. O cenário mobile é emulação em Chromium, não execução em aparelho físico. Não afirmar compatibilidade validada com Safari/iOS, leitores de tela ou usuários reais a partir desses resultados.
 
-Consultar [fontes e licenças](../app/fonts/README.md) para origem e hashes. Nenhum download de fonte acontece durante o build ou em CI.
+Capturas de falha e traces são artefatos locais ignorados pelo Git. `QUIZ_SCREENSHOT_DIR=/diretorio` permite salvar as capturas de referência dos cenários que oferecem essa opção. O trace de um teste com falha pode ser aberto com `npx playwright show-trace /caminho/trace.zip`. Dados desses testes são sintéticos; os runners não devem ser apontados para sessões ou bancos de produção.
+
+O áudio nunca deve possuir `autoplay`; a suíte verifica reprodução pausada e transcrição em falha. Movimento desabilitado e `prefers-reduced-motion` são verificados nos cenários correspondentes. Esses checks são uma base técnica e não substituem revisão pedagógica, pesquisa de usabilidade, avaliação com pessoas com deficiência ou leitores de tela.
+
+## Limites e fontes
+
+Os testes não são de carga, infraestrutura com várias réplicas, dispositivos reais ou revisão editorial. A coordenação de refresh continua local a um processo, conforme o ADR 006. Quizzes não alteram a regra de edição antes da finalização dos simulados e ainda não oferecem missões ou XP.
+
+As cinco famílias da aplicação são arquivos WOFF2 locais reais licenciados sob SIL OFL 1.1. O build não depende da disponibilidade do Google Fonts nem de respostas mockadas. Famílias, pesos, variáveis CSS, `display: swap` e escopo por rota foram preservados. Fontes latinas incluem as letras acentuadas do português; fallbacks continuam disponíveis para outros subconjuntos.
+
+Consultar [fontes e licenças](../app/fonts/README.md) para origem e hashes. Nenhum download de fonte acontece durante build ou CI. Os totais e resultados da validação final ficam em [PROGRESS.md](../PROGRESS.md), sem confundi-los com aprovação editorial ou deploy.

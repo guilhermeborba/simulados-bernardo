@@ -38,3 +38,7 @@ next-env.d.ts
 
 # Compiled authentication tests
 .test-build/
+
+# Browser regression artifacts
+/test-results/
+/playwright-report/

@@ -14,8 +14,8 @@ interface HeroStepProps {
 const DESTAQUES = [
   {
     emoji: '✅',
-    titulo: 'Feedback na hora',
-    texto: 'Você vê o resultado assim que responde.',
+    titulo: 'Resultado ao concluir',
+    texto: 'Confira sua pontuação ao finalizar o simulado.',
     cor: 'var(--grass-deep)',
     fundo: 'rgba(91,214,138,.16)',
   },

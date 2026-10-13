@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   regression:
-    name: Types, auth, production build and real API regression
+    name: Types, sessions, HTTP and browser journeys
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     services:
@@ -49,7 +49,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: guilhermeborba/simulados-bernardo-api
-          ref: 8f1b47b0708e23d6876cd15d1374b0f45e8e4768
+          ref: fba14010d08840e9261334507bc9f56eda96c2d4
           path: api
           persist-credentials: false
       - name: Setup Node
@@ -72,7 +72,11 @@ jobs:
         run: npm run typecheck
       - name: Test session isolation
         run: npm run test:auth
+      - name: Install Chromium and browser dependencies
+        run: npx playwright install --with-deps chromium
       - name: Build production web with real local fonts
         run: npm run build
       - name: Test Next BFF with the real API and isolated PostgreSQL
         run: npm run test:e2e
+      - name: Test keyboard, media fallback and account isolation in Chromium
+        run: npm run test:browser
