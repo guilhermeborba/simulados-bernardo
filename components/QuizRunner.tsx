@@ -275,6 +275,7 @@ function QuizResult({ result, infant, onRetry }: { result: ApiQuizResult; infant
         : result.reward.reason === 'DAILY_LIMIT' ? 'O limite diário de XP já tinha sido registrado no dia desta conclusão. Suas respostas e este resultado continuam salvos.'
         : 'Este resultado foi concluído antes do registro de XP. Você pode consultar sua prática no histórico.'}</p>
       <Link href="/">Ver missões e progresso em Aprender hoje →</Link>
+      <Link href="/colecao">Ver minha coleção e conquistas →</Link>
     </section>
     <div className={styles.resultQuestions}>{result.questions.map((question, index) => <details key={question.id}>
       <summary>Pergunta {index + 1} · {question.isCorrect ? 'Resposta correta' : 'Revisar explicação'}</summary>

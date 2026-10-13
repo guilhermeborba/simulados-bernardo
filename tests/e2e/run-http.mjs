@@ -144,7 +144,7 @@ try {
   console.log('Testing production Next → BFF → real Nest API → isolated PostgreSQL schema.');
   const testArguments = process.argv.includes('--browser')
     ? [requireWeb.resolve('@playwright/test/cli'), 'test', '--config', 'playwright.config.ts']
-    : ['--test', 'tests/e2e/regression.test.mjs', 'tests/e2e/quiz-regression.test.mjs', 'tests/e2e/learning-home-regression.test.mjs'];
+    : ['--test', 'tests/e2e/regression.test.mjs', 'tests/e2e/quiz-regression.test.mjs', 'tests/e2e/learning-home-regression.test.mjs', 'tests/e2e/collection-regression.test.mjs'];
   const tests = start(process.execPath, testArguments, {
     cwd: webRoot, stdio: 'inherit', env: { ...process.env, E2E_WEB_URL: webUrl, E2E_FIXTURE_PATH: fixturePath },
   });

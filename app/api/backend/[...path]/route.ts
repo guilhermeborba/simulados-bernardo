@@ -18,6 +18,22 @@ async function handle(
     return NextResponse.json({ message: 'Not found' }, { status: 404 });
   }
 
+  if (request.method === 'PATCH' && path === '/me/avatar') {
+    const origin = request.headers.get('origin');
+    const forwardedProtocol = request.headers.get('x-forwarded-proto');
+    const protocol = forwardedProtocol === 'https' || forwardedProtocol === 'http' ? `${forwardedProtocol}:` : request.nextUrl.protocol;
+    // Next may use its listen address in nextUrl; Host retains the browser's origin.
+    const host = request.headers.get('host') ?? request.nextUrl.host;
+    let sameOrigin = !origin;
+    if (origin) {
+      try { sameOrigin = new URL(origin).origin === new URL(`${protocol}//${host}`).origin; }
+      catch { sameOrigin = false; }
+    }
+    if (!sameOrigin || request.headers.get('sec-fetch-site') === 'cross-site') {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+  }
+
   const media = isQuizMediaPath(path);
   if (params.path.includes('media') && (!media || request.method !== 'GET' || request.nextUrl.search)) {
     return NextResponse.json({ message: 'Not found' }, { status: 404 });

@@ -5,7 +5,7 @@
 
 ## Status geral
 
-O frontend de simulados está **integrado com a API e em produção**. A migração dos dados estáticos (`data/*.ts`) para a API está concluída. O app cobre login, seleção, realização, resultado, histórico e ranking de turma. Os lotes 06 e 07 acrescentam a jornada web de quizzes, Aprender hoje, missões e XP; não houve deploy dessas entregas. A revisão e publicação do catálogo editorial de quizzes continuam pendentes.
+O frontend de simulados está **integrado com a API e em produção**. A migração dos dados estáticos (`data/*.ts`) para a API está concluída. O app cobre login, seleção, realização, resultado, histórico e ranking de turma. Os lotes 06 a 08 acrescentam a jornada web de quizzes, Aprender hoje, missões, XP e coleção pessoal; não houve deploy dessas entregas. A revisão e publicação do catálogo editorial de quizzes continuam pendentes.
 
 ---
 
@@ -95,7 +95,7 @@ Os testes encontraram contraste insuficiente em cartões legados da home e cabe�
 
 O catálogo preparado mantém 45 quizzes/213 perguntas PENDING. A API oferece um exportador offline com 30 rascunhos de missão para curadoria, sem publicar ou acessar banco. Em 2026-10-13, o responsável pelo projeto assumiu a revisão dos quizzes; a atribuição não aprova conteúdo. Publicação editorial, sessões com pessoas, leitor de tela e aparelhos reais continuam pendentes. Não houve seed em base existente ou deploy.
 
-[ADR 008 — Aprender hoje, missões e XP](docs/decisions/008-aprender-hoje-missoes-e-xp.md) registra os contratos e limites. A próxima tarefa técnica é o **lote 08 — avatar, coleções e conquistas**.
+[ADR 008 — Aprender hoje, missões e XP](docs/decisions/008-aprender-hoje-missoes-e-xp.md) registra os contratos e limites. O lote 08 acrescenta a coleção pessoal, conforme seção abaixo.
 
 ---
 
@@ -130,3 +130,15 @@ O `SimuladoRunner` já tem a infraestrutura (`pauseRound`, `roundsSeen`) para pa
 ## Decisões arquiteturais registradas
 
 Ver `docs/decisions/` para o raciocínio por trás das escolhas não óbvias do projeto.
+
+---
+
+## Avatar, coleções e conquistas — lote 08
+
+A rota protegida /colecao reúne seis itens, cinco conquistas, critérios de liberação, progresso e personalização salva na conta. AUTO acompanha as 15 faixas: Bolinha no Infantil, Capelo no Fundamental I e selos nas faixas mais velhas. MASCOT e SEAL são escolhas explícitas disponíveis para qualquer aluno. Os símbolos SVG diferenciam os itens e usam o sistema visual existente. Home e resultado do quiz oferecem acesso à coleção.
+
+Ownership, concessões e contadores vêm da API. Itens bloqueados não podem ser selecionados; os liberados podem ser visualizados e salvos com confirmação do servidor. Falhas preservam a prévia para retry. Troca de conta cancela leituras/gravações pendentes e substitui o estado, inclusive com respostas atrasadas e proteção de cookies. O novo PATCH no BFF rejeita origem externa e aceita a origem pública recebida em Host/protocolo do proxy.
+
+**Validação:** typecheck/build, 30 testes de sessão, 30 jornadas HTTP Next/BFF/API e 52 Chromium desktop/mobile emulado passaram. Incluem as 15 faixas, itens bloqueados, liberação, estilo explícito, persistência em outro navegador autenticado, versões/repetição, teto de XP e missões, outra conta, teclado, falhas/retry, respostas GET/PATCH atrasadas, cookies, Axe da coleção/home e ausência de overflow. A API passou 513 unitários e 309 casos PostgreSQL, inclusive backfill de progresso do lote 07 e rollback atômico. O workflow fixa o commit compatível da API.
+
+[ADR 009](docs/decisions/009-avatar-colecoes-e-conquistas.md) registra decisões e limites. Conquistas/itens não modificam notas ou XP, não têm compras e não são retirados por pausa. Revisão/publicação dos 45 quizzes e curadoria dos 30 rascunhos de missão continuam pendentes; o responsável pelo projeto assumiu a revisão sem aprovar conteúdo. Não houve seed, migration em base existente ou deploy. Sessões com pessoas, leitor de tela e aparelhos reais seguem pendentes. Próxima tarefa técnica: **lote 09 — habilidades e revisão**.

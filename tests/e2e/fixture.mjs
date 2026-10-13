@@ -154,6 +154,15 @@ export async function createFixture(prisma, hashPassword, { apiRoot } = {}) {
     quizSegments[schoolYear] = row.id;
     quizKeys[schoolYear] = key;
   }
+  // Independent collection fixtures exercise first logical completions, not scores.
+  const collectionQuizzes = [];
+  const collectionTopics = ['Identidades de teste', 'Formas de teste', 'Rotinas de teste', ' identidades DE TESTE ', 'Formas de teste'];
+  for (const [index, topic] of collectionTopics.entries()) {
+    collectionQuizzes.push(await quiz(`colecao-web-${index + 1}`, 3, { topic }));
+  }
+  const collectionNewVersion = await quiz('colecao-web-1', 3, {
+    contentVersion: 2, slug: 'quiz-colecao-web-1-v2', topic: 'Novo tema na mesma atividade de teste',
+  });
   // Mission curation is synthetic and lives only in this run's disposable schema.
   // Determine the Monday using the Brazilian civil date, not the UTC weekday.
   const brazilParts = new Intl.DateTimeFormat('en-CA', {
@@ -208,5 +217,6 @@ export async function createFixture(prisma, hashPassword, { apiRoot } = {}) {
     missionsByYear, privateMission: privateMission.id, draftMission: draftMission.id,
     expiredMission: expiredMission.id, missionWeek: { startsAt: monday.toISOString(), endsAt: nextMonday.toISOString() },
     profileStudent: { id: profileStudent.id, email: profileStudent.email, schoolYear: 10 },
+    collectionQuizzes: collectionQuizzes.map(row => row.id), collectionNewVersion: collectionNewVersion.id,
   };
 }

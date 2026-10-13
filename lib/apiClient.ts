@@ -464,3 +464,44 @@ export function getLearningHome(schoolYear?: number, signal?: AbortSignal) {
 export function getMyMissions(schoolYear?: number, signal?: AbortSignal) {
   return apiFetch<ApiLearningMission[]>(`/api/backend/me/missions${learningYearQuery(schoolYear)}`, { signal });
 }
+
+
+export type AvatarStyle = 'AUTO' | 'MASCOT' | 'SEAL';
+export interface ApiAvatarSelection { itemId: string; style: AvatarStyle }
+export interface ApiAvatarItem {
+  id: string;
+  title: string;
+  description: string;
+  achievementId: string | null;
+  owned: boolean;
+  unlockedAt: string | null;
+}
+export interface ApiMyAvatar {
+  selection: ApiAvatarSelection;
+  items: ApiAvatarItem[];
+  updatedAt: string | null;
+}
+export interface ApiAchievement {
+  id: string;
+  title: string;
+  description: string;
+  target: number;
+  progress: number;
+  earnedAt: string | null;
+}
+export interface ApiMyAchievements {
+  achievements: ApiAchievement[];
+  stats: { completedQuizzes: number; topics: number; completedMissions: number; totalXp: number };
+}
+
+export function getMyAchievements(signal?: AbortSignal) {
+  return apiFetch<ApiMyAchievements>('/api/backend/me/achievements', { signal });
+}
+
+export function getMyAvatar(signal?: AbortSignal) {
+  return apiFetch<ApiMyAvatar>('/api/backend/me/avatar', { signal });
+}
+
+export function updateMyAvatar(patch: Partial<ApiAvatarSelection>, signal?: AbortSignal) {
+  return apiFetch<ApiMyAvatar>('/api/backend/me/avatar', { method: 'PATCH', body: JSON.stringify(patch), signal });
+}

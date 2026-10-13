@@ -83,3 +83,11 @@ A regressão HTTP inclui home/XP, duas missões sintéticas em cada uma das 15 f
 Execute `E2E_API_DIR=/caminho/da/api npm run test:e2e` e `E2E_API_DIR=/caminho/da/api npm run test:browser` depois dos builds de produção web/API e da geração Prisma. O harness cria PostgreSQL e schema descartáveis, aplica as migrations e remove as fixtures ao terminar. Não utilizar URL de banco existente: as mesmas proteções de banco isolado do lote 06 continuam aplicadas.
 
 Os rascunhos editoriais de missão são validados na API com `npm run seed:missions:dry-run`; o exportador offline não publica conteúdo nem acessa banco. A atualização do commit da API no CI acompanha cada mudança do contrato.
+
+## Avatar, coleções e conquistas — lote 08
+
+A CI usa o commit da API identificado em `.github/workflows/ci.yml`, com a migration aditiva de ownership e backfill de progresso válido do lote 07. Não utiliza catálogo editorial publicado nem banco existente.
+
+`tests/e2e/collection-regression.test.mjs` valida autenticação, DTO estrito, Origin, itens bloqueados/liberados, temas normalizados, versão/repetição, notas e XP, missão após teto diário e seleção persistida em outra sessão. `tests/browser/collections.spec.ts` verifica as 15 faixas e os estilos automáticos/explicitos, teclado, bloqueio de itens, salvar/reabrir em outro navegador, retry de leitura/gravação, troca de conta com respostas GET/PATCH atrasadas, cookies, Axe e overflow.
+
+Execute `E2E_API_DIR=/caminho/da/api npm run test:e2e` e `E2E_API_DIR=/caminho/da/api npm run test:browser` após compilar API e web. `QUIZ_SCREENSHOT_DIR=/diretorio/temporario` salva capturas de fixtures sintéticas durante os testes de interface. Não reconstrua `.next` enquanto o servidor de regressão estiver executando.
