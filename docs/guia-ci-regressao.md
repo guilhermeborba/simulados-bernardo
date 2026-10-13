@@ -74,3 +74,12 @@ Os testes não são de carga, infraestrutura com várias réplicas, dispositivos
 As cinco famílias da aplicação são arquivos WOFF2 locais reais licenciados sob SIL OFL 1.1. O build não depende da disponibilidade do Google Fonts nem de respostas mockadas. Famílias, pesos, variáveis CSS, `display: swap` e escopo por rota foram preservados. Fontes latinas incluem as letras acentuadas do português; fallbacks continuam disponíveis para outros subconjuntos.
 
 Consultar [fontes e licenças](../app/fonts/README.md) para origem e hashes. Nenhum download de fonte acontece durante build ou CI. Os totais e resultados da validação final ficam em [PROGRESS.md](../PROGRESS.md), sem confundi-los com aprovação editorial ou deploy.
+
+
+## Lote 07 — Aprender hoje, missões e XP
+
+A regressão HTTP inclui home/XP, duas missões sintéticas em cada uma das 15 faixas, evolução de etapas, reenvio de conclusão, teto diário sob finalizações concorrentes, acesso por turma e fallback do perfil. Chromium verifica a home em desktop/mobile, navegação entre etapas e resultado, seleção das faixas, recuperação de consulta, troca de conta com resposta atrasada e axe.
+
+Execute `E2E_API_DIR=/caminho/da/api npm run test:e2e` e `E2E_API_DIR=/caminho/da/api npm run test:browser` depois dos builds de produção web/API e da geração Prisma. O harness cria PostgreSQL e schema descartáveis, aplica as migrations e remove as fixtures ao terminar. Não utilizar URL de banco existente: as mesmas proteções de banco isolado do lote 06 continuam aplicadas.
+
+Os rascunhos editoriais de missão são validados na API com `npm run seed:missions:dry-run`; o exportador offline não publica conteúdo nem acessa banco. A atualização do commit da API no CI acompanha cada mudança do contrato.

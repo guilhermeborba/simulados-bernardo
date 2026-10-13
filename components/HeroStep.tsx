@@ -16,7 +16,7 @@ const DESTAQUES = [
     emoji: '✅',
     titulo: 'Resultado ao concluir',
     texto: 'Confira sua pontuação ao finalizar o simulado.',
-    cor: 'var(--grass-deep)',
+    cor: '#236644',
     fundo: 'rgba(91,214,138,.16)',
   },
   {
@@ -30,7 +30,7 @@ const DESTAQUES = [
     emoji: '🏆',
     titulo: 'Ranking da turma',
     texto: 'Veja como você está em relação aos colegas.',
-    cor: 'var(--lilac-deep)',
+    cor: '#7251B0',
     fundo: 'rgba(183,157,255,.22)',
   },
 ];
@@ -48,15 +48,15 @@ export default function HeroStep({ onStart }: HeroStepProps) {
     <div className="page-shell flex flex-col px-4 py-6 md:py-8">
 
       {/* Header decorativo */}
-      <div className="flex justify-between items-center mb-6 w-full max-w-5xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 w-full max-w-5xl mx-auto">
         <div className="flex items-center gap-2">
           <span className="text-2xl">📚</span>
           <span className="font-bold text-base" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
             Simulados Bernardo
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--ink-soft)' }}>
             01 · SPLASH
           </span>
           <SeloDiasSeguidos />
@@ -102,7 +102,7 @@ export default function HeroStep({ onStart }: HeroStepProps) {
 
             {/* Eyebrow */}
             <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold mb-6"
-                 style={{ background: 'rgba(91,214,138,.15)', color: 'var(--grass-deep)' }}>
+                 style={{ background: 'rgba(91,214,138,.15)', color: '#236644' }}>
               + Plataforma educativa do 1º ano ao Ensino Médio
             </div>
 
@@ -111,7 +111,7 @@ export default function HeroStep({ onStart }: HeroStepProps) {
               <span style={{ color: 'var(--bubble-deep, #E54F94)' }}>aventura.</span>
             </h1>
 
-            <p className="text-base mb-8" style={{ color: 'var(--muted)', lineHeight: 1.6, maxWidth: 400 }}>
+            <p className="text-base mb-8" style={{ color: 'var(--ink-soft)', lineHeight: 1.6, maxWidth: 400 }}>
               Simulados divertidos com feedback instantâneo, conquistas e dicas que ajudam você a brilhar a cada questão.
             </p>
 
@@ -138,7 +138,7 @@ export default function HeroStep({ onStart }: HeroStepProps) {
                   <span className="text-sm font-extrabold leading-snug" style={{ color: destaque.cor }}>
                     {destaque.titulo}
                   </span>
-                  <span className="text-xs leading-snug" style={{ color: 'var(--muted)' }}>
+                  <span className="text-xs leading-snug" style={{ color: 'var(--ink-soft)' }}>
                     {destaque.texto}
                   </span>
                 </div>
@@ -151,7 +151,7 @@ export default function HeroStep({ onStart }: HeroStepProps) {
             <MascoteGuia />
             {/* Badge topo direito */}
             <div className="absolute -top-3 -right-4 hidden md:flex items-center gap-2 bg-white rounded-2xl px-3 py-2 text-sm font-bold"
-                 style={{ color: 'var(--sun-deep, #8B6000)', boxShadow: 'var(--shadow-2)', background: '#FFF8D6' }}>
+                 style={{ color: '#8B6000', boxShadow: 'var(--shadow-2)', background: '#FFF8D6' }}>
               Vamos começar!
             </div>
           </div>

@@ -12,6 +12,7 @@ export default function QuizNavigation({ current }: { current: 'catalog' | 'hist
     <nav className={styles.navigation} aria-label="Navegação dos quizzes">
       <Link href="/" className={styles.brand}><span className={styles.brandMark} aria-hidden="true">B</span><span>Simulados Bernardo</span></Link>
       <div className={styles.navLinks}>
+        {user?.role === 'STUDENT' && <Link href="/">Aprender hoje</Link>}
         <Link href="/quizzes" aria-current={current === 'catalog' ? 'page' : undefined}>Quizzes</Link>
         {user?.role === 'STUDENT' && <Link href="/quizzes/historico" aria-current={current === 'history' ? 'page' : undefined}>Meu histórico</Link>}
         {user && <button type="button" onClick={() => { void logout().catch(() => undefined).finally(() => router.push('/login')); }}>Sair</button>}

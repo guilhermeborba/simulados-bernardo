@@ -61,3 +61,8 @@
 .shell[data-motion='off'] *, .shell[data-motion='off'] *::before, .shell[data-motion='off'] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 @media (prefers-reduced-motion: reduce) { .shell *, .shell *::before, .shell *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 @media (max-width: 620px) { .shell { padding: 18px 14px 36px; } .header { flex-direction: column; } .navigation { margin-bottom: 18px; } .resultStats { gap: 10px; } .resultStats div { padding: 16px; } .actions .primary { flex: 1; } .guide { align-items: flex-start; } }
+
+.reward { margin: 24px 0; padding: 20px; border: 1px solid #c4d5ed; border-radius: 16px; background: #f3f7ff; }
+.reward h3 { color: #2c4d81; margin-bottom: 8px; }
+.reward p { color: #465a73; line-height: 1.6; font-size: .92rem; }
+.reward a { display: inline-flex; align-items: center; min-height: 44px; margin-top: 10px; font-size: .92rem; font-weight: 800; }

@@ -2,8 +2,8 @@ import SelectionScreen from '@/components/SelectionScreen';
 import LearningEntry from '@/components/LearningEntry';
 
 export const metadata = {
-  title: 'Simulados Bernardo — Quizzes e simulados',
-  description: 'Escolha quizzes rápidos ou simulados e acompanhe sua prática',
+  title: 'Simulados Bernardo — Aprender hoje',
+  description: 'Continue sua prática, descubra missões e acompanhe seu progresso em quizzes e simulados',
 };
 
 export default function Home() {
