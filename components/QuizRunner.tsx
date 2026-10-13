@@ -268,6 +268,14 @@ function QuizResult({ result, infant, onRetry }: { result: ApiQuizResult; infant
       <div><strong>{result.attempt.correctCount ?? 0} / {result.questions.length}</strong><span>respostas corretas</span></div>
       <div><strong>{Number(result.attempt.percentage ?? 0).toLocaleString('pt-BR')}%</strong><span>de aproveitamento</span></div>
     </div>
+    <section className={styles.reward} aria-labelledby="quiz-reward-title">
+      <h3 id="quiz-reward-title">{result.reward.xpAwarded > 0 ? `+${result.reward.xpAwarded} XP pela prática` : 'Prática registrada'}</h3>
+      <p>{result.reward.reason === 'AWARDED' ? 'Este XP já está salvo na sua conta. Cada quiz pode registrar XP uma vez por dia, até o limite diário.'
+        : result.reward.reason === 'ALREADY_REWARDED' ? 'Este quiz já registrou XP no dia desta conclusão. Praticar novamente ajuda a revisar o que você aprendeu.'
+        : result.reward.reason === 'DAILY_LIMIT' ? 'O limite diário de XP já tinha sido registrado no dia desta conclusão. Suas respostas e este resultado continuam salvos.'
+        : 'Este resultado foi concluído antes do registro de XP. Você pode consultar sua prática no histórico.'}</p>
+      <Link href="/">Ver missões e progresso em Aprender hoje →</Link>
+    </section>
     <div className={styles.resultQuestions}>{result.questions.map((question, index) => <details key={question.id}>
       <summary>Pergunta {index + 1} · {question.isCorrect ? 'Resposta correta' : 'Revisar explicação'}</summary>
       <p>{question.statement}</p>
@@ -277,6 +285,7 @@ function QuizResult({ result, infant, onRetry }: { result: ApiQuizResult; infant
     </details>)}</div>
     <div className={styles.actions}><Link className={styles.secondary} href="/quizzes">Escolher outro quiz</Link>
       <button className={styles.primary} onClick={onRetry}>Praticar novamente</button></div>
+    <p className={styles.footer}>Você também pode fazer uma pausa. Seu progresso fica salvo.</p>
     <Link className={styles.historyLink} href="/quizzes/historico">Ver meu histórico de quizzes</Link>
   </section>;
 }

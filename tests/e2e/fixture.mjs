@@ -13,6 +13,13 @@ export async function createFixture(prisma, hashPassword, { apiRoot } = {}) {
       status: 'ACTIVE',
     },
   });
+  const profileStudent = await prisma.user.create({
+    data: {
+      name: 'Aluno com faixa cadastrada', email: 'learning-profile-student@example.test',
+      passwordHash: await hashPassword('Synthetic-password-42', 4), role: 'STUDENT', status: 'ACTIVE',
+      studentProfile: { create: { schoolYear: 10 } },
+    },
+  });
   const discipline = await prisma.discipline.create({
     data: { name: 'Matemática de teste', slug: 'matematica', icon: '🔢', themeColor: '#3070ab' },
   });
@@ -140,10 +147,57 @@ export async function createFixture(prisma, hashPassword, { apiRoot } = {}) {
   const archivedQuiz = await quiz('arquivado-web', 3, { status: 'ARCHIVED' });
   const deletedQuiz = await quiz('excluido-web', 3, { deletedAt: new Date() });
   const quizSegments = {};
+  const quizKeys = {};
   for (const schoolYear of [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
-    const row = await quiz(`faixa-web-${schoolYear < 0 ? `menos-${Math.abs(schoolYear)}` : schoolYear}`, schoolYear);
+    const key = `faixa-web-${schoolYear < 0 ? `menos-${Math.abs(schoolYear)}` : schoolYear}`;
+    const row = await quiz(key, schoolYear);
     quizSegments[schoolYear] = row.id;
+    quizKeys[schoolYear] = key;
   }
+  // Mission curation is synthetic and lives only in this run's disposable schema.
+  // Determine the Monday using the Brazilian civil date, not the UTC weekday.
+  const brazilParts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const parts = Object.fromEntries(brazilParts.map(part => [part.type, part.value]));
+  const brazilDate = `${parts.year}-${parts.month}-${parts.day}`;
+  const monday = new Date(`${brazilDate}T03:00:00.000Z`);
+  monday.setUTCDate(monday.getUTCDate() - (monday.getUTCDay() + 6) % 7);
+  const nextMonday = new Date(monday.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const segmentFor = year => year < 0 ? 'INFANTIL' : year === 0 ? 'ENFERMAGEM'
+    : year <= 5 ? 'FUNDAMENTAL_I' : year <= 9 ? 'FUNDAMENTAL_II' : 'MEDIO';
+  async function mission(schoolYear, slot, activityKeys, overrides = {}) {
+    return prisma.mission.create({
+      data: {
+        title: `Missão sintética ${schoolYear} — etapa ${slot}`,
+        description: 'Pratique as atividades escolhidas para esta semana de teste.',
+        segment: segmentFor(schoolYear), schoolYear, slot,
+        startsAt: monday, endsAt: nextMonday, status: 'PUBLISHED',
+        publishedAt: monday, createdById: admin.id,
+        ...overrides,
+        activities: { create: activityKeys.map((activityKey, index) => ({ activityKey, sortOrder: index + 1 })) },
+      },
+    });
+  }
+  const missionsByYear = {};
+  for (const [yearString, key] of Object.entries(quizKeys)) {
+    const year = Number(yearString);
+    const rows = [
+      await mission(year, 1, year === 3 ? ['jornada-web', key] : [key]),
+      await mission(year, 2, [key]),
+    ];
+    missionsByYear[year] = rows.map(row => ({ id: row.id, title: row.title }));
+  }
+  const privateMission = await mission(3, 1, ['privado-web'], {
+    turmaId: turma.id, title: 'Missão privada sintética',
+  });
+  const draftMission = await mission(3, 1, ['rascunho-web'], {
+    title: 'Missão em rascunho sintética', status: 'DRAFT', publishedAt: null,
+  });
+  const expiredMission = await mission(3, 1, ['jornada-web'], {
+    title: 'Missão encerrada sintética', startsAt: new Date(monday.getTime() - 7 * 24 * 60 * 60 * 1000), endsAt: monday,
+    publishedAt: new Date(monday.getTime() - 7 * 24 * 60 * 60 * 1000),
+  });
   return {
     publicSimulation: publicSimulation.id, privateSimulation: privateSimulation.id,
     draft: draft.id, archived: archived.id, deleted: deleted.id,
@@ -151,5 +205,8 @@ export async function createFixture(prisma, hashPassword, { apiRoot } = {}) {
     publicQuiz: publicQuiz.id, privateQuiz: privateQuiz.id, oldQuiz: oldQuiz.id,
     draftQuiz: draftQuiz.id, archivedQuiz: archivedQuiz.id, deletedQuiz: deletedQuiz.id,
     quizSegments, quizAnswers: quizQuestions.map((question) => question.correctAnswer),
+    missionsByYear, privateMission: privateMission.id, draftMission: draftMission.id,
+    expiredMission: expiredMission.id, missionWeek: { startsAt: monday.toISOString(), endsAt: nextMonday.toISOString() },
+    profileStudent: { id: profileStudent.id, email: profileStudent.email, schoolYear: 10 },
   };
 }

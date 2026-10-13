@@ -361,8 +361,15 @@ export interface ApiQuizConfirmation {
   feedback: ApiQuizFeedback;
 }
 
+export interface ApiQuizReward {
+  xpAwarded: number;
+  reason: 'AWARDED' | 'ALREADY_REWARDED' | 'DAILY_LIMIT' | 'LEGACY';
+  day: string | null;
+}
+
 export interface ApiQuizResult {
   attempt: ApiQuizAttempt;
+  reward: ApiQuizReward;
   questions: Array<ApiQuizQuestion & { isCorrect: boolean; pointsEarned: number }>;
 }
 
@@ -412,4 +419,48 @@ export function updateLearningPreferences(preferences: Partial<ApiLearningPrefer
   return apiFetch<ApiLearningPreferences>('/api/backend/me/learning-preferences', {
     method: 'PATCH', body: JSON.stringify(preferences),
   });
+}
+
+export interface ApiLearningMissionActivity {
+  activityKey: string;
+  title: string;
+  quizId: string;
+  completed: boolean;
+  attemptId: string | null;
+}
+
+export interface ApiLearningMission {
+  id: string;
+  title: string;
+  description: string;
+  segment: LearningSegment;
+  schoolYear: number;
+  startsAt: string;
+  endsAt: string;
+  status: 'AVAILABLE' | 'IN_PROGRESS' | 'COMPLETED';
+  completedActivities: number;
+  totalActivities: number;
+  activities: ApiLearningMissionActivity[];
+}
+
+export interface ApiLearningHome {
+  schoolYear: number | null;
+  xp: { total: number; today: number; dailyLimit: number; perQuiz: number; day: string };
+  inProgress: ApiQuizAttempt | null;
+  missions: ApiLearningMission[];
+  suggestedQuiz: ApiQuizSummary | null;
+}
+
+function learningYearQuery(schoolYear?: number) {
+  const query = new URLSearchParams();
+  if (schoolYear !== undefined) query.set('schoolYear', String(schoolYear));
+  return query.size ? `?${query.toString()}` : '';
+}
+
+export function getLearningHome(schoolYear?: number, signal?: AbortSignal) {
+  return apiFetch<ApiLearningHome>(`/api/backend/me/learning-home${learningYearQuery(schoolYear)}`, { signal });
+}
+
+export function getMyMissions(schoolYear?: number, signal?: AbortSignal) {
+  return apiFetch<ApiLearningMission[]>(`/api/backend/me/missions${learningYearQuery(schoolYear)}`, { signal });
 }

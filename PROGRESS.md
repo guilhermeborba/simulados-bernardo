@@ -1,11 +1,11 @@
 # Estado do Projeto — simulados-bernardo
 
-> Atualizado em: 2026-10-12
+> Atualizado em: 2026-10-13
 > Atualizar este arquivo ao concluir cada feature ou iniciativa relevante.
 
 ## Status geral
 
-O frontend de simulados está **integrado com a API e em produção**. A migração dos dados estáticos (`data/*.ts`) para a API está concluída. O app cobre login, seleção, realização, resultado, histórico e ranking de turma. O lote 06 acrescenta a jornada web de quizzes; não houve deploy deste lote. A revisão e publicação do catálogo editorial de quizzes continuam pendentes.
+O frontend de simulados está **integrado com a API e em produção**. A migração dos dados estáticos (`data/*.ts`) para a API está concluída. O app cobre login, seleção, realização, resultado, histórico e ranking de turma. Os lotes 06 e 07 acrescentam a jornada web de quizzes, Aprender hoje, missões e XP; não houve deploy dessas entregas. A revisão e publicação do catálogo editorial de quizzes continuam pendentes.
 
 ---
 
@@ -79,7 +79,23 @@ Imagens SVG e áudio WAV atravessam o BFF autenticado, incluindo requests de `Ra
 
 **Validação local:** tipos, builds, **30 testes de sessão, 16 jornadas HTTP e 24 testes Chromium desktop/mobile emulado** passaram. A suíte cobre os cinco segmentos, filtros das 15 faixas, teclado, axe, confirmação, resposta incorreta, recarga, resultado/histórico, perda de respostas HTTP, fallback de mídia e troca de conta, incluindo cookies atrasados. Os quatro bundles de páginas de quiz foram inspecionados sem gabaritos, identificadores privados de mídia ou fixtures sintéticas. Não houve avaliação com leitores de tela, pessoas ou aparelhos físicos.
 
-[ADR 007 — Jornada web de quizzes](docs/decisions/007-jornada-web-de-quizzes.md) documenta os contratos, isolamento, recuperação de falhas e limites. [CI e regressão](docs/guia-ci-regressao.md) traz os comandos reproduzíveis. O próximo lote técnico é o **07 — missões, XP e progressão**, em paralelo à revisão editorial do catálogo. Não houve seed em banco existente nem deploy.
+[ADR 007 — Jornada web de quizzes](docs/decisions/007-jornada-web-de-quizzes.md) documenta os contratos, isolamento, recuperação de falhas e limites. [CI e regressão](docs/guia-ci-regressao.md) traz os comandos reproduzíveis. O lote 07 implementa missões e XP conforme seção abaixo. Não houve seed em banco existente nem deploy.
+
+---
+
+## Aprender hoje, missões e XP — lote 07 da evolução
+
+A home do aluno reúne saldo de XP, quiz em andamento, duas posições de missão por semana/faixa/turma, próxima atividade e sugestão de quiz, mantendo acesso ao catálogo e aos simulados. A escolha das 15 faixas usa preferências da conta e, na primeira visita, o ano do perfil quando disponível, sem salvar automaticamente um filtro. Bolinha acompanha Infantil e a apresentação adapta o texto por segmento. Visitantes e outros perfis mantêm a escolha existente de quizzes/simulados.
+
+XP vem do backend: **10 por quiz lógico por dia, até 50 XP/dia**, usando America/Sao_Paulo. O resultado exibe a decisão salva de cada conclusão, inclusive repetição/teto/LEGACY, sem conceder XP no navegador ou alterar notas/ranking. Missões não adicionam bônus de XP no piloto. A home mostra progresso persistido, etapas ordenadas e janela semanal; permite pausar, recarregar e repetir consultas. Troca de sessão cancela requisições e substitui o estado da conta. Resultados de versões anteriores são usados somente quando autorizados; origem indisponível oferece prática no quiz atual e conserva progresso.
+
+Os testes encontraram contraste insuficiente em cartões legados da home e cabeçalho sem quebra de linha que dificultava Sair no celular. Cores e layout do HeroStep foram corrigidos pontualmente; o Axe continua verificando a home inteira pública e autenticada.
+
+**Validação:** typecheck/build web, **30 testes de sessão, 23 jornadas HTTP Next/BFF/API e 38 Chromium desktop/mobile emulado** passaram. Incluem duas missões sintéticas em cada faixa, progresso/XP, teto sob seis conclusões simultâneas, reenvio estável, retomada, perfil, turma, falha/retry, conta anterior com resposta atrasada e cookies, teclado e Axe, sem violações detectadas ou overflow horizontal. A API passou 479 unitários/267 casos PostgreSQL, migration sem backfill e testes com barreiras reais de concorrência. O CI fixa o commit compatível da API.
+
+O catálogo preparado mantém 45 quizzes/213 perguntas PENDING. A API oferece um exportador offline com 30 rascunhos de missão para curadoria, sem publicar ou acessar banco. Em 2026-10-13, o responsável pelo projeto assumiu a revisão dos quizzes; a atribuição não aprova conteúdo. Publicação editorial, sessões com pessoas, leitor de tela e aparelhos reais continuam pendentes. Não houve seed em base existente ou deploy.
+
+[ADR 008 — Aprender hoje, missões e XP](docs/decisions/008-aprender-hoje-missoes-e-xp.md) registra os contratos e limites. A próxima tarefa técnica é o **lote 08 — avatar, coleções e conquistas**.
 
 ---
 
