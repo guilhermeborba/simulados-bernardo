@@ -2,7 +2,7 @@
 
 Protótipo nativo em **Expo 57.0.28 / React Native 0.86.3 / React 19.2.3**, separado das dependências Next/React 18 da web. A prova usa a API diretamente com Bearer e compartilha apenas tipos públicos de `../packages/api-contracts`.
 
-**Estado: implementação e prova automatizada disponíveis; validação física pendente.** A escolha Expo é provisória. Não há APK/IPA distribuído, build assinado, associação de domínio ou app/beta publicado. Os bundles Android/iOS e projetos de prebuild têm alcance diferente de uma instalação nativa.
+**Estado: implementação e prova automatizada disponíveis; validação física pendente.** A escolha Expo é provisória. APK debug x86_64 compilado e instalado localmente no emulador Android 17 em 14/10/2026, com login e navegação para recuperação verificados. Não há build de release, distribuição externa, associação de domínio ou app/beta publicado. Autenticação/quizzes/mídia no emulador aguardam a API de teste (Docker indisponível na verificação). Os bundles Android/iOS e projetos de prebuild têm alcance diferente de uma instalação nativa.
 
 ## Rodar e verificar
 
