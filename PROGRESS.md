@@ -197,3 +197,14 @@ Falhas de consulta/criação permitem retry, inclusive após perder a resposta d
 **Validação no fechamento do lote 10:** typecheck/build, 30 testes de sessão, 48 casos HTTP/6 suítes e 78 testes Chromium desktop/mobile emulado passaram. Os 14 cenários novos de navegador cobrem permissões, teclado/Axe/overflow, revogação, separação de métricas, fragmento removido, sessões invalidadas, Unicode/72 bytes, links ausentes/usados, falhas/retry, conta atrasada e resposta de reset anterior retida durante abertura de outro link. Novos fixtures públicos também exercitam a paginação real do catálogo. API: 688 unitários/39 suites e 395 casos Nest/PostgreSQL/21 suites passaram, com CI verde na [PR API #213](https://github.com/guilhermeborba/simulados-bernardo-api/pull/213). A [PR web #45](https://github.com/guilhermeborba/simulados-bernardo/pull/45) também passou na CI; ambas foram integradas à `main` em 13/10/2026. A CI web fixa o commit compatível e0b19669723de7d67c778fcc08a3f300b0003fa1.
 
 [ADR 011](docs/decisions/011-acompanhamento-e-recuperacao.md) e [guia de CI](docs/guia-ci-regressao.md) documentam o lote. Resend foi escolhido pelo usuário e permanece desativado por padrão na API; ativação real exige chave e remetente verificado configurados fora do chat. O limite de 20/min usa IP imediato da API: usuários do mesmo BFF compartilham o orçamento; política de proxy/perímetro deve ser definida antes de ampliar uso. Os testes usam transporte sintético e PostgreSQL descartável. Não houve migration em base existente, seed editorial, e-mail externo ou deploy. Quizzes/habilidades/classificações e missões continuam pendentes de revisão/publicação. Avaliação com pessoas, leitor de tela e aparelhos físicos segue pendente. Próxima tarefa técnica: **lote 11 — prova e planejamento mobile**.
+
+
+### Preparação Android — ambientes (14/10/2026)
+
+Iniciada a parte independente de P1: variantes development/internal com identidade
+nativa separada e validação antecipada das origens públicas. O ambiente interno
+exige HTTPS e configuração explícita; identificadores de loja, assinatura,
+servidores, APK distribuível e aceite físico permanecem pendentes. A PR #47 foi
+integrada à main. A pasta temporária anterior foi perdida e o trabalho publicado
+foi recuperado em checkout persistente. Nenhuma conclusão de build nativa foi
+presumida a partir do processo iniciado anteriormente. Task 11 segue aberta.

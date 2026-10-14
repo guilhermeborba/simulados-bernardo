@@ -8,7 +8,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test src/core/*.test.ts src/platform/*.test.ts src/navigation/*.test.ts",
+    "test": "node --import tsx --test src/core/*.test.ts src/platform/*.test.ts src/navigation/*.test.ts config/*.test.ts",
     "test:integration": "node scripts/run-integration.mjs",
     "export:android": "expo export --platform android --output-dir .proof/android",
     "export:ios": "expo export --platform ios --output-dir .proof/ios",
