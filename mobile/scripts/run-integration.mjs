@@ -9,6 +9,18 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createFixture } from "../../tests/e2e/fixture.mjs";
 
+const deviceMode = process.argv.includes("--device");
+if (process.argv.slice(2).some((argument) => argument !== "--device"))
+  throw new Error("Unknown mobile proof argument.");
+const devicePort = Number(process.env.MOBILE_PROOF_PORT ?? 3334);
+if (
+  deviceMode &&
+  (!Number.isInteger(devicePort) || devicePort < 1024 || devicePort > 65535)
+)
+  throw new Error(
+    "MOBILE_PROOF_PORT must be an integer between 1024 and 65535.",
+  );
+
 const mobileRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 if (!process.env.E2E_API_DIR)
   throw new Error(
@@ -22,6 +34,7 @@ if (!existsSync(resolve(apiRoot, "dist/src/main.js")))
 const requireApi = createRequire(resolve(apiRoot, "package.json"));
 const { PrismaClient } = requireApi("@prisma/client");
 const { hash } = requireApi("bcryptjs");
+const dockerBinary = process.env.MOBILE_PROOF_DOCKER_BINARY || "docker";
 const suffix = randomBytes(8).toString("hex");
 const schema = `mobile_regression_${suffix}`;
 const temporaryDirectory = mkdtempSync(
@@ -139,7 +152,7 @@ function cleanup() {
     }
     if (containerName)
       await attempt("Removing the isolated mobile container failed", () =>
-        command("docker", ["rm", "--force", containerName]),
+        command(dockerBinary, ["rm", "--force", containerName]),
       );
     await attempt("Removing temporary mobile proof files failed", () =>
       rmSync(temporaryDirectory, { recursive: true, force: true }),
@@ -160,7 +173,7 @@ try {
   let databaseUrl = process.env.TEST_DATABASE_URL;
   if (!databaseUrl) {
     containerName = `simulados-mobile-regression-${suffix}`;
-    command("docker", [
+    command(dockerBinary, [
       "run",
       "--detach",
       "--rm",
@@ -179,7 +192,7 @@ try {
       "POSTGRES_DB=simulados_regression_test",
       "postgres:16-alpine",
     ]);
-    const mapping = command("docker", ["port", containerName, "5432/tcp"]);
+    const mapping = command(dockerBinary, ["port", containerName, "5432/tcp"]);
     const port = /^127\.0\.0\.1:(\d+)$/.exec(mapping)?.[1];
     if (!port) throw new Error("Expected a random loopback PostgreSQL port.");
     databaseUrl = `postgresql://simulados_regression_test:synthetic-mobile-password@127.0.0.1:${port}/simulados_regression_test`;
@@ -188,7 +201,7 @@ try {
     while (Date.now() < deadline) {
       if (
         spawnSync(
-          "docker",
+          dockerBinary,
           [
             "exec",
             containerName,
@@ -225,7 +238,7 @@ try {
   const mailUrl = await mailCapture();
   // Let the OS choose the API port; a parent-owned listener reports readiness.
   const portServer = createServer();
-  portServer.listen(0, "127.0.0.1");
+  portServer.listen(deviceMode ? devicePort : 0, "127.0.0.1");
   await once(portServer, "listening");
   const apiPort = portServer.address().port;
   await new Promise((done) => portServer.close(done));
@@ -256,10 +269,38 @@ try {
   const fixture = await createFixture(prisma, hash, { apiRoot });
   const fixturePath = resolve(temporaryDirectory, "fixture.json");
   writeFileSync(fixturePath, JSON.stringify(fixture), { mode: 0o600 });
-  const api = start(process.execPath, [resolve(apiRoot, "dist/src/main.js")], {
-    cwd: apiRoot,
-    env: apiEnvironment,
-  });
+  // Device sessions remain loopback-only without changing the production bootstrap.
+  const deviceBootstrap = resolve(temporaryDirectory, "device-api.cjs");
+  if (deviceMode)
+    writeFileSync(
+      deviceBootstrap,
+      `
+    const { createRequire } = require('node:module');
+    const requireApi = createRequire(${JSON.stringify(resolve(apiRoot, "package.json"))});
+    const { NestFactory } = requireApi('@nestjs/core');
+    const { ValidationPipe } = requireApi('@nestjs/common');
+    const { ConfigService } = requireApi('@nestjs/config');
+    const helmet = requireApi('helmet');
+    const { AppModule } = requireApi(${JSON.stringify(resolve(apiRoot, "dist/src/app.module.js"))});
+    (async () => {
+      const app = await NestFactory.create(AppModule);
+      app.use(helmet());
+      app.enableCors({origin: app.get(ConfigService).get('FRONTEND_URL'), credentials: true});
+      app.useGlobalPipes(new ValidationPipe({whitelist: true, forbidNonWhitelisted: true, transform: true}));
+      app.enableShutdownHooks();
+      await app.listen(Number(process.env.PORT), '127.0.0.1');
+    })().catch(() => { console.error('Device fixture API failed.'); process.exit(1); });
+  `,
+      { mode: 0o600 },
+    );
+  const api = start(
+    process.execPath,
+    [deviceMode ? deviceBootstrap : resolve(apiRoot, "dist/src/main.js")],
+    {
+      cwd: apiRoot,
+      env: apiEnvironment,
+    },
+  );
   const deadline = Date.now() + 60_000;
   let ready = false;
   while (Date.now() < deadline) {
@@ -279,29 +320,40 @@ try {
     await new Promise((done) => setTimeout(done, 200));
   }
   if (!ready) throw new Error("The isolated API did not become ready.");
-  console.log(
-    "Testing mobile session core → real Nest API → isolated PostgreSQL (no native storage/device claim).",
-  );
-  const tests = start(
-    process.execPath,
-    ["--import", "tsx", "--test", "tests/integration/session.test.ts"],
-    {
-      cwd: mobileRoot,
-      stdio: "inherit",
-      env: {
-        ...process.env,
-        E2E_API_DIR: apiRoot,
-        E2E_API_URL: apiUrl,
-        E2E_FIXTURE_PATH: fixturePath,
-        E2E_MAIL_URL: mailUrl,
-      },
-    },
-  );
-  const [code] = await once(tests, "exit");
-  if (code !== 0)
-    throw new Error(
-      `Mobile session integration failed (${code}); see the test output above.`,
+  if (deviceMode) {
+    console.log(`API_URL=${apiUrl}`);
+    console.log(`DEVICE_FIXTURE_PATH=${fixturePath}`);
+    // Only the explicit device mode stays alive. Signals trigger the shared cleanup.
+    await new Promise((_, reject) =>
+      api.once("exit", () =>
+        reject(new Error("The isolated API exited during device testing.")),
+      ),
     );
+  } else {
+    console.log(
+      "Testing mobile session core → real Nest API → isolated PostgreSQL (no native storage/device claim).",
+    );
+    const tests = start(
+      process.execPath,
+      ["--import", "tsx", "--test", "tests/integration/session.test.ts"],
+      {
+        cwd: mobileRoot,
+        stdio: "inherit",
+        env: {
+          ...process.env,
+          E2E_API_DIR: apiRoot,
+          E2E_API_URL: apiUrl,
+          E2E_FIXTURE_PATH: fixturePath,
+          E2E_MAIL_URL: mailUrl,
+        },
+      },
+    );
+    const [code] = await once(tests, "exit");
+    if (code !== 0)
+      throw new Error(
+        `Mobile session integration failed (${code}); see the test output above.`,
+      );
+  }
 } catch (error) {
   // Database/transport libraries may include credentials in messages or causes.
   failure = new Error(

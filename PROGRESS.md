@@ -68,7 +68,7 @@ Sessão usa access em memória, refresh em SecureStore, marcador de instalação
 
 **Validação local da prova:** 57 testes do núcleo/adaptadores/links (34/20/3), 7 testes de telas e 12 casos reais cliente/Nest/PostgreSQL passaram; typecheck, compatibilidade SDK, bundles Android/iOS e prebuild têm registro no [guia](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/guia-prova-mobile.md). Auditoria dos arquivos de mídia validou 40 SVGs/18 WAVs, sem comprovar renderização/reprodução nativa. A regressão web de tipos/build, 30 testes de sessão e 48 HTTP passou após a extração dos tipos; os totais Chromium acima são o fechamento histórico do lote 10 até a CI desta entrega.
 
-**O lote 11 permanece aberto:** APK debug x86_64 compilado e instalado no emulador Android 17 em 14/10/2026; abertura do login e navegação para recuperação verificadas, sem erros AndroidRuntime/ReactNativeJS no processo observado. Não houve validação em aparelho físico ou build de release; iOS local exige macOS/Xcode ou um processo de build assinado definido. O usuário confirmou Android primeiro; a disponibilidade dos aparelhos ainda aguarda resposta. A matriz física Android é o aceite prioritário do lote 11, e iPhone fica para antes do beta iOS. A [matriz física e plano preliminar do beta](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-13-mobile-proof-and-beta-plan.md) precisam dessas evidências antes de confirmar a escolha Expo/reestimar. Não houve cloud build, distribuição, seed editorial, deploy ou envio real de e-mail.
+**O lote 11 permanece aberto:** APK debug x86_64 compilado e instalado no emulador Android 17 em 14/10/2026; login, confirmação/retomada/finalização de quiz (2/2, +10 XP), histórico por link interno e restauração da sessão após encerramento do processo verificados. Não houve validação em aparelho físico ou build de release; iOS local exige macOS/Xcode ou um processo de build assinado definido. O usuário confirmou Android primeiro; a disponibilidade dos aparelhos ainda aguarda resposta. A matriz física Android é o aceite prioritário do lote 11, e iPhone fica para antes do beta iOS. A [matriz física e plano preliminar do beta](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-13-mobile-proof-and-beta-plan.md) precisam dessas evidências antes de confirmar a escolha Expo/reestimar. Não houve cloud build, distribuição, seed editorial, deploy ou envio real de e-mail.
 
 ## Funcionalidades implementadas
 
@@ -216,11 +216,18 @@ APK debug local compilado com sucesso e instalado via ADB no `emulator-5554`
 (x86_64, Android 17). Metro no WSL acessível pelo Windows e encaminhado ao
 emulador na porta 8081. Verificadas a tela de login, a navegação para recuperação
 e o retorno ao login. Sem erro AndroidRuntime/ReactNativeJS no processo observado.
-Isso não valida autenticação, quizzes, SVG/áudio, reinstalação ou aparelho físico.
+Na sequência, foram verificados login real, retomada de resposta confirmada, finalização de quiz com 2/2 e +10 XP, histórico por link interno e restauração da sessão após encerrar/reabrir o processo. SVG/áudio, reinstalação e aparelho físico continuam pendentes.
 
-A API sintética permanece pendente porque o motor do Docker Desktop estava
-indisponível. O rascunho local do modo persistente de fixture foi preservado fora
-do Git para validação quando o Docker estiver ativo; não foi publicado como fluxo
-aprovado. O APK e a captura local ficam em `mobile/android/app/build/outputs/apk/debug/`
-e `mobile/.proof/android-emulator-login.png` (artefatos ignorados). Não houve
-alteração em banco existente, envio de e-mail real ou distribuição de release.
+A API sintética foi iniciada após o Docker ficar ativo. O novo modo
+`device:fixture` mantém API e dados descartáveis até Ctrl+C, com bind somente em
+loopback, porta validada e fixture temporária 0600. A regressão padrão passou
+as 12 integrações; uma segunda fixture passou prontidão e encerramento por
+SIGTERM, removendo arquivo temporário e fechando a porta. Restou apenas o
+container da sessão interativa. Nenhum banco existente ou seed editorial foi usado.
+
+Links comuns agora usam o esquema da variante instalada, com testes que recusam
+variantes externas, segredos e rotas desconhecidas. Validação local final: **63
+unitários, 7 testes de telas, 12 integrações e TypeScript** passaram. APK/capturas
+ficam em diretórios ignorados `mobile/android/` e `mobile/.proof/`; procedimento e
+limites em [guia do emulador](mobile/docs/android-emulator.md). A task 11 segue
+aberta para aceite físico Android. Não houve distribuição de release ou e-mail real.
