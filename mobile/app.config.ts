@@ -1,16 +1,18 @@
 import type { ExpoConfig } from "expo/config";
+import { buildEnvironment } from "./config/build-environment.cjs";
+const environment = buildEnvironment(process.env);
 const config: ExpoConfig = {
-  name: "Simulados Bernardo · Prova",
+  name: environment.name,
   slug: "simulados-bernardo-mobile-proof",
   version: "0.0.1",
-  scheme: "simuladosbernardoproof",
+  scheme: environment.scheme,
   orientation: "portrait",
   userInterfaceStyle: "light",
   ios: {
     supportsTablet: true,
-    bundleIdentifier: "com.simuladosbernardo.proof",
+    bundleIdentifier: environment.identifier,
   },
-  android: { package: "com.simuladosbernardo.proof" },
+  android: { package: environment.identifier },
   plugins: [
     "expo-router",
     ["expo-secure-store", { configureAndroidBackup: true }],

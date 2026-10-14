@@ -69,3 +69,43 @@ A prova tem 57 testes de sessão/adaptadores/links, 7 testes de telas com depend
 Para encerrar o lote 11, preencher a matriz em **Android real, prioridade confirmada pelo usuário**: instalação/reabertura/reinstalação, sessão e armazenamento, suspensão/rede, SVG/áudio, leitor de tela, links e troca de conta. A disponibilidade do aparelho ainda aguarda confirmação. iOS fica preparado e requer sua matriz própria antes de um beta iOS. Emulador, testes com doubles, bundle e prebuild não substituem esse registro.
 
 A revisão dos 45 quizzes/213 perguntas, 45 habilidades/213 classificações e 30 rascunhos de missão segue PENDING; envio real Resend, deploy e distribuição continuam separados desta prova.
+
+## Preparação Android: ambientes separados
+
+A configuração aceita `MOBILE_APP_ENV=development` (padrão) ou `internal`.
+Os aplicativos usam nomes, esquemas e identificadores diferentes, permitindo
+instalação lado a lado e isolamento dos dados de sessão. Os identificadores
+`com.simuladosbernardo.proof` e `com.simuladosbernardo.proof.internal` continuam
+provisórios; o identificador definitivo da loja depende da titularidade.
+
+O ambiente interno exige `EXPO_PUBLIC_API_URL` e `EXPO_PUBLIC_WEB_ORIGIN`
+explícitos com HTTPS, sem credenciais, caminho, query ou fragmento. A configuração
+falha antes de export/prebuild quando faltam origens ou são usados placeholders
+`.invalid`. Isso valida a configuração, não a disponibilidade dos servidores.
+`MOBILE_APP_ENV` é configuração de build; mudar o identificador exige novo
+prebuild/build e reinstalação da variante correspondente.
+
+Para conferir o ambiente interno, configure as duas origens autorizadas no
+ambiente do processo e execute dentro de `mobile/`:
+
+```bash
+MOBILE_APP_ENV=internal npx expo config --type public
+MOBILE_APP_ENV=internal npm run export:android
+```
+
+Para gerar uma build de desenvolvimento local, com JDK 17, Android SDK 36,
+build-tools 36.0.0, NDK 27.1 e licenças previamente aceitas pelo responsável:
+
+```bash
+cd mobile
+npm ci
+npm run android
+```
+
+O comando gera/instala uma build debug e precisa de emulador ou aparelho
+conectado, além de Metro para executar o código. Não equivale a um APK interno
+independente do Metro. Não há assinatura de release, configuração de loja,
+servidor interno provisionado ou distribuição habilitada nesta preparação.
+A toolchain temporária da sessão anterior não foi preservada; não há evidência
+recuperada de APK concluído ou teste físico. O aceite Android da task 11 segue
+pendente enquanto esta parte independente de P1 avança.
