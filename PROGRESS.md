@@ -68,7 +68,7 @@ Sessão usa access em memória, refresh em SecureStore, marcador de instalação
 
 **Validação local da prova:** 57 testes do núcleo/adaptadores/links (34/20/3), 7 testes de telas e 12 casos reais cliente/Nest/PostgreSQL passaram; typecheck, compatibilidade SDK, bundles Android/iOS e prebuild têm registro no [guia](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/guia-prova-mobile.md). Auditoria dos arquivos de mídia validou 40 SVGs/18 WAVs, sem comprovar renderização/reprodução nativa. A regressão web de tipos/build, 30 testes de sessão e 48 HTTP passou após a extração dos tipos; os totais Chromium acima são o fechamento histórico do lote 10 até a CI desta entrega.
 
-**O lote 11 permanece aberto:** nenhum APK/IPA assinado ou aparelho físico foi validado. AVD Pixel_10a disponível não foi executado; iOS local exige macOS/Xcode ou um processo de build assinado definido. O usuário confirmou Android primeiro; a disponibilidade dos aparelhos ainda aguarda resposta. A matriz física Android é o aceite prioritário do lote 11, e iPhone fica para antes do beta iOS. A [matriz física e plano preliminar do beta](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-13-mobile-proof-and-beta-plan.md) precisam dessas evidências antes de confirmar a escolha Expo/reestimar. Não houve cloud build, distribuição, seed editorial, deploy ou envio real de e-mail.
+**O lote 11 permanece aberto:** APK debug x86_64 compilado e instalado no emulador Android 17 em 14/10/2026; abertura do login e navegação para recuperação verificadas, sem erros AndroidRuntime/ReactNativeJS no processo observado. Não houve validação em aparelho físico ou build de release; iOS local exige macOS/Xcode ou um processo de build assinado definido. O usuário confirmou Android primeiro; a disponibilidade dos aparelhos ainda aguarda resposta. A matriz física Android é o aceite prioritário do lote 11, e iPhone fica para antes do beta iOS. A [matriz física e plano preliminar do beta](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-13-mobile-proof-and-beta-plan.md) precisam dessas evidências antes de confirmar a escolha Expo/reestimar. Não houve cloud build, distribuição, seed editorial, deploy ou envio real de e-mail.
 
 ## Funcionalidades implementadas
 
@@ -208,3 +208,19 @@ servidores, APK distribuível e aceite físico permanecem pendentes. A PR #47 fo
 integrada à main. A pasta temporária anterior foi perdida e o trabalho publicado
 foi recuperado em checkout persistente. Nenhuma conclusão de build nativa foi
 presumida a partir do processo iniciado anteriormente. Task 11 segue aberta.
+
+
+### Execução no emulador Android — 14/10/2026
+
+APK debug local compilado com sucesso e instalado via ADB no `emulator-5554`
+(x86_64, Android 17). Metro no WSL acessível pelo Windows e encaminhado ao
+emulador na porta 8081. Verificadas a tela de login, a navegação para recuperação
+e o retorno ao login. Sem erro AndroidRuntime/ReactNativeJS no processo observado.
+Isso não valida autenticação, quizzes, SVG/áudio, reinstalação ou aparelho físico.
+
+A API sintética permanece pendente porque o motor do Docker Desktop estava
+indisponível. O rascunho local do modo persistente de fixture foi preservado fora
+do Git para validação quando o Docker estiver ativo; não foi publicado como fluxo
+aprovado. O APK e a captura local ficam em `mobile/android/app/build/outputs/apk/debug/`
+e `mobile/.proof/android-emulator-login.png` (artefatos ignorados). Não houve
+alteração em banco existente, envio de e-mail real ou distribuição de release.
