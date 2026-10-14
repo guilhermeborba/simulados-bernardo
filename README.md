@@ -8,7 +8,7 @@ Os lotes 01–10 do plano de evolução estão implementados e integrados à `ma
 
 A jornada de quizzes contempla 15 faixas: Infantil de 4/5 anos, 1º ao 9º ano, três séries do Ensino Médio e Técnico em Enfermagem. O catálogo preparado tem **45 quizzes/213 perguntas, 45 habilidades/213 classificações e 30 rascunhos de missão**, todos pendentes de revisão editorial (`PENDING`) e publicação. Conteúdo preparado não significa catálogo disponível aos alunos.
 
-A recuperação de senha está integrada ao Resend e permanece desativada por padrão na API. Envio real depende de habilitação, chave, remetente verificado e URL pública configurados no backend. Avaliação com pessoas, leitores de tela e aparelhos Android/iOS físicos ainda está pendente. A próxima tarefa é o **lote 11 — prova e planejamento mobile**; o app/beta do lote 12 ainda não foi iniciado.
+A recuperação de senha está integrada ao Resend e permanece desativada por padrão na API. Envio real depende de habilitação, chave, remetente verificado e URL pública configurados no backend. Avaliação com pessoas, leitores de tela e aparelhos Android/iOS físicos ainda está pendente. O **lote 11 está em andamento**, com [protótipo Expo e prova automatizada](mobile/README.md); a validação física continua pendente. O app/beta do lote 12 ainda não foi iniciado.
 
 ## Jornadas e rotas
 
@@ -26,6 +26,10 @@ A recuperação de senha está integrada ao Resend e permanece desativada por pa
 O BFF em `/api/backend/*` mantém tokens em cookies httpOnly e encaminha somente os contratos permitidos à API. Questões, correção, recompensas e autorização vêm do backend. As preferências de quizzes são salvas por conta na API; a trilha legada de simulados conserva sua escolha em localStorage. Imagens e áudio autenticados oferecem descrição/transcrição em falha; áudio não inicia automaticamente.
 
 Quizzes normais concedem 10 XP por quiz lógico por dia, até 50 XP/dia, no fuso America/Sao_Paulo. Revisões não concedem XP, progresso de missão ou itens. Simulados concluídos e prática por habilidade são apresentados separadamente; a área de acompanhamento não responde em nome do aluno.
+
+## Prova mobile
+
+O diretório [mobile/](mobile/README.md) contém a aplicação Expo isolada; [packages/api-contracts](packages/api-contracts/README.md) compartilha tipos públicos com o cliente web. Não há dependência React Native no build Next. Arquitetura provisória, mapa de telas, testes e gate em aparelhos reais estão no [plano mobile](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-13-mobile-proof-and-beta-plan.md).
 
 ## Desenvolvimento local
 
