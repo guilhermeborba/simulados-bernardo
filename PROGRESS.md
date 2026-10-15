@@ -208,3 +208,23 @@ servidores, APK distribuível e aceite físico permanecem pendentes. A PR #47 fo
 integrada à main. A pasta temporária anterior foi perdida e o trabalho publicado
 foi recuperado em checkout persistente. Nenhuma conclusão de build nativa foi
 presumida a partir do processo iniciado anteriormente. Task 11 segue aberta.
+
+
+### Acesso ao catálogo oficial no mobile — 14/10/2026
+
+O menu do aluno agora inclui Simulados, permitindo acessar a tela existente sem
+links manuais. Uma cópia local descartável do seed oficial da API foi conectada ao
+emulador e à web de desenvolvimento: 588 simulados/17.684 questões, sem alterar
+produção. Os 45 quizzes foram mantidos em DRAFT. Lista nativa, encaminhamento,
+login separado no navegador e abertura da primeira questão oficial foram
+verificados. TypeScript e os 7 testes de telas passaram.
+
+## APK interno Android via EAS — 15/10/2026
+
+Perfil `internal` preparado com API Railway e web Vercel informadas pelo
+responsável, vinculado ao projeto `@guilhermesborbas-team/simulados-bernardo`.
+O APK release independe do Metro e mantém identidade Android separada da prova
+local. Inclui a navegação para simulados da PR #50, ainda não integrada à main
+na criação desta branch. Typecheck, 60 testes de lógica e 7 testes de telas
+passaram. [Operação e instalação](mobile/docs/android-internal-eas.md).
+Layout provisório; design system completo web/mobile permanece futuro.

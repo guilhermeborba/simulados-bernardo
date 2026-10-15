@@ -174,6 +174,7 @@ export function Navigation() {
       ? [
           ["Hoje", "/"],
           ["Quizzes", "/quizzes"],
+          ["Simulados", "/simulations"],
           ["Progresso", "/progress"],
           ["Perfil", "/profile"],
         ]
