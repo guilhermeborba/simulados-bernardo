@@ -1,739 +1,381 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import {
-  startAttempt,
-  getAttemptQuestions,
-  submitAttemptAnswer,
-  finishAttempt,
-  ApiAttemptResult,
-} from '@/lib/apiClient';
-import {
-  mapApiQuestion,
-  buildAnswerBody,
-  parseStoredAnswer,
-  TemplateQuestion,
-} from '@/lib/questionMapper';
-import { DEFAULT_TIER, Tier, tierForSchoolYear } from '@/lib/tier';
-import { isEducacaoInfantil } from '@/lib/trilha';
-import MascoteGuia from './MascoteGuia';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ApiRequestError, finishAttempt, getAttemptQuestions, getAttemptResult, getMe, startAttempt, submitAttemptAnswer } from '@/lib/apiClient';
+import { mapApiQuestion } from '@/lib/questionMapper';
+import { getTimerDefault } from '@/lib/gizPreferences';
+import { answerIsComplete, feedbackContent, getAttemptDetails, makeAnswer, persistSnapshot, QUESTION_TIME_MS, questionsFromResult, readSnapshot, responseFeedback, restoreAnswers, SESSION_USER_KEY, type RunnerSnapshot } from '@/lib/gizRunner';
+import { AppShell, Badge, Button, FeedbackBlock, Icon, Modal, Progress, ScreenState } from './giz/ui';
+import QuestionAnswers from './giz/QuestionAnswers';
+import RunnerResult from './giz/RunnerResult';
+import './giz/runner.css';
 
-interface SimuladoRunnerProps {
-  simulationId: string;
-}
+type Screen = 'loading' | 'ready' | 'result' | 'review' | 'error';
 
-type RunnerState = 'loading' | 'ready' | 'finished' | 'error';
-
-export default function SimuladoRunner({ simulationId }: SimuladoRunnerProps) {
+export default function SimuladoRunner({ simulationId }: { simulationId: string }) {
   const router = useRouter();
-  const [state, setState] = useState<RunnerState>('loading');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [attemptId, setAttemptId] = useState<string | null>(null);
-  const [questions, setQuestions] = useState<TemplateQuestion[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<{ [questionId: string]: unknown }>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [result, setResult] = useState<ApiAttemptResult | null>(null);
-  const [tier, setTier] = useState<Tier>(DEFAULT_TIER);
-  const [heading, setHeading] = useState('Simulados Bernardo');
-  const [schoolYear, setSchoolYear] = useState<number | null>(null);
-  // Dica de ouro sob demanda, só na Educação Infantil — pergunta a pergunta,
-  // não fica salva entre uma questão e outra.
-  const [revealedTips, setRevealedTips] = useState<{ [questionId: string]: boolean }>({});
-  // Rodadas de 10 com pausa, só na Educação Infantil. roundsSeen evita pausar
-  // de novo se o aluno voltar e avançar pela mesma questão outra vez.
-  const [roundsSeen, setRoundsSeen] = useState<Set<number>>(new Set());
-  // 0 = boas-vindas antes da 1ª questão; 1/2 = pausa após a 10ª/20ª.
-  const [pauseRound, setPauseRound] = useState<0 | 1 | 2 | null>(null);
-  // Respostas já gravadas no servidor, para não reenviar o que não mudou.
-  const [savedAnswers, setSavedAnswers] = useState<{ [questionId: string]: unknown }>({});
-  const [startedAt, setStartedAt] = useState<number | null>(null);
-  const [elapsed, setElapsed] = useState(0);
-  const isInfantil = isEducacaoInfantil(schoolYear);
+  const params = useSearchParams();
+  const requestedAttempt = params.get('attemptId');
+  const requestedView = params.get('view');
+  const requestedTimer = params.get('timer');
+  const [screen, setScreen] = useState<Screen>('loading');
+  const [snapshot, setSnapshot] = useState<RunnerSnapshot | null>(null);
+  const snapshotRef = useRef<RunnerSnapshot | null>(null);
+  const [offline, setOffline] = useState(false);
+  const [storageOk, setStorageOk] = useState(true);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [exitOpen, setExitOpen] = useState(false);
+  const [timerAnnouncement, setTimerAnnouncement] = useState('');
+  const questionHeading = useRef<HTMLHeadingElement>(null);
+  const feedbackHeading = useRef<HTMLHeadingElement>(null);
+  const revision = useRef(0);
+  const syncing = useRef<Promise<void> | null>(null);
+  const screenRef = useRef(screen);
+  const exitRef = useRef(exitOpen);
+  const clockBase = useRef(0);
+  const confirmRef = useRef<(blank?: boolean) => void>(() => undefined);
+  screenRef.current = screen;
+  exitRef.current = exitOpen;
 
-  useEffect(() => {
-    void loadAttempt();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [simulationId]);
-
-  useEffect(() => {
-    if (state !== 'ready' || startedAt === null) return;
-
-    const tick = () => setElapsed(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
-    tick();
-    const id = window.setInterval(tick, 1000);
-    return () => window.clearInterval(id);
-  }, [state, startedAt]);
-
-  async function loadAttempt() {
-    setState('loading');
-    setCurrentIndex(0);
-    setUserAnswers({});
-    setSavedAnswers({});
-    setElapsed(0);
-    setResult(null);
-    setRevealedTips({});
-    setRoundsSeen(new Set());
-    setPauseRound(null);
-
-    try {
-      const attempt = await startAttempt(simulationId);
-      const apiQuestions = await getAttemptQuestions(attempt.id);
-      const mapped = apiQuestions.map(mapApiQuestion).sort((a, b) => a.order - b.order);
-
-      const attemptTier = tierForSchoolYear(attempt.simulation?.schoolYear);
-      setTier(attemptTier);
-      setSchoolYear(attempt.simulation?.schoolYear ?? null);
-      setHeading(
-        attemptTier === 'ludico' || !attempt.simulation
-          ? 'Simulados Bernardo'
-          : // No curso técnico o eixo temático identifica o simulado melhor que
-            // o subtítulo, que repete o nome do curso.
-            [
-              attempt.simulation.discipline.name,
-              attempt.simulation.topic ?? attempt.simulation.subtitle,
-            ]
-              .filter(Boolean)
-              .join(' · '),
-      );
-
-      const startedAtMs = attempt.startedAt ? Date.parse(attempt.startedAt) : Date.now();
-      setStartedAt(Number.isNaN(startedAtMs) ? Date.now() : startedAtMs);
-
-      // Retomada: recupera o que já foi respondido e abre na primeira questão
-      // em aberto, em vez de jogar o aluno de volta na questão 1.
-      const restored: { [questionId: string]: unknown } = {};
-      apiQuestions.forEach((apiQuestion) => {
-        const question = mapped.find((item) => item.id === apiQuestion.id);
-        if (!question) return;
-
-        const answer = parseStoredAnswer(question.type, apiQuestion.answer);
-        if (answer !== undefined) {
-          restored[question.id] = answer;
-        }
-      });
-
-      const firstUnanswered = mapped.findIndex((question) => !(question.id in restored));
-
-      // Boas-vindas do Bolinha só na primeira vez — quem retoma uma tentativa
-      // já em andamento cai direto na questão em aberto, sem repetir o "oi".
-      if (isEducacaoInfantil(attempt.simulation?.schoolYear) && Object.keys(restored).length === 0) {
-        setPauseRound(0);
-      }
-
-      setUserAnswers(restored);
-      setSavedAnswers(restored);
-      setCurrentIndex(firstUnanswered === -1 ? 0 : firstUnanswered);
-      setAttemptId(attempt.id);
-      setQuestions(mapped);
-      setState('ready');
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Erro ao carregar o simulado');
-      setState('error');
-    }
+  function commit(next: RunnerSnapshot) {
+    snapshotRef.current = next;
+    setSnapshot(next);
+    setStorageOk(persistSnapshot(next));
   }
 
-  function handleAnswerChange(questionId: string, answer: unknown) {
-    setUserAnswers((prev) => ({ ...prev, [questionId]: answer }));
-  }
-
-  /**
-   * Grava a resposta da questão informada, se houver e se tiver mudado desde
-   * o último envio. Como agora dá para pular de questão sem passar pelo botão
-   * de confirmar, toda saída de questão precisa persistir — senão a resposta
-   * ficaria só no estado local e a correção do servidor a trataria como vazia.
-   */
-  async function persistAnswer(index: number) {
-    if (!attemptId) return;
-
-    const question = questions[index];
-    if (!question) return;
-
-    const answer = userAnswers[question.id];
-    if (answer === undefined || answer === null || answer === '') return;
-    if (JSON.stringify(savedAnswers[question.id]) === JSON.stringify(answer)) return;
-
-    await submitAttemptAnswer(attemptId, question.id, buildAnswerBody(question.type, answer));
-    setSavedAnswers((prev) => ({ ...prev, [question.id]: answer }));
-  }
-
-  function goToIndex(index: number) {
-    setCurrentIndex(index);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  async function finishNow() {
-    if (!attemptId) return;
-
-    setErrorMessage('');
-    setIsSubmitting(true);
-
-    try {
-      await persistAnswer(currentIndex);
-      const finalResult = await finishAttempt(attemptId);
-      setResult(finalResult);
-      setState('finished');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Erro ao enviar resposta');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function handleConfirm() {
-    if (!attemptId) return;
-
-    if (currentIndex === questions.length - 1) {
-      await finishNow();
+  async function load() {
+    const loadRevision = ++revision.current;
+    if (requestedAttempt && snapshotRef.current?.attempt.id === requestedAttempt && snapshotRef.current.result) {
+      setScreen(requestedView === 'review' ? 'review' : 'result');
       return;
     }
-
-    setErrorMessage('');
-    setIsSubmitting(true);
-
+    setScreen('loading');
+    setError('');
     try {
-      await persistAnswer(currentIndex);
-
-      const completedCount = currentIndex + 1;
-      const isRoundBoundary =
-        isInfantil &&
-        completedCount % 10 === 0 &&
-        completedCount < questions.length &&
-        !roundsSeen.has(completedCount);
-
-      if (isRoundBoundary) {
-        setRoundsSeen((prev) => new Set(prev).add(completedCount));
-        setPauseRound((completedCount / 10) as 1 | 2);
-        return;
+      const user = await getMe();
+      try { sessionStorage.setItem(SESSION_USER_KEY, user.id); } catch { /* Browser storage is optional. */ }
+      const attempt = requestedAttempt ? await getAttemptDetails(requestedAttempt) : await startAttempt(simulationId);
+      if (attempt.simulationId !== simulationId) throw new Error('Esta tentativa pertence a outro simulado. Abra pelo seu histórico.');
+      const cached = readSnapshot(user.id, simulationId, attempt.id);
+      const result = attempt.status === 'FINISHED' ? await getAttemptResult(attempt.id) : undefined;
+      let apiQuestions;
+      if (result) {
+        let fallback = cached?.questions ?? [];
+        if (result.questions.some((question) => !Array.isArray(question.options))) {
+          try { fallback = await getAttemptQuestions(attempt.id); } catch { /* The authorized result remains usable if its legacy alternatives are unavailable. */ }
+        }
+        apiQuestions = questionsFromResult(result, fallback);
+      } else {
+        apiQuestions = (await getAttemptQuestions(attempt.id)).sort((a, b) => a.order - b.order);
       }
-
-      goToIndex(currentIndex + 1);
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Erro ao enviar resposta');
-    } finally {
-      setIsSubmitting(false);
+      const answers = restoreAnswers(apiQuestions, cached);
+      const firstOpen = apiQuestions.findIndex((question) => !answers[question.id]);
+      const currentIndex = Math.min(Math.max(cached?.currentIndex ?? (firstOpen < 0 ? apiQuestions.length - 1 : firstOpen), 0), Math.max(apiQuestions.length - 1, 0));
+      const next: RunnerSnapshot = {
+        version: 1, userId: user.id, attempt, questions: apiQuestions, answers,
+        drafts: cached?.drafts ?? {}, spentMs: cached?.spentMs ?? {}, currentIndex,
+        remainingMs: QUESTION_TIME_MS,
+        timerEnabled: requestedTimer === '0' ? false : requestedTimer === '1' ? true : cached?.timerEnabled ?? getTimerDefault(),
+        result,
+      };
+      if (loadRevision !== revision.current) return;
+      commit(next);
+      setOffline(false);
+      setScreen(result ? requestedView === 'review' ? 'review' : 'result' : 'ready');
+      clockBase.current = performance.now();
+      void synchronize().catch(() => undefined);
+    } catch (cause) {
+      if (loadRevision !== revision.current) return;
+      const disconnected = !navigator.onLine || cause instanceof TypeError;
+      let cached: RunnerSnapshot | null = null;
+      if (disconnected) {
+        try {
+          const userId = sessionStorage.getItem(SESSION_USER_KEY);
+          if (userId) cached = readSnapshot(userId, simulationId, requestedAttempt);
+        } catch { /* An offline cache requires the same verified browser session. */ }
+      }
+      if (cached && (!(requestedView === 'result' || requestedView === 'review') || cached.result)) {
+        commit({ ...cached, remainingMs: QUESTION_TIME_MS });
+        setOffline(true);
+        setScreen(cached.result ? requestedView === 'review' ? 'review' : 'result' : 'ready');
+        clockBase.current = performance.now();
+      } else {
+        setOffline(disconnected);
+        setError(disconnected ? 'Conecte-se para abrir este simulado. Respostas já salvas neste aparelho continuam guardadas.' : cause instanceof Error ? cause.message : 'Não foi possível abrir o simulado.');
+        setScreen('error');
+      }
     }
   }
 
-  async function handleNavigate(index: number) {
-    if (index === currentIndex || isSubmitting) return;
+  useEffect(() => {
+    void load();
+    return () => { revision.current += 1; };
+    // Query parameters also support direct links from history and review.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [simulationId, requestedAttempt, requestedView, requestedTimer]);
 
-    setErrorMessage('');
-    setIsSubmitting(true);
+  async function synchronize() {
+    if (syncing.current) return syncing.current;
+    const operation = (async () => {
+      const initial = snapshotRef.current;
+      if (!initial || initial.result) return;
+      for (const question of initial.questions) {
+        const current = snapshotRef.current;
+        if (!current || current.attempt.id !== initial.attempt.id) return;
+        const answer = current.answers[question.id];
+        if (!answer || answer.synced) continue;
+        let response;
+        try { response = await submitAttemptAnswer(current.attempt.id, question.id, answer.body); }
+        catch (cause) {
+          if (!(cause instanceof ApiRequestError) || cause.status !== 409) throw cause;
+          // Another tab/device may have confirmed first. Restore that response
+          // instead of repeatedly attempting to overwrite an immutable answer.
+          const refreshed = (await getAttemptQuestions(current.attempt.id)).sort((a, b) => a.order - b.order);
+          const latest = snapshotRef.current;
+          if (!latest || latest.attempt.id !== initial.attempt.id) return;
+          const answers = restoreAnswers(refreshed, latest);
+          if (!answers[question.id]?.synced) throw cause;
+          commit({ ...latest, questions: refreshed, answers });
+          continue;
+        }
+        const latest = snapshotRef.current;
+        if (!latest || latest.attempt.id !== initial.attempt.id) return;
+        commit({ ...latest, answers: { ...latest.answers, [question.id]: { ...answer, synced: true, feedback: responseFeedback(response) } } });
+      }
+      setOffline(false);
+    })();
+    syncing.current = operation;
+    try { await operation; } finally { if (syncing.current === operation) syncing.current = null; }
+  }
 
+  useEffect(() => {
+    const online = () => {
+      setOffline(false);
+      void synchronize().catch((cause) => setError(cause instanceof Error ? cause.message : 'Não foi possível sincronizar. Tente de novo.'));
+    };
+    const disconnected = () => setOffline(true);
+    const visibility = () => { clockBase.current = performance.now(); };
+    window.addEventListener('online', online);
+    window.addEventListener('offline', disconnected);
+    document.addEventListener('visibilitychange', visibility);
+    const interval = window.setInterval(() => {
+      const now = performance.now();
+      const elapsed = Math.min(Math.max(now - clockBase.current, 0), 1500);
+      clockBase.current = now;
+      const current = snapshotRef.current;
+      if (screenRef.current !== 'ready' || exitRef.current || document.hidden || !current) return;
+      const question = current.questions[current.currentIndex];
+      if (!question || current.answers[question.id]) return;
+      const remainingMs = current.timerEnabled ? Math.max(0, current.remainingMs - elapsed) : current.remainingMs;
+      const previousSeconds = Math.ceil(current.remainingMs / 1000);
+      const seconds = Math.ceil(remainingMs / 1000);
+      if (current.timerEnabled && previousSeconds > 30 && seconds <= 30) setTimerAnnouncement('Faltam 30 segundos.');
+      if (current.timerEnabled && previousSeconds > 10 && seconds <= 10) setTimerAnnouncement('Faltam 10 segundos.');
+      commit({ ...current, remainingMs, spentMs: { ...current.spentMs, [question.id]: (current.spentMs[question.id] ?? 0) + elapsed } });
+      if (current.timerEnabled && remainingMs === 0) confirmRef.current(true);
+    }, 1000);
+    return () => {
+      window.removeEventListener('online', online);
+      window.removeEventListener('offline', disconnected);
+      document.removeEventListener('visibilitychange', visibility);
+      window.clearInterval(interval);
+    };
+    // State is read through refs so rendering never restarts the clock.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const currentQuestion = snapshot?.questions[snapshot.currentIndex];
+  const confirmation = currentQuestion && snapshot?.answers[currentQuestion.id];
+  useEffect(() => {
+    if (screen !== 'ready' || exitOpen) return;
+    if (confirmation) feedbackHeading.current?.focus();
+    else questionHeading.current?.focus();
+    // Move focus when the real verdict arrives, without reacting to unrelated sync updates.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen, currentQuestion?.id, Boolean(confirmation), confirmation?.feedback?.isCorrect, exitOpen]);
+
+  function choose(value: unknown) {
+    const current = snapshotRef.current;
+    if (!current) return;
+    const question = current.questions[current.currentIndex];
+    if (current.answers[question.id]) return;
+    commit({ ...current, drafts: { ...current.drafts, [question.id]: value } });
+  }
+
+  function confirm(blank = false) {
+    const current = snapshotRef.current;
+    if (!current) return;
+    const question = current.questions[current.currentIndex];
+    if (!question || current.answers[question.id]) return;
+    const mapped = mapApiQuestion(question);
+    const value = current.drafts[question.id];
+    if (!blank && !answerIsComplete(mapped, value)) return;
+    const now = performance.now();
+    const partial = document.hidden || exitRef.current ? 0 : Math.min(Math.max(now - clockBase.current, 0), 1500);
+    clockBase.current = now;
+    commit({ ...current, spentMs: { ...current.spentMs, [question.id]: (current.spentMs[question.id] ?? 0) + partial }, answers: { ...current.answers, [question.id]: makeAnswer(mapped, value, blank) } });
+    setError('');
+    if (navigator.onLine) void synchronize().catch((cause) => {
+      if (cause instanceof TypeError || !navigator.onLine) setOffline(true);
+      else setError(cause instanceof Error ? cause.message : 'Sua resposta está no aparelho. Tente sincronizar de novo.');
+    });
+    else setOffline(true);
+  }
+  confirmRef.current = confirm;
+
+  function goTo(index: number) {
+    const current = snapshotRef.current;
+    if (!current || index < 0 || index >= current.questions.length) return;
+    commit({ ...current, currentIndex: index, remainingMs: QUESTION_TIME_MS });
+    setTimerAnnouncement('');
+    clockBase.current = performance.now();
+    window.scrollTo({ top: 0 });
+  }
+
+  async function showResult() {
+    const current = snapshotRef.current;
+    if (!current || busy) return;
+    setBusy(true);
+    setError('');
     try {
-      await persistAnswer(currentIndex);
-      goToIndex(index);
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Erro ao enviar resposta');
-    } finally {
-      setIsSubmitting(false);
+      await synchronize();
+      const latest = snapshotRef.current!;
+      if (latest.questions.some((question) => !latest.answers[question.id]?.synced)) throw new Error('Conecte-se para enviar as respostas salvas e ver seu resultado.');
+      let result;
+      try { result = await finishAttempt(current.attempt.id); }
+      catch (cause) {
+        // A finish response can be lost after the server commits. Recover that
+        // result before retrying a non-idempotent finish operation.
+        try { result = await getAttemptResult(current.attempt.id); } catch { throw cause; }
+      }
+      commit({ ...snapshotRef.current!, attempt: result.attempt, result });
+      setScreen('result');
+      router.replace(`/simulado/${simulationId}?attemptId=${encodeURIComponent(current.attempt.id)}&view=result`);
+    } catch (cause) {
+      if (cause instanceof TypeError || !navigator.onLine) setOffline(true);
+      setError(!navigator.onLine ? 'Seu progresso está guardado. Conecte-se para finalizar e ver o resultado.' : cause instanceof Error ? cause.message : 'Não foi possível finalizar. Tente de novo.');
+    } finally { setBusy(false); }
+  }
+
+  async function leave() {
+    if (!snapshotRef.current) return;
+    if (!storageOk) {
+      setBusy(true);
+      try { await synchronize(); } catch { setError('Não foi possível guardar as respostas. Tente sincronizar antes de sair.'); setBusy(false); return; }
+      setBusy(false);
     }
+    router.push('/');
   }
 
-  function handleBack() {
-    if (currentIndex > 0) {
-      void handleNavigate(currentIndex - 1);
-    }
+  function closeExit() {
+    const current = snapshotRef.current;
+    if (current) commit({ ...current, remainingMs: QUESTION_TIME_MS });
+    clockBase.current = performance.now();
+    setExitOpen(false);
   }
 
-  if (state === 'loading') {
-    return (
-      <div className="page-shell flex items-center justify-center">
-        <p style={{ color: 'var(--muted)' }}>Preparando seu simulado...</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const keyboard = (event: KeyboardEvent) => {
+      if (screen !== 'ready' || exitOpen || busy || event.altKey || event.ctrlKey || event.metaKey || event.repeat) return;
+      const target = event.target as HTMLElement;
+      if (target.closest('select, textarea, input:not([type="radio"]), [contenteditable="true"]')) return;
+      const current = snapshotRef.current;
+      if (!current) return;
+      const question = current.questions[current.currentIndex];
+      if (!question) return;
+      const answered = current.answers[question.id];
+      if (/^[a-d]$/i.test(event.key) && question.type === 'MULTIPLE_CHOICE' && !answered) {
+        const options = mapApiQuestion(question).options;
+        const option = options?.[event.key.toUpperCase().charCodeAt(0) - 65];
+        if (option) {
+          event.preventDefault();
+          choose(option.id);
+          document.querySelector<HTMLInputElement>(`input[name="question-${question.id}"][value="${CSS.escape(option.id)}"]`)?.focus();
+        }
+      }
+      if (event.key === 'Enter' && !target.closest('button, a, summary')) {
+        event.preventDefault();
+        if (!answered) confirm();
+        else if (current.attempt.immediateFeedback === true && !answered.synced && !offline) return;
+        else if (current.currentIndex === current.questions.length - 1) void showResult();
+        else goTo(current.currentIndex + 1);
+      }
+    };
+    window.addEventListener('keydown', keyboard);
+    return () => window.removeEventListener('keydown', keyboard);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen, exitOpen, busy, offline]);
 
-  if (state === 'error') {
-    return (
-      <div className="page-shell flex items-center justify-center">
-        <div className="max-w-md w-full text-center">
-          <p className="mb-4" style={{ color: 'var(--bubble-deep)' }}>{errorMessage}</p>
-          <button className="btn btn--grass" onClick={() => router.push('/')}>Voltar ao início</button>
-        </div>
-      </div>
-    );
-  }
+  if (screen === 'loading') return <AppShell title="Preparando o simulado" flow><ScreenState kind="loading" title="Preparando suas questões…" /></AppShell>;
+  if (screen === 'error') return <AppShell title="Seu simulado" backHref="/" flow><ScreenState kind={offline ? 'offline' : 'error'} message={error} action={<Button onClick={() => void load()}>Tentar de novo</Button>} /></AppShell>;
+  if ((screen === 'result' || screen === 'review') && snapshot?.result) return <RunnerResult snapshot={snapshot} review={screen === 'review'} onReview={() => router.replace(`/simulado/${simulationId}?attemptId=${encodeURIComponent(snapshot.attempt.id)}&view=review`)} onResult={() => router.replace(`/simulado/${simulationId}?attemptId=${encodeURIComponent(snapshot.attempt.id)}&view=result`)} onRetry={() => { snapshotRef.current = null; setScreen('loading'); router.replace(`/simulado/${simulationId}?timer=${snapshot.timerEnabled ? '1' : '0'}`); if (!requestedAttempt) void load(); }} onExit={() => router.push('/')} />;
 
-  if (state === 'finished' && result) {
-    return (
-      <ResultScreen
-        result={result}
-        tier={tier}
-        heading={heading}
-        isInfantil={isInfantil}
-        onRetry={loadAttempt}
-        onExit={() => router.push('/')}
-      />
-    );
-  }
+  if (!snapshot || snapshot.questions.length === 0) return <AppShell title="Seu simulado" backHref="/" flow><ScreenState kind="empty" title="As questões ainda não chegaram" message="Escolha outro simulado e volte para conferir." action={<a className="btn" href="/simulados">Escolher um simulado</a>} /></AppShell>;
 
-  if (pauseRound !== null) {
-    return (
-      <PausaRodada
-        round={pauseRound}
-        onContinue={() => {
-          const eraBoasVindas = pauseRound === 0;
-          setPauseRound(null);
-          // Na tela de boas-vindas ainda não se respondeu a 1ª questão — só
-          // dispensa a tela, sem pular pra questão seguinte.
-          if (!eraBoasVindas) goToIndex(currentIndex + 1);
-        }}
-      />
-    );
+  const rawQuestion = snapshot.questions[snapshot.currentIndex];
+  const question = mapApiQuestion(rawQuestion);
+  const record = snapshot.answers[question.id];
+  const value = record ? record.value : snapshot.drafts[question.id];
+  const confirmedCount = Object.keys(snapshot.answers).length;
+  const pending = Object.values(snapshot.answers).filter((answer) => !answer.synced).length;
+  const seconds = Math.ceil(snapshot.remainingMs / 1000);
+  const last = snapshot.currentIndex === snapshot.questions.length - 1;
+  const heading = snapshot.attempt.simulation?.title ?? 'Seu simulado';
+  const feedback = record?.feedback;
+  const feedbackTip = feedbackContent(feedback?.tip, rawQuestion.tip);
+  const feedbackFunFact = feedbackContent(feedback?.funFact, rawQuestion.funFact);
+  const blank = record?.value === -1;
+  const feedbackTitle = blank ? 'O tempo acabou' : feedback?.isCorrect === true ? 'Resposta certa!' : feedback?.isCorrect === false ? 'Quase! Vamos olhar a dica?' : 'Resposta guardada!';
+  let streak = 0;
+  for (let i = snapshot.currentIndex; i >= 0; i -= 1) {
+    if (snapshot.answers[snapshot.questions[i].id]?.feedback?.isCorrect !== true) break;
+    streak += 1;
   }
-
-  const question = questions[currentIndex];
-  const userAnswer = userAnswers[question.id];
-  const hasAnswer = userAnswer !== undefined && userAnswer !== null && userAnswer !== '';
-  const isLast = currentIndex === questions.length - 1;
-  const progress = ((currentIndex + 1) / questions.length) * 100;
-  const answeredCount = questions.filter((q) => q.id in userAnswers).length;
-  // Com o navegador dá para responder tudo e parar no meio da prova, então a
-  // saída não pode existir só na última questão.
-  const canFinishFromHere = tier !== 'ludico' && !isLast && answeredCount === questions.length;
+  const retrySync = () => { setError(''); setBusy(true); void synchronize().catch((cause) => setError(cause instanceof Error ? cause.message : 'Não foi possível sincronizar.')).finally(() => setBusy(false)); };
+  const waitingFeedback = snapshot.attempt.immediateFeedback === true && Boolean(record && !record.synced && !offline);
+  const controls = <Button disabled={busy || waitingFeedback || (!record && !answerIsComplete(question, value))} onClick={() => record ? last ? void showResult() : goTo(snapshot.currentIndex + 1) : confirm()}>{busy ? 'Enviando…' : waitingFeedback ? 'Conferindo…' : record ? last ? 'Ver resultado' : 'Próxima' : 'Confirmar'}</Button>;
 
   return (
-    <div data-tier={tier} className="sim-shell page-shell flex flex-col px-4 py-6 md:py-8">
-      <div className="flex justify-between items-center mb-5 w-full max-w-2xl mx-auto gap-3">
-        <button className="sim-btn sim-btn--ghost text-sm" onClick={() => router.push('/')}>
-          ‹ Sair
-        </button>
-        <div className="flex items-center gap-2 min-w-0">
-          {tier === 'ludico' && <span className="text-xl">📚</span>}
-          <span className="sim-brand font-bold text-base truncate">{heading}</span>
+    <AppShell title={heading} flow actions={<Button variant="secondary" onClick={() => { exitRef.current = true; setExitOpen(true); }}>Sair do simulado</Button>}>
+      <div className="giz-runner">
+        <header className="giz-runner-head">
+          <div className="giz-runner-head__row"><button className="giz-exit-button" onClick={() => { exitRef.current = true; setExitOpen(true); }} aria-label="Sair do simulado"><Icon name="x" /></button><div><strong>{heading}</strong><span>Uma descoberta por vez</span></div><div className="giz-mobile-timer">{snapshot.timerEnabled && <Timer seconds={seconds} />}</div></div>
+          <div className="giz-mobile-progress"><Progress value={confirmedCount} max={snapshot.questions.length} /><span>{snapshot.currentIndex + 1} de {snapshot.questions.length}</span></div>
+        </header>
+        <div className="sr-only" aria-live="polite" aria-atomic="true">{timerAnnouncement}</div>
+        <div className="giz-runner-grid">
+          <section className="card giz-question-card">
+            <span className="giz-question-label">Questão {snapshot.currentIndex + 1} de {snapshot.questions.length}</span>
+            <h1 ref={questionHeading} tabIndex={-1}>{question.text}</h1>
+            <QuestionAnswers question={question} value={value} onChange={choose} locked={Boolean(record)} isCorrect={feedback?.isCorrect} correctAnswer={feedback?.correctAnswer} />
+            {(!snapshot.timerEnabled || offline || !storageOk || error) && <div className="giz-runner-notices">
+              {!snapshot.timerEnabled && <p className="muted"><Icon name="clock" size={20} />Sem limite de tempo</p>}
+              {offline && <p role="status"><Icon name="alert" size={20} />{storageOk ? 'Sem conexão. Seu progresso está salvo neste aparelho.' : 'Sem conexão. Mantenha esta página aberta para preservar as respostas.'}</p>}
+              {!storageOk && <p role="alert">Este navegador não conseguiu guardar o progresso no aparelho. {pending ? 'Conecte-se para sincronizar antes de sair.' : 'As respostas enviadas continuam salvas na sua conta.'}</p>}
+              {error && <p role="alert">{error}</p>}
+              {(pending > 0 || error) && <Button variant="text" disabled={busy} onClick={retrySync}>Tentar sincronizar</Button>}
+            </div>}
+            {record && <section className="giz-question-feedback" aria-live="polite" aria-labelledby="question-feedback-title">
+              <div className="giz-feedback-heading"><Icon name={blank ? 'clock' : feedback?.isCorrect === false ? 'bulb' : 'check'} /><h2 id="question-feedback-title" ref={feedbackHeading} tabIndex={-1}>{feedbackTitle}</h2></div>
+              {feedback ? <>{feedback.isCorrect && feedbackFunFact && <FeedbackBlock correct>{feedbackFunFact}</FeedbackBlock>}{!feedback.isCorrect && feedbackTip && <FeedbackBlock correct={false}>{feedbackTip}</FeedbackBlock>}{feedback.explanation && <details className="giz-answer-explanation"><summary>Entenda a resposta</summary><p>{feedback.explanation}</p></details>}</> : <p>{blank ? 'Esta questão ficou em branco. ' : ''}{record.synced ? 'Você verá a correção e as dicas ao finalizar o simulado.' : 'Sua resposta está neste aparelho e será enviada quando a conexão voltar.'}</p>}
+            </section>}
+            <div className="giz-desktop-controls">{controls}</div>
+          </section>
+          <aside className="giz-runner-aside" aria-label="Progresso do simulado">
+            <section className="giz-progress-card">{snapshot.timerEnabled && <Timer seconds={seconds} large />}<div><h2>Questão {snapshot.currentIndex + 1} de {snapshot.questions.length}</h2><Progress value={confirmedCount} max={snapshot.questions.length} /><p>{snapshot.timerEnabled ? record ? 'Resposta confirmada' : 'Tempo desta questão' : 'Sem limite de tempo'}</p></div></section>
+            <section className="card"><h2>Mapa das questões</h2><div className="giz-question-map">{snapshot.questions.map((item, index) => { const answer = snapshot.answers[item.id]; const firstPending = snapshot.questions.findIndex((q) => !snapshot.answers[q.id]); const status = answer?.value === -1 ? 'em branco' : answer?.feedback?.isCorrect === true ? 'certa' : answer?.feedback?.isCorrect === false ? 'para revisar' : answer ? 'respondida' : 'a responder'; const icon = answer?.value === -1 ? 'clock' : answer?.feedback?.isCorrect === true ? 'check' : answer?.feedback?.isCorrect === false ? 'x' : 'book'; return <button key={item.id} className="giz-map-cell" disabled={!answer && firstPending !== index} data-state={index === snapshot.currentIndex ? 'current' : answer?.value === -1 ? 'blank' : answer?.feedback ? answer.feedback.isCorrect ? 'correct' : 'wrong' : answer ? 'answered' : 'pending'} aria-current={index === snapshot.currentIndex ? 'step' : undefined} aria-label={`Questão ${index + 1}, ${index === snapshot.currentIndex ? 'atual, ' : ''}${status}`} onClick={() => goTo(index)}><span>{index + 1}</span>{answer && <Icon name={icon} size={20} />}</button>; })}</div><div className="muted giz-map-legend"><span>Atual</span><span><Icon name="check" size={20} />Certa</span><span><Icon name="x" size={20} />Revisar</span><span><Icon name="clock" size={20} />Em branco</span><span><Icon name="book" size={20} />Respondida</span></div></section>
+            <section className="card"><h2>Seu progresso</h2><p><strong className="giz-progress-number">{confirmedCount}</strong> de {snapshot.questions.length} confirmadas</p>{streak >= 2 && <Badge tone="ok"><Icon name="flame" size={20} />{streak} acertos seguidos</Badge>}<p className="muted">Cada resposta é uma nova descoberta.</p></section>
+          </aside>
         </div>
-        {tier === 'ludico' ? (
-          <span className="sim-step hidden sm:block flex-shrink-0">
-            Questão {currentIndex + 1}
-          </span>
-        ) : (
-          <span
-            className="sim-timer flex-shrink-0"
-            title="Tempo desde o início da tentativa"
-            aria-label={`Tempo decorrido: ${formatDuration(elapsed)}`}
-          >
-            {formatDuration(elapsed)}
-          </span>
-        )}
+        <div className="giz-mobile-controls" data-feedback={Boolean(record)}>{record && <p><Icon name={blank ? 'clock' : 'check'} size={20} />{feedbackTitle}</p>}{controls}</div>
       </div>
-
-      <div className="w-full max-w-2xl mx-auto mb-5 flex items-center gap-3">
-        <div className="sim-track">
-          <div className="sim-track-fill" style={{ width: `${progress}%` }} />
-        </div>
-        <span className="sim-count">
-          {currentIndex + 1}/{questions.length}
-        </span>
-      </div>
-
-      <div className="sim-card w-full max-w-2xl mx-auto">
-        <div className="sim-chip">
-          {tier === 'ludico' ? `+ Questão ${currentIndex + 1}` : `Questão ${currentIndex + 1}`}
-        </div>
-
-        <p className="sim-statement">{question.text}</p>
-
-        {isInfantil && question.tip && (
-          <div className="mb-5">
-            {revealedTips[question.id] ? (
-              <div className="sim-tip">💛 {question.tip}</div>
-            ) : (
-              <button
-                className="sim-btn sim-btn--ghost text-sm"
-                onClick={() => setRevealedTips((prev) => ({ ...prev, [question.id]: true }))}
-              >
-                💛 Preciso de uma dica
-              </button>
-            )}
-          </div>
-        )}
-
-        {question.type === 'multiple_choice' && question.options && (
-          <div className="flex flex-col gap-2.5 mb-6">
-            {question.options.map((option) => {
-              const isSelected = userAnswer === option.id;
-              return (
-                <button
-                  key={option.id}
-                  className="sim-opt"
-                  aria-pressed={isSelected}
-                  onClick={() => handleAnswerChange(question.id, option.id)}
-                >
-                  <span className="sim-bullet">{option.id.toUpperCase()}</span>
-                  {option.text}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {question.type === 'true_false_multiple' && question.items && (
-          <div className="flex flex-col gap-2.5 mb-6">
-            {question.items.map((item) => {
-              const selectedValue = (userAnswer as Record<string, string> | undefined)?.[item.id];
-              return (
-                <div key={item.id} className="sim-row">
-                  <span className="sim-row-text">{item.text}</span>
-                  <div className="flex gap-2">
-                    {['V', 'F'].map((opt) => (
-                      <button
-                        key={opt}
-                        className="sim-vf"
-                        data-value={opt}
-                        aria-pressed={selectedValue === opt}
-                        onClick={() =>
-                          handleAnswerChange(question.id, {
-                            ...(userAnswer as Record<string, string>),
-                            [item.id]: opt,
-                          })
-                        }
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {question.type === 'matching' && question.pairs && (
-          <div className="flex flex-col gap-2.5 mb-6">
-            {question.pairs.map((pair) => {
-              const selected = (userAnswer as Record<string, string> | undefined)?.[pair.left.id];
-              return (
-                <div key={pair.left.id} className="sim-row">
-                  <span className="sim-row-text">{pair.left.text}</span>
-                  <select
-                    className="sim-select"
-                    data-filled={Boolean(selected)}
-                    value={selected || ''}
-                    onChange={(e) =>
-                      handleAnswerChange(question.id, {
-                        ...(userAnswer as Record<string, string>),
-                        [pair.left.id]: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">— Escolha —</option>
-                    {pair.right.map((opt) => (
-                      <option key={opt.id} value={opt.id}>{opt.text}</option>
-                    ))}
-                  </select>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {question.type === 'classification' && question.items && (
-          <div className="flex flex-col gap-2.5 mb-6">
-            {question.items.map((item) => {
-              const selectedValue = (userAnswer as Record<string, string> | undefined)?.[item.id];
-              return (
-                <div key={item.id} className="sim-row">
-                  <span className="sim-row-text">{item.text}</span>
-                  <div className="flex gap-2">
-                    {['C', 'P'].map((opt) => (
-                      <button
-                        key={opt}
-                        className="sim-vf"
-                        aria-pressed={selectedValue === opt}
-                        onClick={() =>
-                          handleAnswerChange(question.id, {
-                            ...(userAnswer as Record<string, string>),
-                            [item.id]: opt,
-                          })
-                        }
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        <div className="flex flex-col gap-3 pt-4 sim-divider">
-          {errorMessage && <p className="sim-error">{errorMessage}</p>}
-
-          {tier === 'ludico' ? (
-            <div className="flex gap-[3px]">
-              {questions.map((q, i) => (
-                <div
-                  key={q.id}
-                  className="sim-seg"
-                  data-state={i === currentIndex ? 'current' : q.id in userAnswers ? 'answered' : 'pending'}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="sim-nav" role="group" aria-label="Ir para uma questão">
-              {questions.map((q, i) => (
-                <button
-                  key={q.id}
-                  className="sim-nav-item"
-                  data-state={i === currentIndex ? 'current' : q.id in userAnswers ? 'answered' : 'pending'}
-                  aria-current={i === currentIndex ? 'true' : undefined}
-                  aria-label={`Questão ${i + 1}${q.id in userAnswers ? ', respondida' : ''}`}
-                  onClick={() => void handleNavigate(i)}
-                >
-                  {i + 1}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            {currentIndex > 0 ? (
-              <button className="sim-btn sim-btn--ghost" onClick={handleBack} disabled={isSubmitting}>
-                ← Anterior
-              </button>
-            ) : <div />}
-
-            <div className="flex items-center gap-3 ml-auto">
-              {tier !== 'ludico' && (
-                <span className="sim-answered-count">
-                  {answeredCount} de {questions.length} respondidas
-                </span>
-              )}
-
-              {canFinishFromHere && (
-                <button
-                  className="sim-btn sim-btn--ghost"
-                  onClick={() => void finishNow()}
-                  disabled={isSubmitting}
-                >
-                  {finishLabel(tier)}
-                </button>
-              )}
-
-              <button
-                className="sim-btn sim-btn--primary"
-                onClick={handleConfirm}
-                disabled={!hasAnswer || isSubmitting}
-              >
-                {isSubmitting ? 'Enviando...' : isLast ? finishLabel(tier) : confirmLabel(tier)}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      {exitOpen && <Modal title="Sair do simulado?" onClose={closeExit}><p>{storageOk ? 'Seu progresso fica salvo. Você pode continuar de onde parou.' : 'O navegador não conseguiu guardar as respostas no aparelho. Vamos sincronizar antes de sair.'}</p><div className="stack">{error && <p role="alert">{error}</p>}<Button onClick={closeExit}>Continuar simulado</Button><Button variant="secondary" onClick={() => void leave()} disabled={busy}>{busy ? 'Guardando…' : 'Sair e continuar depois'}</Button></div></Modal>}
+    </AppShell>
   );
 }
 
-/**
- * Falas do Bolinha nas pausas — hoje são fixas porque só existe um simulado
- * de Educação Infantil; se um dia houver mascotes/falas por campo, isso vira
- * conteúdo vindo da API em vez de texto fixo aqui.
- */
-const FALAS_BOLINHA: Record<0 | 1 | 2, { titulo: string; texto: string; botao: string }> = {
-  0: {
-    titulo: 'Oi, oi! 🐶',
-    texto: 'Vamos brincar de responder um montão de perguntas sobre você e sua família?',
-    botao: '✦ Vamos começar!',
-  },
-  1: {
-    titulo: 'Você terminou a primeira rodada! 🎉',
-    texto: 'Vamos dar um pulinho e latir três vezes: au au au! Agora bora continuar!',
-    botao: '✦ Vamos continuar!',
-  },
-  2: {
-    titulo: 'Você terminou a segunda rodada! 🎉',
-    texto: 'Vamos esticar bem alto os bracinhos e respirar fundo três vezes! Ahhh, que bom!',
-    botao: '✦ Vamos continuar!',
-  },
-};
-
-/** Tela de boas-vindas (antes da 1ª questão) e de pausa entre rodadas — só na Educação Infantil. */
-function PausaRodada({ round, onContinue }: { round: 0 | 1 | 2; onContinue: () => void }) {
-  const fala = FALAS_BOLINHA[round];
-
-  return (
-    <div className="page-shell flex items-center justify-center px-4 py-6">
-      <div className="max-w-md w-full text-center flex flex-col items-center gap-4">
-        <MascoteGuia variant="bolinha" celebrando={round !== 0} size={160} />
-        <h2 className="text-2xl" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
-          {fala.titulo}
-        </h2>
-        <p style={{ color: 'var(--muted)' }}>{fala.texto}</p>
-        <button className="btn btn--grass btn--lg mt-2" onClick={onContinue}>
-          {fala.botao}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/** Sem horas até 59:59; com horas a partir daí — prova longa passa de uma hora. */
-function formatDuration(totalSeconds: number) {
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  const pad = (value: number) => String(value).padStart(2, '0');
-
-  return hours > 0 ? `${hours}:${pad(minutes)}:${pad(seconds)}` : `${pad(minutes)}:${pad(seconds)}`;
-}
-
-function confirmLabel(tier: Tier) {
-  return tier === 'exame' ? 'Responder' : 'Confirmar';
-}
-
-function finishLabel(tier: Tier) {
-  return tier === 'ludico' ? 'Finalizar ✓' : 'Finalizar';
-}
-
-function ResultScreen({
-  result,
-  tier,
-  heading,
-  isInfantil,
-  onRetry,
-  onExit,
-}: {
-  result: ApiAttemptResult;
-  tier: Tier;
-  heading: string;
-  isInfantil: boolean;
-  onRetry: () => void;
-  onExit: () => void;
-}) {
-  const score = Number(result.attempt.score ?? 0);
-  const maxScore = Number(result.attempt.maxScore);
-  const pct = Math.round((score / maxScore) * 100);
-  const circumference = 2 * Math.PI * 44;
-  const strokeDash = (score / maxScore) * circumference;
-  const feedback = getFeedback(pct, tier);
-
-  return (
-    <div data-tier={tier} className="sim-shell page-shell">
-      <div className="max-w-4xl mx-auto">
-        {isInfantil && (
-          <div className="flex flex-col items-center text-center mb-6 gap-2">
-            <MascoteGuia variant="bolinha" celebrando size={140} />
-            <p className="text-lg font-bold" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
-              Uau, você respondeu tudo! Você é super esperto(a)! Au au au de festa! 🐶🎉
-            </p>
-          </div>
-        )}
-
-        <div className="flex justify-between items-center mb-8 gap-3">
-          <span className="sim-brand text-xl font-bold truncate">
-            {tier === 'ludico' ? '📚 Resultado' : heading}
-          </span>
-          <span className="sim-chip flex-shrink-0" style={{ marginBottom: 0 }}>Concluído</span>
-        </div>
-
-        <div className="flex flex-col md:flex-row gap-6 items-start">
-          <div className="flex-1 flex flex-col gap-5 w-full">
-            <div className="sim-card flex items-center gap-6">
-              <svg width="110" height="110" viewBox="0 0 100 100" style={{ flexShrink: 0, transform: 'rotate(-90deg)' }}>
-                <circle cx="50" cy="50" r="44" fill="none" stroke="var(--t-line)" strokeWidth="10" />
-                <circle cx="50" cy="50" r="44" fill="none" stroke="var(--t-accent)" strokeWidth="10" strokeLinecap="round"
-                        strokeDasharray={`${strokeDash} ${circumference}`} />
-                <text x="50" y="50" textAnchor="middle" dominantBaseline="central"
-                      style={{ transform: 'rotate(90deg)', transformOrigin: '50px 50px', fontFamily: 'var(--t-font-ui)', fill: 'var(--t-ink)' }}>
-                  <tspan fontSize="24" fontWeight="800">{score}</tspan>
-                  <tspan fontSize="13" fill="var(--t-muted)"> /{maxScore}</tspan>
-                </text>
-              </svg>
-
-              <div>
-                <h2 className="sim-brand text-2xl mb-1">{feedback.title}</h2>
-                <p className="text-sm mb-3" style={{ color: 'var(--t-muted)', lineHeight: 1.5 }}>
-                  {feedback.message}
-                </p>
-                <div className="sim-chip" style={{ marginBottom: 0 }}>
-                  {pct}% de aproveitamento
-                </div>
-              </div>
-            </div>
-
-            <div className="sim-card">
-              <h3 className="sim-brand text-lg mb-4">
-                {tier === 'ludico' ? '📊 Análise detalhada' : 'Análise detalhada'}
-              </h3>
-              <div className="flex flex-col">
-                {result.questions.map((question, idx) => (
-                  <div key={question.id}>
-                    <div className="flex items-center gap-3 py-2.5">
-                      <div className="sim-mark" data-correct={question.isCorrect}>
-                        {tier === 'ludico'
-                          ? (question.isCorrect ? '✅' : '❌')
-                          : (question.isCorrect ? '✓' : '✕')}
-                      </div>
-                      <div className="flex-1 text-sm font-semibold" style={{ color: 'var(--t-ink-soft)' }}>
-                        Questão {idx + 1}
-                      </div>
-                      <div className="text-sm font-bold" style={{ color: question.isCorrect ? 'var(--t-correct)' : 'var(--t-muted)' }}>
-                        {question.isCorrect ? `+${question.pointsEarned} pt` : '0 pt'}
-                      </div>
-                    </div>
-                    {!question.isCorrect && question.tip && (
-                      <div className="sim-tip">
-                        {tier === 'ludico' ? '💡 ' : ''}{question.tip}
-                      </div>
-                    )}
-                    {question.funFact && (
-                      <div className="sim-tip sim-tip--funfact">
-                        {tier === 'ludico' ? '🌟 Você sabia? ' : 'Você sabia? '}{question.funFact}
-                      </div>
-                    )}
-                    {idx < result.questions.length - 1 && <div style={{ height: 1, background: 'var(--t-line)' }} />}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="w-full md:w-60 flex-shrink-0 flex flex-col gap-3">
-            <div className="sim-card flex flex-col gap-2.5">
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--t-muted)' }}>
-                O que fazer agora?
-              </p>
-              <button className="sim-btn sim-btn--primary w-full" onClick={onRetry}>
-                {tier === 'ludico' ? '🔄 Refazer simulado' : 'Refazer simulado'}
-              </button>
-              <button className="sim-btn sim-btn--ghost w-full" onClick={onExit}>
-                {tier === 'ludico' ? '🏠 Voltar ao início' : 'Voltar ao início'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function getFeedback(percentage: number, tier: Tier) {
-  // Na faixa de prova o retorno é factual: quem estuda para uma avaliação real
-  // quer saber onde está, não ser parabenizado.
-  if (tier === 'exame') {
-    if (percentage >= 90) return { title: 'Desempenho alto', message: 'Conteúdo dominado. Revise apenas os itens marcados como incorretos.' };
-    if (percentage >= 70) return { title: 'Desempenho satisfatório', message: 'Base sólida, com lacunas pontuais. Priorize os assuntos das questões erradas.' };
-    if (percentage >= 50) return { title: 'Desempenho parcial', message: 'Metade do conteúdo ainda não está consolidada. Recomendado revisar antes de repetir.' };
-    return { title: 'Desempenho abaixo do esperado', message: 'Retome o material do módulo antes de uma nova tentativa.' };
-  }
-
-  if (tier === 'jovem') {
-    if (percentage === 100) return { title: 'Gabaritou', message: 'Acertou todas. Esse conteúdo está dominado.' };
-    if (percentage >= 90) return { title: 'Muito bom', message: 'Faltou pouco para o total. Dá uma olhada no que escapou.' };
-    if (percentage >= 70) return { title: 'Bom resultado', message: 'Você está no caminho. Foca nos assuntos das questões que errou.' };
-    if (percentage >= 50) return { title: 'Dá pra melhorar', message: 'Metade do conteúdo ainda precisa de revisão.' };
-    return { title: 'Vale revisar', message: 'Retoma a matéria e tenta de novo — a segunda vez costuma render bem mais.' };
-  }
-
-  if (percentage === 100) return { title: '🏆 Perfeição Total', message: 'Você é um verdadeiro campeão! Acertou TODAS as questões! 🌟' };
-  if (percentage >= 90) return { title: '⭐ Excelente', message: 'Você é incrível! Apenas um detalhe faltou para a perfeição! 🚀' };
-  if (percentage >= 70) return { title: '👏 Muito Bom', message: 'Parabéns! Você está no caminho certo! Siga estudando! 📚' };
-  if (percentage >= 50) return { title: '💪 Bom Início', message: 'Você está aprendendo! Continue praticando para melhorar! 🎯' };
-  return { title: '🌱 Próxima Vez', message: 'Você está no caminho! Revise os conteúdos e tente novamente! 💡' };
+function Timer({ seconds, large = false }: { seconds: number; large?: boolean }) {
+  return <div className="giz-timer" data-large={large} data-urgent={seconds <= 10} role="img" aria-label="Tempo da questão"><svg viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="24" /><circle className="giz-timer__fill" cx="28" cy="28" r="24" pathLength="45" strokeDasharray={`${seconds} 45`} /></svg><span aria-hidden="true">{seconds}</span></div>;
 }

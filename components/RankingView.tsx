@@ -1,253 +1,130 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import {
-  getMinhaPontuacao,
-  getMyTurmas,
-  getRankingDaTurma,
-  ApiLinhaDoRanking,
-  ApiMinhaPontuacao,
-  ApiRanking,
-  ApiTurma,
-} from '@/lib/apiClient';
+import { getMinhaPontuacao, getMyTurmas, getRankingDaTurma, ApiLinhaDoRanking, ApiMinhaPontuacao, ApiRanking, ApiTurma } from '@/lib/apiClient';
+import { AppShell, Badge, Button, Icon, ScreenState, Tuca } from '@/components/giz/ui';
+import '@/components/giz/tracking.css';
 
-const MEDALHAS = ['🥇', '🥈', '🥉'];
+/** Nomes de colegas nunca devem revelar sobrenomes completos ou e-mails. */
+function publicName(name: string) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (!words.length || name.includes('@')) return 'Estudante';
+  return words.length > 1 ? `${words[0]} ${Array.from(words[words.length - 1])[0]}.` : words[0];
+}
 
 export default function RankingView() {
   const router = useRouter();
-  const { user, isLoading: carregandoSessao } = useAuth();
-  const [pontuacao, setPontuacao] = useState<ApiMinhaPontuacao | null>(null);
-  const [turmas, setTurmas] = useState<ApiTurma[] | null>(null);
+  const { user, isLoading: sessionLoading } = useAuth();
+  const [score, setScore] = useState<ApiMinhaPontuacao | null>(null);
+  const [classes, setClasses] = useState<ApiTurma[]>([]);
+  const [classId, setClassId] = useState('');
   const [ranking, setRanking] = useState<ApiRanking | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
+  const [scope, setScope] = useState<'class' | 'general'>('class');
+  const [isLoading, setIsLoading] = useState(true);
+  const [rankingLoading, setRankingLoading] = useState(false);
+  const [failure, setFailure] = useState<'error' | 'offline' | null>(null);
+  const [rankingFailure, setRankingFailure] = useState<'error' | 'offline' | null>(null);
+  const [retry, setRetry] = useState(0);
 
-  // A pontuação é de quem está logado. Sem sessão, mandar para o login é mais
-  // honesto que dizer "não foi possível carregar" — o problema não é uma falha.
+  const load = useCallback(async () => {
+    setIsLoading(true);
+    setFailure(null);
+    try {
+      const [myScore, myClasses] = await Promise.all([getMinhaPontuacao(), getMyTurmas()]);
+      setScore(myScore);
+      setClasses(myClasses);
+      setClassId((current) => myClasses.some((item) => item.id === current) ? current : myClasses[0]?.id ?? '');
+    } catch {
+      setFailure(navigator.onLine ? 'error' : 'offline');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    if (carregandoSessao || user) return;
-    router.replace(`/login?returnTo=${encodeURIComponent('/ranking')}`);
-  }, [carregandoSessao, user, router]);
+    if (sessionLoading) return;
+    if (!user) {
+      router.replace(`/login?returnTo=${encodeURIComponent('/ranking')}`);
+      return;
+    }
+    void load();
+  }, [sessionLoading, user, router, load]);
 
   useEffect(() => {
-    if (carregandoSessao || !user) return;
+    if (!classId || !user) return;
+    let active = true;
+    setRanking(null);
+    setRankingLoading(true);
+    setRankingFailure(null);
+    getRankingDaTurma(classId)
+      .then((value) => { if (active) setRanking(value); })
+      .catch(() => { if (active) setRankingFailure(navigator.onLine ? 'error' : 'offline'); })
+      .finally(() => { if (active) setRankingLoading(false); });
+    return () => { active = false; };
+  }, [classId, user, retry]);
 
-    Promise.all([getMinhaPontuacao(), getMyTurmas()])
-      .then(([minha, minhasTurmas]) => {
-        setPontuacao(minha);
-        setTurmas(minhasTurmas);
-        return minhasTurmas[0]
-          ? getRankingDaTurma(minhasTurmas[0].id).then(setRanking)
-          : null;
-      })
-      .catch(() => setErro('Não foi possível carregar sua pontuação.'));
-  }, [carregandoSessao, user]);
-
-  return (
-    <div className="page-shell flex flex-col px-4 py-6 md:py-8">
-      <div className="flex justify-between items-center mb-6 w-full max-w-2xl mx-auto">
-        <Link href="/" className="btn btn--ghost text-sm" style={{ padding: '8px 16px' }}>
-          ‹ Voltar
-        </Link>
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🏆</span>
-          <span className="font-bold text-base" style={{ fontFamily: 'var(--font-fredoka)', color: 'var(--ink)' }}>
-            Pontuação
-          </span>
+  return <AppShell title="Ranking" subtitle="Cada simulado é uma chance de aprender um pouco mais.">
+    {(sessionLoading || isLoading || !user) && !failure && <ScreenState kind="loading" title="Buscando sua pontuação…" />}
+    {failure && <ScreenState kind={failure} message="Não foi possível carregar sua pontuação." action={<Button onClick={() => void load()}>Tentar de novo</Button>} />}
+    {!sessionLoading && !isLoading && !failure && user && <div className="stack">
+      <div className="tracking-ranking-tools">
+        <div className="tracking-tabs" role="group" aria-label="Quem aparece no ranking">
+          <button type="button" aria-pressed={scope === 'class'} onClick={() => setScope('class')}>Minha turma</button>
+          <button type="button" aria-pressed={scope === 'general'} onClick={() => setScope('general')}>Geral <Badge tone="soon">Em breve</Badge></button>
         </div>
-        <Link href="/historico" className="btn btn--ghost text-sm" style={{ padding: '8px 16px' }}>
-          Histórico ›
-        </Link>
+        {scope === 'class' && classes.length > 1 && <div className="tracking-order"><label htmlFor="ranking-class">Turma</label><select id="ranking-class" value={classId} onChange={(event) => setClassId(event.target.value)}>{classes.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>}
       </div>
-
-      <div className="w-full max-w-2xl mx-auto flex flex-col gap-5">
-        {erro && <p style={{ color: 'var(--bubble-deep)' }}>{erro}</p>}
-
-        {!erro && !pontuacao && (
-          <p style={{ color: 'var(--muted)' }}>Carregando sua pontuação...</p>
-        )}
-
-        {pontuacao && <MinhaPontuacao pontuacao={pontuacao} />}
-
-        {turmas !== null && turmas.length === 0 && (
-          <div className="card" style={{ textAlign: 'center' }}>
-            <p style={{ color: 'var(--muted)' }}>
-              O ranking é entre colegas da mesma turma. Você ainda não está em
-              uma — se recebeu um link de convite, abra o link para entrar.
-            </p>
-          </div>
-        )}
-
-        {ranking && <RankingDaTurma ranking={ranking} />}
-      </div>
-    </div>
-  );
+      {scope === 'general' ? <section className="card tracking-soon"><Image priority unoptimized style={{ width: 160, height: 'auto' }} src="/giz/ilustracoes/em-breve.svg" alt="" width={220} height={170} /><Badge tone="soon">Em breve</Badge><h2>O ranking geral vem depois</h2><p className="muted">Por enquanto, acompanhe sua evolução e o ranking da sua turma.</p><Button variant="secondary" onClick={() => setScope('class')}>Ver minha turma</Button></section> : <>
+        {rankingLoading && <ScreenState kind="loading" title="Buscando o ranking da turma…" />}
+        {rankingFailure && <ScreenState kind={rankingFailure} message="Não foi possível carregar o ranking desta turma." action={<Button onClick={() => setRetry((value) => value + 1)}>Tentar de novo</Button>} />}
+        {!rankingLoading && !rankingFailure && classes.length === 0 && <ScreenState kind="empty" title="O ranking é entre colegas da mesma turma" message="Você ainda não está em uma turma. Se recebeu um link de convite, abra o link para entrar. Enquanto isso, continue suas descobertas." action={<Link href="/simulados" className="btn">Escolher um simulado</Link>} />}
+        {!rankingLoading && !rankingFailure && classId && !ranking && <ScreenState kind="empty" title="Ainda não há dados desta turma" message="Conclua um simulado para começar a acompanhar sua evolução." action={<Link href="/simulados" className="btn">Escolher um simulado</Link>} />}
+        {!rankingLoading && !rankingFailure && ranking && <RankingClass ranking={ranking} score={score} />}
+      </>}
+      {score && (!ranking || scope === 'general' || rankingLoading || rankingFailure) && <MyScore score={score} />}
+    </div>}
+  </AppShell>;
 }
 
-function MinhaPontuacao({ pontuacao }: { pontuacao: ApiMinhaPontuacao }) {
-  return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <p style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600 }}>
-        Conta todos os simulados que você fez, de todas as trilhas.
-      </p>
-      <div className="grid grid-cols-3 gap-3">
-        <Numero valor={`${pontuacao.media}%`} rotulo="Média geral" destaque />
-        <Numero valor={String(pontuacao.simulados)} rotulo="Simulados feitos" />
-        <Numero valor={String(pontuacao.diasSeguidos)} rotulo="Dias seguidos" />
-      </div>
-
-      {pontuacao.melhorSimulado && (
-        <div
-          className="flex items-center gap-3 rounded-2xl px-4 py-3"
-          style={{ background: 'var(--cream)' }}
-        >
-          <span style={{ fontSize: 22 }}>⭐</span>
-          <div style={{ fontSize: 14 }}>
-            <div style={{ fontWeight: 700, color: 'var(--ink)' }}>
-              Seu melhor: {pontuacao.melhorSimulado.percentage}% em{' '}
-              {pontuacao.melhorSimulado.disciplina}
-            </div>
-            <div style={{ color: 'var(--muted)' }}>{pontuacao.melhorSimulado.titulo}</div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+function MyScore({ score }: { score: ApiMinhaPontuacao }) {
+  return <section className="card stack tracking-my-score">
+    <h2>Seus números</h2>
+    <p className="muted">Todos os seus simulados, de todas as trilhas.</p>
+    <div className="tracking-summary"><ScoreStat value={`${score.media}%`} label="Média geral" /><ScoreStat value={String(score.simulados)} label="Simulados feitos" /><ScoreStat value={String(score.diasSeguidos)} label="Dias seguidos" /></div>
+    {score.melhorSimulado && <div className="tracking-best"><Icon name="spark" /><div><strong>Seu melhor: {score.melhorSimulado.percentage}% em {score.melhorSimulado.disciplina}</strong><p className="muted">{score.melhorSimulado.titulo}</p></div></div>}
+  </section>;
 }
 
-function Numero({
-  valor,
-  rotulo,
-  destaque,
-}: {
-  valor: string;
-  rotulo: string;
-  destaque?: boolean;
-}) {
-  return (
-    <div style={{ textAlign: 'center' }}>
-      <div
-        style={{
-          fontFamily: 'var(--font-fredoka)',
-          fontWeight: 700,
-          fontSize: 30,
-          lineHeight: 1.1,
-          color: destaque ? 'var(--grass-deep)' : 'var(--ink)',
-        }}
-      >
-        {valor}
-      </div>
-      <div style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600 }}>{rotulo}</div>
-    </div>
-  );
+function ScoreStat({ value, label }: { value: string; label: string }) {
+  return <div className="tracking-stat"><span>{label}</span><strong>{value}</strong></div>;
 }
 
-function RankingDaTurma({ ranking }: { ranking: ApiRanking }) {
-  const { minhaPosicao, podio, vizinhanca } = ranking;
-
-  // Quem já está no pódio não precisa ver a própria linha duas vezes.
-  const mostraVizinhanca =
-    minhaPosicao !== null && minhaPosicao.posicao > 3 && vizinhanca.length > 0;
-
-  return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div>
-        <h2 style={{ fontFamily: 'var(--font-fredoka)', fontSize: 22, color: 'var(--ink)' }}>
-          {ranking.turma.name}
-        </h2>
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>
-          Só os simulados desta turma contam aqui.
-        </p>
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>
-          {ranking.totalClassificados === 0
-            ? 'Ninguém da turma completou simulados suficientes ainda.'
-            : `${ranking.totalClassificados} no ranking · entra quem fez ${ranking.minimoDeSimulados} simulados`}
-        </p>
-      </div>
-
-      {podio.length > 0 && (
-        <div className="flex flex-col gap-2">
-          {podio.map((linha) => (
-            <Linha key={linha.posicao} linha={linha} medalha={MEDALHAS[linha.posicao - 1]} />
-          ))}
-        </div>
-      )}
-
-      {mostraVizinhanca && (
-        <div className="flex flex-col gap-2">
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 800,
-              letterSpacing: '.06em',
-              textTransform: 'uppercase',
-              color: 'var(--muted)',
-            }}
-          >
-            Perto de você
-          </div>
-          {vizinhanca.map((linha) => (
-            <Linha key={linha.posicao} linha={linha} />
-          ))}
-        </div>
-      )}
-
-      {minhaPosicao === null && (
-        <div
-          className="flex items-start gap-3 rounded-2xl px-4 py-3"
-          style={{ background: '#FFF8D6', border: '1.5px solid #FFD66B' }}
-        >
-          <span style={{ fontSize: 20, flexShrink: 0 }}>💡</span>
-          <p style={{ fontSize: 13, color: '#6B4A00', fontWeight: 600, lineHeight: 1.5 }}>
-            {ranking.faltamParaORanking === ranking.minimoDeSimulados
-              ? `Faça ${ranking.minimoDeSimulados} simulados desta turma para entrar no ranking.`
-              : `Falta${ranking.faltamParaORanking === 1 ? '' : 'm'} ${ranking.faltamParaORanking} simulado${ranking.faltamParaORanking === 1 ? '' : 's'} desta turma para você entrar no ranking.`}{' '}
-            A média conta a sua melhor tentativa de cada um — dá para refazer e
-            melhorar.
-          </p>
-        </div>
-      )}
+function RankingClass({ ranking, score }: { ranking: ApiRanking; score: ApiMinhaPontuacao | null }) {
+  const podium = [...ranking.podio].sort((a, b) => a.posicao - b.posicao);
+  const nearby = ranking.vizinhanca.filter((line) => !podium.some((item) => item.posicao === line.posicao && item.nome === line.nome));
+  return <div className="tracking-ranking-layout">
+    <div className="stack">
+      <section className="card stack">
+        <div className="cluster tracking-ranking-title"><div><h2>{ranking.turma.name}</h2><p className="muted">Sua melhor tentativa de cada simulado forma a média da turma.</p></div><Tuca pose="medalha" size={96} /></div>
+        {podium.length ? <ol className="tracking-podium" aria-label="Primeiras posições da turma">{podium.map((line, index) => <li key={`${line.posicao}-${index}`} className={`tracking-podium-person tracking-podium-person--${line.posicao}${line.ehVoce ? ' tracking-podium-person--me' : ''}`}><span className="tracking-avatar" aria-hidden="true">{publicName(line.nome).charAt(0)}</span><strong>{publicName(line.nome)}{line.ehVoce ? ' (você)' : ''}</strong><span className="muted">{line.media}% · {line.simulados} simulados</span><span className="tracking-podium-block">{line.posicao}º<span className="sr-only"> lugar</span></span></li>)}</ol> : <div className="tracking-ranking-empty"><Image unoptimized style={{ width: 160, height: 'auto' }} src="/giz/ilustracoes/podio.svg" alt="" width={220} height={170} /><h3>A turma está começando</h3><p className="muted">Ninguém completou os simulados necessários para entrar no ranking ainda.</p></div>}
+        <p className="muted tracking-ranking-rule">{ranking.totalClassificados} {ranking.totalClassificados === 1 ? 'estudante no ranking' : 'estudantes no ranking'} · participação a partir de {ranking.minimoDeSimulados} simulados desta turma.</p>
+      </section>
+      {nearby.length > 0 && <section className="card tracking-nearby"><h2>Perto de você</h2><ol aria-label="Posições próximas da sua">{nearby.map((line, index) => <RankingLine key={`${line.posicao}-${index}`} line={line} />)}</ol></section>}
+      {ranking.minhaPosicao === null && <section className="tracking-ranking-invitation"><Icon name="bulb" /><div><h3>Seu lugar está esperando por você</h3><p>{ranking.faltamParaORanking === 1 ? 'Falta 1 simulado' : `Faltam ${ranking.faltamParaORanking} simulados`} desta turma para você entrar no ranking. Dá para refazer e melhorar: só a melhor tentativa de cada simulado conta.</p><Link className="btn" href="/simulados">Escolher um simulado</Link></div></section>}
     </div>
-  );
+    <aside className="stack">
+      {ranking.minhaPosicao && <section className="tracking-position"><span>Sua posição na turma</span><strong>{ranking.minhaPosicao.posicao}º</strong><span>{ranking.minhaPosicao.media}% de média</span><span>{ranking.minhaPosicao.simulados} simulados</span></section>}
+      {score && <MyScore score={score} />}
+    </aside>
+  </div>;
 }
 
-function Linha({ linha, medalha }: { linha: ApiLinhaDoRanking; medalha?: string }) {
-  return (
-    <div
-      className="flex items-center gap-3 rounded-2xl px-4 py-3"
-      style={{
-        background: linha.ehVoce ? 'rgba(91,214,138,.14)' : 'var(--paper)',
-        border: `1.5px solid ${linha.ehVoce ? 'var(--grass-deep)' : 'var(--line)'}`,
-      }}
-    >
-      <span
-        style={{
-          width: 28,
-          textAlign: 'center',
-          fontFamily: 'var(--font-fredoka)',
-          fontWeight: 700,
-          color: 'var(--muted)',
-          flexShrink: 0,
-        }}
-      >
-        {medalha ?? linha.posicao}
-      </span>
-      <span style={{ flex: 1, fontWeight: 700, color: 'var(--ink)' }}>
-        {linha.nome}
-        {linha.ehVoce && (
-          <span style={{ color: 'var(--grass-deep)', fontWeight: 800 }}> · você</span>
-        )}
-      </span>
-      <span style={{ textAlign: 'right', flexShrink: 0 }}>
-        <span style={{ fontWeight: 800, color: 'var(--ink)' }}>{linha.media}%</span>
-        {/* A contagem fica ao lado da média de propósito: sem ela, quem fez
-            três simulados fáceis parece melhor que quem fez quinze. */}
-        <span style={{ display: 'block', fontSize: 11, color: 'var(--muted)' }}>
-          {linha.simulados} simulados
-        </span>
-      </span>
-    </div>
-  );
+function RankingLine({ line }: { line: ApiLinhaDoRanking }) {
+  return <li className={`tracking-ranking-line${line.ehVoce ? ' tracking-ranking-line--me' : ''}`}>
+    <strong className="tracking-ranking-number">{line.posicao}º</strong><span className="tracking-avatar" aria-hidden="true">{publicName(line.nome).charAt(0)}</span><span className="tracking-ranking-name">{publicName(line.nome)}{line.ehVoce ? ' (você)' : ''}</span><span className="tracking-ranking-score"><strong>{line.media}%</strong><span className="muted">{line.simulados} simulados</span></span>
+  </li>;
 }

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -14 262 250" width="524" height="500" role="img" aria-label="Tuca com uma lâmpada acesa sobre a cabeça"><defs><symbol id="tb" viewBox="0 0 250 230">
+      <clipPath id="bkc"><path d="M126 52 C172 34 218 54 234 92 L126 90 Z"></path><path d="M126 90 L234 92 C218 116 170 120 128 108 Z"></path></clipPath>
+      <path d="M74 176 L50 220 Q62 230 76 224 L108 186 Z" fill="#1F2B42"></path>
+      <path d="M50 220 Q62 230 76 224 L80 216 L56 212 Z" fill="#FF7B54"></path>
+      <ellipse cx="86" cy="200" rx="14" ry="6" fill="#FFC93C"></ellipse><ellipse cx="118" cy="200" rx="14" ry="6" fill="#FFC93C"></ellipse>
+      <ellipse cx="100" cy="140" rx="48" ry="60" fill="#2B3A55"></ellipse>
+      <ellipse cx="120" cy="138" rx="28" ry="46" fill="#FFF6E0"></ellipse>
+      <circle cx="98" cy="76" r="40" fill="#2B3A55"></circle>
+      <ellipse cx="118" cy="92" rx="26" ry="30" fill="#FFF6E0"></ellipse>
+      <ellipse cx="76" cy="142" rx="22" ry="44" transform="rotate(8 76 142)" fill="#1F2B42"></ellipse>
+      <path d="M70 120 Q76 150 72 178 M84 124 Q90 150 86 176" fill="none" stroke="#3A4B6B" stroke-width="3" stroke-linecap="round"></path>
+      <path d="M126 52 C172 34 218 54 234 92 L126 90 Z" fill="#FF7B54"></path>
+      <path d="M126 90 L234 92 C218 116 170 120 128 108 Z" fill="#FF9A78"></path>
+      <rect x="204" y="30" width="40" height="100" fill="#FFB199" clip-path="url(#bkc)"></rect>
+      <path d="M126 90 L234 92" stroke="#D9552F" stroke-width="2.5" stroke-linecap="round"></path>
+      <circle cx="110" cy="71" r="17" fill="#FFC93C"></circle>
+      <circle cx="244" cy="112" r="3" fill="#FFB199"></circle>
+      <ellipse cx="102" cy="96" rx="7" ry="4.5" fill="#FF7B54" opacity="0.5"></ellipse>
+    </symbol><symbol id="st" viewBox="0 0 24 24"><polygon points="12,1 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" fill="#FFC93C" stroke="#E0A800" stroke-width="1" stroke-linejoin="round"></polygon></symbol></defs><use href="#tb" x="0" y="0" width="250" height="230"></use><circle cx="111" cy="71" r="7.5" fill="#1B2A2F"></circle><circle cx="113.5" cy="68.4" r="2.6" fill="#fff"></circle><circle cx="98" cy="16" r="10" fill="#FFC93C" stroke="#E0A800" stroke-width="1.5"></circle><rect x="93" y="25" width="10" height="5" rx="1.5" fill="#E0A800"></rect><path d="M80 10l-8-4M116 10l8-4M98-2v-6" stroke="#E0A800" stroke-width="2.5" stroke-linecap="round"></path></svg>

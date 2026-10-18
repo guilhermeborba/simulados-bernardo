@@ -1,0 +1,411 @@
+// Generated; run node scripts/generate-giz-tokens.mjs.
+export const gizTokens = {
+  "$description": "Tokens do Design System Giz v1. Fonte da verdade para web e app. Valores em px sem unidade, salvo indicação.",
+  "color": {
+    "light": {
+      "page": {
+        "value": "#EDE8DB",
+        "uso": "Fundo atrás do app, só no palco de apresentação"
+      },
+      "bg": {
+        "value": "#F7F3EA",
+        "nome": "Papel",
+        "uso": "Fundo das telas"
+      },
+      "surface": {
+        "value": "#FFFFFF",
+        "uso": "Cartões, campos, painéis"
+      },
+      "ink": {
+        "value": "#1B2A2F",
+        "nome": "Lousa",
+        "uso": "Texto principal e cabeçalhos escuros"
+      },
+      "muted": {
+        "value": "#4A5A5E",
+        "nome": "Grafite",
+        "uso": "Texto de apoio"
+      },
+      "line": {
+        "value": "#E7E0CF",
+        "uso": "Bordas e divisórias"
+      },
+      "soft": {
+        "value": "#F0EBDD",
+        "uso": "Fundos de apoio, trilhas de barra"
+      },
+      "primary": {
+        "value": "#FF7B54",
+        "nome": "Coral",
+        "uso": "Ação principal. Texto sobre ele é sempre on-primary"
+      },
+      "on-primary": {
+        "value": "#1B2A2F"
+      },
+      "hl": {
+        "value": "#FFC93C",
+        "nome": "Sol",
+        "uso": "Progresso, conquistas, destaque"
+      },
+      "hl-bg": {
+        "value": "#FFF1C2",
+        "uso": "Fundo da Dica de Ouro e selos de destaque"
+      },
+      "info": {
+        "value": "#2F66DB",
+        "nome": "Azul 600",
+        "uso": "Links, foco do teclado, trilha Escola"
+      },
+      "ok": {
+        "value": "#1E8C77",
+        "nome": "Pinho",
+        "uso": "Acerto: só ícone, borda e preenchimento. Nunca texto pequeno (4,1:1)"
+      },
+      "ok-ink": {
+        "value": "#0D4A3E",
+        "uso": "Texto sobre ok-bg"
+      },
+      "ok-bg": {
+        "value": "#D3EFE8"
+      },
+      "err": {
+        "value": "#C8452A",
+        "nome": "Coral 700",
+        "uso": "Erro: borda e ícone"
+      },
+      "err-bg": {
+        "value": "#FFE0D6"
+      },
+      "sel-bg": {
+        "value": "#FFE9DF",
+        "uso": "Opção marcada, linha do usuário no ranking"
+      },
+      "urgent": {
+        "value": "#FF9A78",
+        "uso": "Cronômetro nos últimos 10 segundos"
+      },
+      "head": {
+        "value": "#1B2A2F",
+        "uso": "Cabeçalho escuro (mobile) e caixa de progresso"
+      },
+      "head-ink": {
+        "value": "#F7F3EA"
+      },
+      "head-muted": {
+        "value": "#B9C6C8"
+      }
+    },
+    "dark": {
+      "_aviso": "Valores do tema escuro foram definidos na prancha, mas o contraste ainda não foi verificado tela a tela. Validar antes de liberar.",
+      "page": {
+        "value": "#0B1215"
+      },
+      "bg": {
+        "value": "#121C20"
+      },
+      "surface": {
+        "value": "#1B2A2F"
+      },
+      "ink": {
+        "value": "#F7F3EA"
+      },
+      "muted": {
+        "value": "#B9C6C8"
+      },
+      "line": {
+        "value": "#2E4046"
+      },
+      "soft": {
+        "value": "#243539"
+      },
+      "primary": {
+        "value": "#FF7B54"
+      },
+      "on-primary": {
+        "value": "#1B2A2F"
+      },
+      "hl": {
+        "value": "#FFC93C"
+      },
+      "hl-bg": {
+        "value": "#4A4018"
+      },
+      "info": {
+        "value": "#8FB0F7"
+      },
+      "ok": {
+        "value": "#1E8C77"
+      },
+      "ok-ink": {
+        "value": "#BFEDE2"
+      },
+      "ok-bg": {
+        "value": "#16403A"
+      },
+      "err": {
+        "value": "#FF9A78"
+      },
+      "err-bg": {
+        "value": "#4A2A22"
+      },
+      "sel-bg": {
+        "value": "#3A2E2B"
+      },
+      "urgent": {
+        "value": "#FF9A78"
+      },
+      "head": {
+        "value": "#0B1215"
+      },
+      "head-ink": {
+        "value": "#F7F3EA"
+      },
+      "head-muted": {
+        "value": "#B9C6C8"
+      }
+    },
+    "trilha": {
+      "kids": {
+        "destaque": "#FF7B54",
+        "fundo-suave": "#FFE9DF"
+      },
+      "escola": {
+        "destaque": "#2F66DB",
+        "fundo-suave": "#DCE8FF"
+      },
+      "tecnico": {
+        "destaque": "#1E8C77",
+        "fundo-suave": "#D3EFE8"
+      }
+    },
+    "ilustracao-fixa": {
+      "_nota": "Cores usadas dentro das ilustrações e do Tuca. Não mudam com o tema.",
+      "tuca-corpo": "#2B3A55",
+      "tuca-asa": "#1F2B42",
+      "tuca-barriga": "#FFF6E0",
+      "tuca-bico": "#FF7B54",
+      "tuca-bico-baixo": "#FF9A78",
+      "tuca-bico-ponta": "#FFB199",
+      "tuca-olho-anel": "#FFC93C",
+      "tuca-pe": "#FFC93C",
+      "estrela": "#FFC93C",
+      "estrela-borda": "#E0A800"
+    }
+  },
+  "font": {
+    "display": {
+      "family": "Fredoka",
+      "pesos": [
+        500,
+        600,
+        700
+      ],
+      "fallback": "Nunito, system-ui, sans-serif",
+      "uso": "Títulos, números grandes, botões"
+    },
+    "body": {
+      "family": "Nunito",
+      "pesos": [
+        400,
+        600,
+        700,
+        800
+      ],
+      "fallback": "system-ui, sans-serif",
+      "uso": "Texto corrido, rótulos, enunciados"
+    }
+  },
+  "type": {
+    "display": {
+      "font": "display",
+      "peso": 600,
+      "mobile": [
+        32,
+        40
+      ],
+      "desktop": [
+        44,
+        52
+      ]
+    },
+    "h1": {
+      "font": "display",
+      "peso": 600,
+      "mobile": [
+        28,
+        34
+      ],
+      "desktop": [
+        32,
+        40
+      ]
+    },
+    "h2": {
+      "font": "display",
+      "peso": 600,
+      "mobile": [
+        22,
+        28
+      ],
+      "desktop": [
+        24,
+        32
+      ]
+    },
+    "h3": {
+      "font": "display",
+      "peso": 600,
+      "mobile": [
+        18,
+        24
+      ],
+      "desktop": [
+        20,
+        28
+      ]
+    },
+    "body": {
+      "font": "body",
+      "peso": 600,
+      "mobile": [
+        16,
+        24
+      ],
+      "desktop": [
+        16,
+        24
+      ]
+    },
+    "body-sm": {
+      "font": "body",
+      "peso": 600,
+      "mobile": [
+        14,
+        20
+      ],
+      "desktop": [
+        14,
+        20
+      ]
+    },
+    "caption": {
+      "font": "body",
+      "peso": 800,
+      "mobile": [
+        12,
+        16
+      ],
+      "desktop": [
+        12,
+        16
+      ],
+      "extra": "caixa alta com letter-spacing 0.08em em rótulos"
+    },
+    "enunciado": {
+      "font": "body",
+      "peso": 800,
+      "mobile": [
+        19,
+        27
+      ],
+      "desktop": [
+        24,
+        32
+      ],
+      "uso": "Texto da questão"
+    },
+    "_regra": "Texto de leitura nunca abaixo de 16 px. 14 e 12 só para apoio e rótulos. Cada par é [tamanho, altura de linha]."
+  },
+  "space": [
+    0,
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    32,
+    40,
+    56,
+    72
+  ],
+  "radius": {
+    "sm": 8,
+    "md": 12,
+    "lg": 20,
+    "xl": 28,
+    "full": 999
+  },
+  "shadow": {
+    "e1": "0 1px 2px rgba(27,42,47,.08)",
+    "e2": "0 4px 12px rgba(27,42,47,.10)",
+    "e3": "0 12px 28px rgba(27,42,47,.16)",
+    "sheet": "0 -6px 20px rgba(27,42,47,.14)"
+  },
+  "size": {
+    "touch-min": 48,
+    "touch-kids": 56,
+    "button-height": 56,
+    "button-height-compact": 48,
+    "field-height": 56,
+    "option-min-height": 64,
+    "chip-min-height": 44,
+    "bottom-nav-height": 76,
+    "icon": [
+      20,
+      24,
+      28
+    ],
+    "icon-stroke": 2,
+    "avatar": [
+      36,
+      52,
+      88
+    ]
+  },
+  "breakpoint": {
+    "mobile-max": 599,
+    "tablet-min": 600,
+    "desktop-min": 1024,
+    "container-max": 1280,
+    "sidebar-tablet": 72,
+    "sidebar-desktop": 240,
+    "columns-desktop": 12
+  },
+  "motion": {
+    "rapido": "120ms ease-out",
+    "padrao": "250ms ease-out",
+    "_regra": "Com prefers-reduced-motion: reduce, remover transições e animações."
+  },
+  "tempo": {
+    "questao-segundos": 45,
+    "aviso-leitor-de-tela": [
+      30,
+      10
+    ],
+    "urgencia-abaixo-de": 10
+  },
+  "layout": {
+    "_nota": "Medidas complementares dos protótipos, centralizadas durante a implementação web.",
+    "aside": 320,
+    "modal": 480,
+    "form": 440,
+    "logo-width": 84,
+    "logo-height": 60,
+    "auth-card": 440,
+    "auth-copy": 416,
+    "profile-aside": 360,
+    "coming": 680,
+    "illustration": 240,
+    "logo": 120,
+    "logo-mobile": 96
+  },
+  "border": {
+    "thin": 1,
+    "default": 2,
+    "focus": 3
+  },
+  "overlay": {
+    "value": "rgb(13 21 24 / .55)"
+  }
+} as const;

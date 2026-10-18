@@ -1,0 +1,6 @@
+{
+  "name": "@simulados-bernardo/api-contracts",
+  "version": "0.0.1",
+  "private": true,
+  "types": "src/index.ts"
+}

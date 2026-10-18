@@ -5,6 +5,13 @@ export interface AuthUser {
   role: string;
 }
 
+export class ApiRequestError extends Error {
+  constructor(public readonly status: number, message: string) {
+    super(message);
+    this.name = 'ApiRequestError';
+  }
+}
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
     ...init,
@@ -18,7 +25,7 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     const message = Array.isArray(rawMessage)
       ? rawMessage.join(', ')
       : rawMessage ?? 'Erro inesperado';
-    throw new Error(message);
+    throw new ApiRequestError(response.status, message);
   }
 
   return body as T;
@@ -114,6 +121,8 @@ export interface ApiAttempt {
   simulationId: string;
   /** Início da tentativa no servidor — base do cronômetro. */
   startedAt?: string;
+  /** New attempts may opt in; an existing legacy attempt keeps its mode. */
+  immediateFeedback?: boolean;
   /**
    * Opcional de propósito: o front-end pode ir para produção antes do back-end
    * que passou a devolver esse campo. Sem ele, a faixa cai no padrão.
@@ -124,6 +133,7 @@ export interface ApiAttempt {
 export function startAttempt(simulationId: string) {
   return apiFetch<ApiAttempt>(`/api/backend/simulations/${simulationId}/attempts`, {
     method: 'POST',
+    body: JSON.stringify({ immediateFeedback: true }),
   });
 }
 
@@ -133,6 +143,14 @@ export interface ApiQuestionOption {
   text: string;
   groupKey: string | null;
   order: number;
+}
+
+export interface ApiAnswerFeedback {
+  isCorrect: boolean;
+  correctAnswer: Record<string, unknown>;
+  tip?: string | null;
+  funFact?: string | null;
+  explanation?: string | null;
 }
 
 export interface ApiQuestion {
@@ -147,6 +165,9 @@ export interface ApiQuestion {
   options: ApiQuestionOption[];
   /** Resposta que o próprio aluno já enviou nesta tentativa, se houver. */
   answer?: unknown;
+  /** Present only after this question has been confirmed by the server. */
+  feedback?: ApiAnswerFeedback | null;
+  confirmedAt?: string | null;
 }
 
 export function getAttemptQuestions(attemptId: string) {
@@ -175,6 +196,10 @@ export interface ApiAttemptResultQuestion {
   answer: unknown;
   isCorrect: boolean;
   pointsEarned: string;
+  options?: ApiQuestionOption[];
+  correctAnswer?: Record<string, unknown> | null;
+  theme?: string | null;
+  explanation?: string | null;
 }
 
 export interface ApiAttemptResult {
@@ -186,6 +211,8 @@ export interface ApiAttemptResult {
     wrongCount: number;
   };
   questions: ApiAttemptResultQuestion[];
+  topics?: { theme: string; correct: number; total: number }[];
+  unclassifiedQuestions?: number;
 }
 
 export function finishAttempt(attemptId: string) {

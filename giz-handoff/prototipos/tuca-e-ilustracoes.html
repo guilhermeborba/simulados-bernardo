@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body style="margin:0">
+<title>Tuca e ilustrações Giz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#F7F3EA; --surface:#FFFFFF; --ink:#1B2A2F; --muted:#4A5A5E; --line:#E7E0CF; --soft:#F0EBDD;
+  --primary:#FF7B54; --info:#2F66DB; --ok:#1E8C77; --hl:#FFC93C;
+  --font-d:'Fredoka','Nunito',system-ui,sans-serif; --font-b:'Nunito',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121C20;--surface:#1B2A2F;--ink:#F7F3EA;--muted:#B9C6C8;--line:#2E4046;--soft:#243539;--info:#7FA3F5;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121C20;--surface:#1B2A2F;--ink:#F7F3EA;--muted:#B9C6C8;--line:#2E4046;--soft:#243539;--info:#7FA3F5;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:16px;line-height:24px;margin:0;padding-block:32px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.w{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+h1,h2,h3{font-family:var(--font-d);margin:0;text-wrap:balance}
+h1{font-weight:600;font-size:clamp(30px,5vw,44px);line-height:1.1}
+h2{font-weight:600;font-size:28px;line-height:34px}
+h3{font-weight:600;font-size:20px;line-height:26px}
+.eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.lead{max-width:62ch;color:var(--muted);margin:8px 0 0}
+section>p{max-width:68ch;color:var(--muted);margin:6px 0 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin-top:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.art{height:170px;border-radius:14px;display:grid;place-items:center}
+.art svg{max-width:100%;height:150px;width:auto}
+.card .t{padding:0 6px 6px}
+.card .t p{margin:2px 0 0;font-size:14px;line-height:20px;color:var(--muted)}
+.tag{display:inline-block;margin-top:8px;font-size:12px;line-height:16px;font-weight:800;background:var(--soft);border-radius:999px;padding:3px 10px;color:var(--ink)}
+.tag.n{background:#FFF1C2;color:#1B2A2F}
+.tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:20px}
+.tr{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.tr .art{height:190px}
+.tr .art svg{height:170px}
+.tbl{overflow-x:auto;margin-top:20px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:15px}
+th{text-align:left;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:14px 16px;border-bottom:2px solid var(--line)}
+td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td b{font-family:var(--font-d);font-weight:600}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:20px}
+.rl{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:20px;min-width:0}
+.rl ul{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.rl.ok{border-top:6px solid var(--ok)}.rl.no{border-top:6px solid #C8452A}
+.ladder{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-top:20px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:20px}
+.ladder figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;color:var(--muted);font-weight:700}
+.ladder svg{display:block}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="st" viewBox="0 0 24 24"><polygon points="12,1 15,9 23,9 17,14 19,22 12,17 5,22 7,14 1,9 9,9" fill="#FFC93C" stroke="#E0A800" stroke-width="1" stroke-linejoin="round"/></symbol>
+    <symbol id="tb" viewBox="0 0 250 230">
+      <clipPath id="bkc"><path d="M126 52 C172 34 218 54 234 92 L126 90 Z"/><path d="M126 90 L234 92 C218 116 170 120 128 108 Z"/></clipPath>
+      <path d="M74 176 L50 220 Q62 230 76 224 L108 186 Z" fill="#1F2B42"/>
+      <path d="M50 220 Q62 230 76 224 L80 216 L56 212 Z" fill="#FF7B54"/>
+      <ellipse cx="86" cy="200" rx="14" ry="6" fill="#FFC93C"/><ellipse cx="118" cy="200" rx="14" ry="6" fill="#FFC93C"/>
+      <ellipse cx="100" cy="140" rx="48" ry="60" fill="#2B3A55"/>
+      <ellipse cx="120" cy="138" rx="28" ry="46" fill="#FFF6E0"/>
+      <circle cx="98" cy="76" r="40" fill="#2B3A55"/>
+      <ellipse cx="118" cy="92" rx="26" ry="30" fill="#FFF6E0"/>
+      <ellipse cx="76" cy="142" rx="22" ry="44" transform="rotate(8 76 142)" fill="#1F2B42"/>
+      <path d="M70 120 Q76 150 72 178 M84 124 Q90 150 86 176" fill="none" stroke="#3A4B6B" stroke-width="3" stroke-linecap="round"/>
+      <path d="M126 52 C172 34 218 54 234 92 L126 90 Z" fill="#FF7B54"/>
+      <path d="M126 90 L234 92 C218 116 170 120 128 108 Z" fill="#FF9A78"/>
+      <rect x="204" y="30" width="40" height="100" fill="#FFB199" clip-path="url(#bkc)"/>
+      <path d="M126 90 L234 92" stroke="#D9552F" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="110" cy="71" r="17" fill="#FFC93C"/>
+      <circle cx="244" cy="112" r="3" fill="#FFB199"/>
+      <ellipse cx="102" cy="96" rx="7" ry="4.5" fill="#FF7B54" opacity="0.5"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="w">
+  <header>
+    <div class="eyebrow">Giz · Fase 2 · Personagens e ilustrações</div>
+    <h1 style="margin-top:8px">Tuca e as ilustrações do Giz</h1>
+    <p class="lead">Doze poses do Tuca para a trilha Giz Kids, quatro ilustrações sem personagem para as outras trilhas e o mapa de onde cada uma aparece nas 15 telas.</p>
+  </header>
+
+  <section aria-labelledby="h-poses">
+    <h2 id="h-poses">Tuca, 12 poses</h2>
+    <p>As seis primeiras já estavam aprovadas. As seis marcadas como novas cobrem os momentos que as telas 8 a 15 pedem: troféu, sequência, histórico vazio, carregando, pausa e medalha.</p>
+    <div class="grid" id="poses"></div>
+  </section>
+
+  <section aria-labelledby="h-spot">
+    <h2 id="h-spot">Ilustrações sem personagem</h2>
+    <p>As trilhas Escola e Técnico não têm mascote. O mesmo desenho de "caderno vazio" troca só a cor de destaque de cada trilha, e as outras três ilustrações valem para todas.</p>
+    <div class="tracks" id="tracks"></div>
+    <div class="grid" id="spots"></div>
+  </section>
+
+  <section aria-labelledby="h-map">
+    <h2 id="h-map">Onde cada uma aparece</h2>
+    <p>Tuca só entra na trilha Kids. Nas outras trilhas, a mesma tela usa a ilustração sem personagem ou fica sem figura.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Tela</th><th>Kids</th><th>Escola e Técnico</th><th>Tamanho</th></tr></thead>
+      <tbody>
+        <tr><td><b>3 Escolha de trilha</b></td><td>Feliz</td><td>Sem figura</td><td>120 px</td></tr>
+        <tr><td><b>4 Início</b></td><td>Feliz, e Sequência quando há dias seguidos</td><td>Sem figura</td><td>96 px</td></tr>
+        <tr><td><b>7 Questão</b></td><td>Sem figura, para não distrair</td><td>Sem figura</td><td>-</td></tr>
+        <tr><td><b>8 Feedback</b></td><td>Acertou, Dica de Ouro e Você sabia?</td><td>Só o ícone do cartão</td><td>72 px</td></tr>
+        <tr><td><b>9 Resultado</b></td><td>Troféu, ou Errou? Tenta de novo</td><td>Sem figura</td><td>140 px</td></tr>
+        <tr><td><b>10 Revisão</b></td><td>Lupa</td><td>Sem figura</td><td>72 px</td></tr>
+        <tr><td><b>11 Histórico (vazio)</b></td><td>Lupa</td><td>Caderno vazio</td><td>160 px</td></tr>
+        <tr><td><b>12 Ranking</b></td><td>Medalha</td><td>Pódio</td><td>96 px</td></tr>
+        <tr><td><b>13 Perfil e conquistas</b></td><td>Troféu</td><td>Sem figura</td><td>96 px</td></tr>
+        <tr><td><b>14 Painel dos pais</b></td><td>Sem figura</td><td>Sem figura</td><td>-</td></tr>
+        <tr><td><b>15 Monte seu simulado</b></td><td>Feliz</td><td>Sem figura</td><td>72 px</td></tr>
+        <tr><td><b>Carregando</b></td><td>Lendo</td><td>Indicador de progresso simples</td><td>96 px</td></tr>
+        <tr><td><b>Sem conexão</b></td><td>Respira fundo</td><td>Nuvem sem conexão</td><td>140 px</td></tr>
+        <tr><td><b>Volte amanhã</b></td><td>Até amanhã</td><td>Texto simples</td><td>120 px</td></tr>
+      </tbody></table></div>
+  </section>
+
+  <section aria-labelledby="h-reg">
+    <h2 id="h-reg">Regras de uso</h2>
+    <div class="rules">
+      <div class="rl ok"><h3>Pode</h3><ul>
+        <li>Mostrar o Tuca em momentos de pausa: início, resultado, vazio e carregando.</li>
+        <li>Usar um fundo claro e suave atrás dele: Pêssego, Sol claro, Pinho claro ou Azul claro.</li>
+        <li>Escrever a legenda ao lado da figura, nunca dentro dela.</li>
+        <li>Dar a cada figura um texto alternativo curto, como "Tuca comemorando um acerto".</li>
+      </ul></div>
+      <div class="rl no"><h3>Não pode</h3><ul>
+        <li>Pôr o Tuca na tela de questão, onde a criança precisa ler e pensar.</li>
+        <li>Usar a pose de erro para zombar. O tom é "sem drama", com a borracha na mão.</li>
+        <li>Mudar as cores do Tuca por trilha. Ele só existe na Kids.</li>
+        <li>Passar de 140 px no celular ou cobrir botões e opções de resposta.</li>
+      </ul></div>
+    </div>
+    <h3 style="margin-top:28px">Escada de tamanhos</h3>
+    <div class="ladder" id="ladder" role="group" aria-label="Tuca em cinco tamanhos"></div>
+  </section>
+</div>
+
+<script>
+var EYE='<circle cx="111" cy="71" r="7.5" fill="#1B2A2F"/><circle cx="113.5" cy="68.4" r="2.6" fill="#fff"/>';
+var HAPPY='<path d="M101 73 Q111 60 121 73" fill="none" stroke="#1B2A2F" stroke-width="4.5" stroke-linecap="round"/>';
+var SLEEP='<path d="M101 70 Q111 80 121 70" fill="none" stroke="#1B2A2F" stroke-width="4.5" stroke-linecap="round"/>';
+var WING='<ellipse cx="60" cy="112" rx="14" ry="38" transform="rotate(-35 60 112)" fill="#1F2B42"/>';
+function ST(x,y,s){return '<use href="#st" x="'+x+'" y="'+y+'" width="'+s+'" height="'+s+'"/>'}
+var TROPHY='<g><path d="M26 50h44v24a22 22 0 0 1-44 0z" fill="#FFC93C" stroke="#E0A800" stroke-width="2.5" stroke-linejoin="round"/><path d="M26 56H14v8a12 12 0 0 0 12 12M70 56h12v8a12 12 0 0 1-12 12" fill="none" stroke="#E0A800" stroke-width="3" stroke-linecap="round"/><rect x="42" y="96" width="12" height="14" fill="#E0A800"/><rect x="32" y="108" width="32" height="9" rx="3" fill="#FFC93C" stroke="#E0A800" stroke-width="2"/><path d="M40 60v14" stroke="#FFF1C2" stroke-width="4" stroke-linecap="round"/></g>';
+var FLAME='<g transform="translate(14 8)"><path d="M36 4c4 18 24 26 24 50a24 24 0 0 1-48 0c0-12 6-18 12-24 1 8 5 12 10 12-2-14-2-24 2-38z" fill="#FF7B54" stroke="#D9552F" stroke-width="2.5" stroke-linejoin="round"/><path d="M36 38c2 10 12 14 12 26a12 12 0 0 1-24 0c0-8 6-12 12-26z" fill="#FFC93C"/></g>';
+var LENS='<g><circle cx="38" cy="104" r="22" fill="#DCE8FF" fill-opacity=".7" stroke="#1B2A2F" stroke-width="5"/><path d="M54 120 L72 142" stroke="#1B2A2F" stroke-width="8" stroke-linecap="round"/><path d="M26 98a14 14 0 0 1 10-10" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/></g>';
+var BOOK='<g><path d="M46 158 L100 150 L100 196 L46 204 Z" fill="#FFF6E0" stroke="#1B2A2F" stroke-width="3" stroke-linejoin="round"/><path d="M154 158 L100 150 L100 196 L154 204 Z" fill="#FFFFFF" stroke="#1B2A2F" stroke-width="3" stroke-linejoin="round"/><path d="M54 168l38-5M54 178l38-5M54 188l38-5M108 163l38 5M108 173l38 5M108 183l38 5" stroke="#9AA7A9" stroke-width="3" stroke-linecap="round"/><path d="M100 150v46" stroke="#FF7B54" stroke-width="5"/></g>';
+var MOON='<path d="M206 18a22 22 0 1 0 14 38a18 18 0 0 1-14-38z" fill="#FFC93C" stroke="#E0A800" stroke-width="2"/>';
+var ZZZ='<g font-family="Fredoka,sans-serif" font-weight="700" fill="#2F66DB"><text x="168" y="30" font-size="26">z</text><text x="184" y="52" font-size="20">z</text></g>';
+var MEDAL='<g><path d="M96 108 L88 150 M132 108 L140 150" stroke="#FF7B54" stroke-width="9" stroke-linecap="round"/><circle cx="114" cy="158" r="20" fill="#FFC93C" stroke="#E0A800" stroke-width="3"/>'+'<path d="M114 148l3.6 7.4 8.2 1.2-6 5.7 1.5 8.1-7.3-3.9-7.3 3.9 1.5-8.1-6-5.7 8.2-1.2z" fill="#FFF1C2"/></g>';
+var POSES=[
+ ["Feliz","Boas-vindas e tela inicial.","#FFE9DF","aprovada","Tuca feliz",EYE,""],
+ ["Acertou!","Resposta certa e fim de simulado.","#FFF1C2","aprovada","Tuca comemorando um acerto",HAPPY,WING+"|"+ST(14,24,30)+ST(206,24,24)+ST(190,150,20)],
+ ["Dica de Ouro","Aparece quando a criança erra.","#FFF1C2","aprovada","Tuca com uma lâmpada acesa sobre a cabeça",EYE,'<circle cx="98" cy="16" r="10" fill="#FFC93C" stroke="#E0A800" stroke-width="1.5"/><rect x="93" y="25" width="10" height="5" rx="1.5" fill="#E0A800"/><path d="M80 10l-8-4M116 10l8-4M98-2v-6" stroke="#E0A800" stroke-width="2.5" stroke-linecap="round"/>'],
+ ["Errou? Tenta de novo","Com a borracha na mão, sem drama.","#FFE0D6","aprovada","Tuca um pouco preocupado, com uma borracha",'<circle cx="111" cy="73" r="7.5" fill="#1B2A2F"/><circle cx="113.5" cy="70.4" r="2.6" fill="#fff"/><path d="M97 61 L123 52" stroke="#1B2A2F" stroke-width="4" stroke-linecap="round"/>','<g transform="translate(-8 86) rotate(-20 52 56)"><rect x="34" y="44" width="40" height="22" rx="5" fill="#FFB199" stroke="#1B2A2F" stroke-width="3"/><rect x="34" y="44" width="16" height="22" rx="5" fill="#fff" stroke="#1B2A2F" stroke-width="3"/></g>'],
+ ["Respira fundo","Antes da prova e em pausas.","#DCE8FF","aprovada","Tuca de olhos fechados, respirando fundo",SLEEP,'<g fill="#F7F3EA" stroke="#2F66DB" stroke-width="2"><circle cx="196" cy="30" r="9"/><circle cx="214" cy="19" r="7"/><circle cx="228" cy="9" r="5"/></g>'],
+ ["Você sabia?","Abre cada curiosidade.","#D3EFE8","aprovada","Tuca de olhos arregalados, curioso",'<circle cx="111" cy="71" r="9" fill="#1B2A2F"/><circle cx="113.5" cy="68.4" r="3.2" fill="#fff"/><path d="M97 52 Q110 42 124 51" fill="none" stroke="#1B2A2F" stroke-width="4" stroke-linecap="round"/>',ST(16,30,26)+ST(44,6,18)],
+ ["Troféu","Resultado alto e conquistas.","#FFF1C2","nova","Tuca com um troféu dourado",HAPPY,TROPHY+ST(206,24,26)+ST(8,6,18)],
+ ["Sequência","Dias seguidos estudando.","#FFE9DF","nova","Tuca ao lado de uma chama",EYE,FLAME],
+ ["Lupa","Revisão e histórico vazio.","#DCE8FF","nova","Tuca procurando com uma lupa",EYE,LENS],
+ ["Lendo","Carregando e dicas de estudo.","#D3EFE8","nova","Tuca lendo um livro aberto",'<circle cx="111" cy="77" r="7.5" fill="#1B2A2F"/><circle cx="113" cy="80" r="2.4" fill="#fff"/>',BOOK],
+ ["Até amanhã","Meta do dia cumprida.","#DCE8FF","nova","Tuca sonolento com uma lua e a letra z",SLEEP,MOON+ZZZ],
+ ["Medalha","Ranking e posição na turma.","#FFE0D6","nova","Tuca com uma medalha dourada no peito",HAPPY,MEDAL+ST(14,26,22)]
+];
+function tuca(p,size){
+  var parts=(p[6]||"").split("|"), under=parts.length>1?parts[0]:"", over=parts.length>1?parts[1]:parts[0];
+  return '<svg viewBox="-6 -14 262 250" role="img" aria-label="'+p[4]+'" '+(size?'width="'+size+'" height="'+Math.round(size*250/262)+'"':'')+'>'+under+'<use href="#tb" x="0" y="0" width="250" height="230"/>'+p[5]+over+'</svg>';
+}
+var h='';POSES.forEach(function(p){h+='<article class="card"><div class="art" style="background:'+p[2]+'">'+tuca(p)+'</div><div class="t"><h3>'+p[0]+'</h3><p>'+p[1]+'</p><span class="tag'+(p[3]==="nova"?" n":"")+'">'+(p[3]==="nova"?"Nova":"Aprovada")+'</span></div></article>'});
+document.getElementById("poses").innerHTML=h;
+/* ilustrações */
+function nb(c){ /* caderno vazio */
+  return '<svg viewBox="0 0 220 170" role="img" aria-label="Caderno aberto e vazio, com um lápis"><ellipse cx="110" cy="152" rx="78" ry="9" fill="#1B2A2F" opacity=".08"/><path d="M34 40 L108 30 L108 140 L34 150 Z" fill="#fff" stroke="#1B2A2F" stroke-width="4" stroke-linejoin="round"/><path d="M186 40 L108 30 L108 140 L186 150 Z" fill="#FFF6E0" stroke="#1B2A2F" stroke-width="4" stroke-linejoin="round"/><path d="M48 62l46-6M48 80l46-6M48 98l46-6M122 56l50 6M122 74l50 6M122 92l50 6" stroke="#D9D1BC" stroke-width="4" stroke-linecap="round"/><path d="M108 30v110" stroke="'+c+'" stroke-width="6"/><g transform="rotate(32 160 60)"><rect x="152" y="14" width="14" height="70" rx="3" fill="#FFC93C" stroke="#1B2A2F" stroke-width="4"/><path d="M152 84l7 14 7-14z" fill="#FFF6E0" stroke="#1B2A2F" stroke-width="4" stroke-linejoin="round"/><rect x="152" y="14" width="14" height="12" rx="3" fill="'+c+'" stroke="#1B2A2F" stroke-width="4"/></g></svg>';
+}
+function offline(){return '<svg viewBox="0 0 220 170" role="img" aria-label="Nuvem com um risco, sem conexão"><ellipse cx="110" cy="152" rx="70" ry="8" fill="#1B2A2F" opacity=".08"/><path d="M60 118a28 28 0 0 1 4-56 40 40 0 0 1 76-8 32 32 0 0 1 14 64z" fill="#fff" stroke="#1B2A2F" stroke-width="4" stroke-linejoin="round"/><path d="M70 150L150 40" stroke="#C8452A" stroke-width="8" stroke-linecap="round"/><path d="M70 150L150 40" stroke="#F7F3EA" stroke-width="2" stroke-linecap="round" opacity=".6"/></svg>'}
+function podium(){return '<svg viewBox="0 0 220 170" role="img" aria-label="Pódio com três degraus e uma estrela no primeiro"><ellipse cx="110" cy="154" rx="86" ry="8" fill="#1B2A2F" opacity=".08"/><rect x="24" y="104" width="52" height="46" rx="6" fill="#DCE8FF" stroke="#1B2A2F" stroke-width="4"/><rect x="84" y="74" width="52" height="76" rx="6" fill="#FFC93C" stroke="#1B2A2F" stroke-width="4"/><rect x="144" y="120" width="52" height="30" rx="6" fill="#FFE0D6" stroke="#1B2A2F" stroke-width="4"/><g font-family="Fredoka,sans-serif" font-weight="700" font-size="24" fill="#1B2A2F" text-anchor="middle"><text x="50" y="136">2</text><text x="110" y="112">1</text><text x="170" y="146">3</text></g><use href="#st" x="92" y="26" width="36" height="36"/></svg>'}
+function soon(){return '<svg viewBox="0 0 220 170" role="img" aria-label="Cadeado fechado, em breve"><ellipse cx="110" cy="154" rx="56" ry="8" fill="#1B2A2F" opacity=".08"/><path d="M78 76V58a32 32 0 0 1 64 0v18" fill="none" stroke="#1B2A2F" stroke-width="8" stroke-linecap="round"/><rect x="62" y="74" width="96" height="70" rx="14" fill="#FFC93C" stroke="#1B2A2F" stroke-width="4"/><circle cx="110" cy="104" r="9" fill="#1B2A2F"/><path d="M110 108v16" stroke="#1B2A2F" stroke-width="7" stroke-linecap="round"/></svg>'}
+var TR=[["Giz Kids","Cor de destaque: Coral","#FF7B54","#FFE9DF"],["Giz Escola","Cor de destaque: Azul 600","#2F66DB","#DCE8FF"],["Giz Técnico","Cor de destaque: Pinho","#1E8C77","#D3EFE8"]];
+h='';TR.forEach(function(t){h+='<article class="tr"><div class="art" style="background:'+t[3]+'">'+nb(t[2])+'</div><div class="t"><h3>'+t[0]+'</h3><p style="margin:2px 0 0;font-size:14px;color:var(--muted)">Caderno vazio · '+t[1]+'</p></div></article>'});
+document.getElementById("tracks").innerHTML=h;
+var SP=[["Sem conexão","Quando a internet cai no meio do estudo.","#FFF1C2",offline()],["Pódio","Ranking nas trilhas Escola e Técnico.","#DCE8FF",podium()],["Em breve","Recursos que ainda não abriram.","#F0EBDD",soon()]];
+h='';SP.forEach(function(s){h+='<article class="card"><div class="art" style="background:'+s[2]+'">'+s[3]+'</div><div class="t"><h3>'+s[0]+'</h3><p>'+s[1]+'</p></div></article>'});
+document.getElementById("spots").innerHTML=h;
+var L='';[160,112,80,56,40].forEach(function(n){L+='<figure>'+tuca(POSES[0],n)+n+' px</figure>'});
+document.getElementById("ladder").innerHTML=L;
+</script>
+
+</body></html>
