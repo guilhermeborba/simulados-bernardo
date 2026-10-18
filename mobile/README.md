@@ -2,7 +2,7 @@
 
 Protótipo nativo em **Expo 57.0.28 / React Native 0.86.3 / React 19.2.3**, separado das dependências Next/React 18 da web. A prova usa a API diretamente com Bearer e compartilha apenas tipos públicos de `../packages/api-contracts`.
 
-**Estado: implementação e prova automatizada disponíveis; validação física pendente.** A escolha Expo é provisória. APK debug x86_64 compilado e instalado localmente no emulador Android 17 em 14/10/2026, com login e navegação para recuperação verificados. Não há build de release, distribuição externa, associação de domínio ou app/beta publicado. Login, retomada/finalização de quiz (+10 XP), histórico e restauração de sessão foram verificados com API descartável. Mídia e aceite físico continuam pendentes. Os bundles Android/iOS e projetos de prebuild têm alcance diferente de uma instalação nativa.
+**Estado: implementação e prova automatizada disponíveis; validação física pendente.** A escolha Expo é provisória. APK debug x86_64 compilado e instalado localmente no emulador Android 17 em 14/10/2026; login, retomada/finalização de quiz (+10 XP), histórico e restauração de sessão foram verificados com API descartável. O perfil de APK interno via EAS está configurado; o resultado do primeiro build é registrado no guia abaixo. Não há IPA, publicação em loja, associação de domínio ou aceite físico concluído. Mídia continua pendente. Os bundles Android/iOS e projetos de prebuild têm alcance diferente de uma instalação nativa.
 
 ## Rodar e verificar
 
@@ -139,3 +139,18 @@ Inicie Metro com `EXPO_PUBLIC_API_URL=http://127.0.0.1:3334` e
 iniciada pelo runner. Encerrar a fixture remove o schema, o container criado e
 os arquivos temporários. O modo padrão `test:integration` continua executando os
 testes e encerrando seus recursos automaticamente.
+
+## Explorar os simulados oficiais localmente
+
+O menu do aluno inclui **Simulados**, com o catálogo da API configurada e
+encaminhamento da realização para a web. O catálogo sintético é exclusivo do
+harness de regressão. Para uma cópia dos arquivos oficiais do repositório, use o
+[runner da API](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/preview-mobile-catalogo-e-voz.md)
+com banco próprio descartável. Configure Metro com API na porta 3336 e web na
+porta 3000; o navegador mantém login próprio. Quizzes pendentes continuam DRAFT.
+
+## APK interno via Expo/EAS
+
+O [guia de distribuição](docs/android-internal-eas.md) registra projeto, ambientes,
+assinatura e instalação. Execute comandos EAS a partir de `mobile/`, onde estão
+`app.config.ts`, `eas.json` e o lockfile do app.

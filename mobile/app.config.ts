@@ -3,8 +3,10 @@ import { buildEnvironment } from "./config/build-environment.cjs";
 const environment = buildEnvironment(process.env);
 const config: ExpoConfig = {
   name: environment.name,
-  slug: "simulados-bernardo-mobile-proof",
+  slug: "simulados-bernardo",
+  owner: "guilhermesborbas-team",
   version: "0.0.1",
+  extra: { eas: { projectId: "d03c6091-0858-4150-9de5-ae051ed5f83a" } },
   scheme: environment.scheme,
   orientation: "portrait",
   userInterfaceStyle: "light",
