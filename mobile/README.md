@@ -2,7 +2,7 @@
 
 Protótipo nativo em **Expo 57.0.28 / React Native 0.86.3 / React 19.2.3**, separado das dependências Next/React 18 da web. A prova usa a API diretamente com Bearer e compartilha apenas tipos públicos de `../packages/api-contracts`.
 
-**Estado: implementação e prova automatizada disponíveis; validação física pendente.** A escolha Expo é provisória. O perfil de APK interno via EAS está configurado; o resultado do primeiro build é registrado no guia abaixo. Não há IPA, publicação em loja ou aceite físico concluído. Os bundles Android/iOS e projetos de prebuild têm alcance diferente de uma instalação nativa.
+**Estado: implementação e prova automatizada disponíveis; validação física pendente.** A escolha Expo é provisória. APK debug x86_64 compilado e instalado localmente no emulador Android 17 em 14/10/2026; login, retomada/finalização de quiz (+10 XP), histórico e restauração de sessão foram verificados com API descartável. O perfil de APK interno via EAS está configurado; o resultado do primeiro build é registrado no guia abaixo. Não há IPA, publicação em loja, associação de domínio ou aceite físico concluído. Mídia continua pendente. Os bundles Android/iOS e projetos de prebuild têm alcance diferente de uma instalação nativa.
 
 ## Rodar e verificar
 
@@ -106,9 +106,39 @@ O comando gera/instala uma build debug e precisa de emulador ou aparelho
 conectado, além de Metro para executar o código. Não equivale a um APK interno
 independente do Metro. Não há assinatura de release, configuração de loja,
 servidor interno provisionado ou distribuição habilitada nesta preparação.
-A toolchain temporária da sessão anterior não foi preservada; não há evidência
-recuperada de APK concluído ou teste físico. O aceite Android da task 11 segue
+A primeira build nativa concluída nesta etapa foi instalada no emulador Android
+17 em 14/10/2026; procedimento e evidências no [guia do emulador](docs/android-emulator.md). O teste físico continua pendente. O aceite Android da task 11 segue
 pendente enquanto esta parte independente de P1 avança.
+
+## API descartável para o emulador
+
+Com Docker ativo e a API compatível já compilada, o modo abaixo mantém a fixture
+sintética em execução até Ctrl+C. A API escuta somente em `127.0.0.1:3334`;
+`MOBILE_PROOF_PORT` permite escolher outra porta entre 1024 e 65535. O caminho do
+arquivo temporário de fixture é mostrado na saída; o arquivo tem permissão 0600.
+As contas de teste usam a senha sintética definida em `tests/e2e/fixture.mjs`.
+Nenhum seed editorial ou banco existente é usado.
+
+```bash
+E2E_API_DIR=/caminho/para/api npm run device:fixture --prefix mobile
+```
+
+No WSL sem CLI Docker no PATH, `MOBILE_PROOF_DOCKER_BINARY` pode apontar para o
+`docker.exe` do Docker Desktop. O motor Linux do Docker Desktop precisa estar
+iniciado. O runner não inicia o Docker nem altera sua integração com WSL.
+
+Encaminhe API e Metro ao emulador com o ADB que o detecta:
+
+```bash
+adb -s emulator-5554 reverse tcp:3334 tcp:3334
+adb -s emulator-5554 reverse tcp:8081 tcp:8081
+```
+
+Inicie Metro com `EXPO_PUBLIC_API_URL=http://127.0.0.1:3334` e
+`EXPO_PUBLIC_WEB_ORIGIN=http://127.0.0.1:3000`. A web de recuperação não é
+iniciada pelo runner. Encerrar a fixture remove o schema, o container criado e
+os arquivos temporários. O modo padrão `test:integration` continua executando os
+testes e encerrando seus recursos automaticamente.
 
 ## Explorar os simulados oficiais localmente
 

@@ -13,7 +13,8 @@
     "export:android": "expo export --platform android --output-dir .proof/android",
     "export:ios": "expo export --platform ios --output-dir .proof/ios",
     "prebuild": "expo prebuild --no-install",
-    "test:ui": "jest --config jest.config.cjs --runInBand"
+    "test:ui": "jest --config jest.config.cjs --runInBand",
+    "device:fixture": "node scripts/run-integration.mjs --device"
   },
   "dependencies": {
     "expo": "57.0.28",
