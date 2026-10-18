@@ -87,6 +87,10 @@ export default function Profile() {
           <div className="account-setting"><label htmlFor="profile-theme">Tema</label><select id="profile-theme" value={theme} onChange={event => changeTheme(event.target.value as ThemePreference)}><option value="light">Claro</option><option value="dark">Escuro</option><option value="auto">Automático</option></select></div>
           <div className="account-setting"><label htmlFor="profile-timer">Cronômetro por padrão</label><input id="profile-timer" type="checkbox" role="switch" className="account-toggle" checked={timer} onChange={event => changeTimer(event.target.checked)} /></div>
           <div className="account-setting"><Link href="/historico"><Icon name="clock" />Histórico</Link><Icon name="back" /></div>
+          <div className="account-setting"><Link href="/aprender"><Icon name="book" />Aprender hoje</Link><Icon name="back" /></div>
+          <div className="account-setting"><Link href="/progresso"><Icon name="spark" />Meu progresso</Link><Icon name="back" /></div>
+          <div className="account-setting"><Link href="/colecao"><Icon name="cup" />Minha coleção</Link><Icon name="back" /></div>
+          {['GUARDIAN', 'TEACHER', 'ADMIN'].includes(user.role) && <div className="account-setting"><Link href="/acompanhamento">Acompanhamento</Link><Icon name="back" /></div>}
           <div className="account-setting"><Link href="/pais">Painel dos pais</Link><Badge tone="soon">Em breve</Badge></div>
           {notice && <p role="status" className="muted">{notice}</p>}
           <Button type="button" variant="secondary" onClick={signOut} disabled={signingOut}>{signingOut ? 'Saindo…' : 'Sair da conta'}</Button>

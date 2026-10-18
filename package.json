@@ -1,19 +1,22 @@
 {
   "name": "simulados-bernardo",
   "version": "1.0.0",
-  "description": "Aplicação de simulados escolares para Ensino Fundamental",
+  "description": "Aplica\u00e7\u00e3o de simulados escolares para Ensino Fundamental",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint --dir app components contexts lib tests scripts packages/api-contracts/src --file middleware.ts next.config.js postcss.config.js tailwind.config.js --max-warnings 0",
     "test:auth": "tsc -p tsconfig.test.json && node --test .test-build/tests/auth-session.test.js",
-    "tokens:generate": "node scripts/generate-giz-tokens.mjs && node scripts/generate-giz-mobile.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "tsc -p tsconfig.test.json && node --test .test-build/tests/*.test.js",
+    "test:e2e": "tsc -p tsconfig.test.json && node tests/e2e/run-http.mjs",
+    "test:browser": "node tests/e2e/run-http.mjs --browser",
     "mobile:start": "npm --prefix mobile run start",
     "mobile:check": "npm --prefix mobile run typecheck",
-    "mobile:test": "npm --prefix mobile run test"
+    "mobile:test": "npm --prefix mobile run test",
+    "mobile:test:integration": "npm --prefix mobile run test:integration",
+    "tokens:generate": "node scripts/generate-giz-tokens.mjs && node scripts/generate-giz-mobile.mjs",
+    "test": "tsc -p tsconfig.test.json && node --test .test-build/tests/*.test.js"
   },
   "dependencies": {
     "next": "^14.0.0",
@@ -21,14 +24,16 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.64.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "autoprefixer": "^10.4.16",
-    "eslint": "8.57.1",
-    "eslint-config-next": "14.2.35",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "eslint": "8.57.1",
+    "eslint-config-next": "14.2.35"
   }
 }

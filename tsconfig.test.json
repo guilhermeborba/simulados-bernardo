@@ -11,13 +11,17 @@
     "rootDir": "."
   },
   "include": [
+    "tests/auth-session.test.ts",
+    "lib/authenticatedBackendClient.server.ts",
+    "lib/authenticatedFetchCookies.server.ts",
+    "lib/serverCookies.ts",
+    "lib/questionMapper.ts",
+    "lib/apiClient.ts",
     "tests/**/*.test.ts"
   ],
   "exclude": [
     "node_modules",
     ".next",
-    ".test-build",
-    "mobile",
-    "packages"
+    ".test-build"
   ]
 }

@@ -73,6 +73,8 @@ export interface ApiQuestion {
   type:
     "MULTIPLE_CHOICE" | "TRUE_FALSE_MULTIPLE" | "MATCHING" | "CLASSIFICATION";
   statement: string;
+  /** Input shape only; correct values remain protected until confirmation. */
+  classificationMode?: "CP" | "TEXT";
   tip: string | null;
   /** "Você sabia?" — curiosidade mostrada na tela de resultado, sempre. */
   funFact: string | null;
@@ -91,6 +93,8 @@ export interface ApiAttemptResultQuestion {
   id: string;
   type: ApiQuestion["type"];
   statement: string;
+  /** Input shape only; correct values remain protected until confirmation. */
+  classificationMode?: "CP" | "TEXT";
   tip: string | null;
   funFact: string | null;
   points: string;

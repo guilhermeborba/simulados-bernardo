@@ -96,6 +96,7 @@ export function answerIsComplete(question: TemplateQuestion, value: unknown): bo
   if (!value || typeof value !== 'object') return false;
   const values = value as Record<string, unknown>;
   if (question.type === 'matching') return Boolean(question.pairs?.length) && question.pairs!.every((pair) => pair.right.some((option) => option.id === values[pair.left.id]));
+  if (question.type === 'classification' && question.classificationMode === 'TEXT') return Boolean(question.items?.length) && question.items!.every((item) => typeof values[item.id] === 'string' && Boolean((values[item.id] as string).trim()));
   const allowed = question.type === 'classification' ? ['C', 'P'] : ['V', 'F'];
   return Boolean(question.items?.length) && question.items!.every((item) => allowed.includes(String(values[item.id])));
 }
@@ -140,7 +141,7 @@ export function questionsFromResult(result: ApiAttemptResult, fallback: ApiQuest
     const source = fallback.find((item) => item.id === question.id);
     const options = Array.isArray(question.options) ? question.options : source?.options;
     if (!options) return [];
-    return [{ id: question.id, type: question.type, statement: question.statement, tip: question.tip, funFact: question.funFact, points: question.points, order: question.order, options, answer: question.answer }];
+    return [{ id: question.id, type: question.type, statement: question.statement, tip: question.tip, funFact: question.funFact, points: question.points, order: question.order, options, answer: question.answer, classificationMode: question.classificationMode ?? source?.classificationMode }];
   }).sort((left, right) => left.order - right.order);
 }
 

@@ -29,7 +29,7 @@
 .giz-answer-group:disabled .giz-answer { cursor: default; }
 .giz-answer-row { border: var(--border) solid var(--line); border-radius: var(--r-md); padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; }
 .giz-answer-row legend { padding: 0 var(--s-2); font-weight: 800; max-width: 100%; }
-.giz-answer-row select { width: 100%; min-width: 0; min-height: var(--size-touch); border: var(--border) solid var(--line); border-radius: var(--r-md); padding: var(--s-2) var(--s-3); color: var(--ink); background: var(--surface); font: inherit; }
+.giz-answer-row select, .giz-answer-row input[type="text"] { width: 100%; min-width: 0; min-height: var(--size-touch); border: var(--border) solid var(--line); border-radius: var(--r-md); padding: var(--s-2) var(--s-3); color: var(--ink); background: var(--surface); font: inherit; }
 .giz-answer-choices { display: flex; flex-wrap: wrap; gap: var(--s-3); }
 .giz-answer-choice { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-3) var(--s-4); min-height: var(--size-touch); border: var(--border) solid var(--line); border-radius: var(--r-md); cursor: pointer; }
 .giz-answer-choice input { width: var(--s-5); height: var(--s-5); accent-color: var(--info); }

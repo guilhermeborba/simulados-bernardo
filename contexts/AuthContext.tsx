@@ -5,11 +5,13 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   ReactNode,
 } from 'react';
 import {
   getMe,
+  cancelPendingSessionRequests,
   login as apiLogin,
   logout as apiLogout,
   register as apiRegister,
@@ -19,6 +21,7 @@ import {
 interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
+  getSessionGeneration: () => number;
   login: (email: string, password: string) => Promise<void>;
   register: (
     name: string,
@@ -35,41 +38,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const generation = useRef(0);
+  const bootstrap = useRef<AbortController | null>(null);
+  const mutations = useRef<Promise<unknown>>(Promise.resolve());
+  const getSessionGeneration = useCallback(() => generation.current, []);
+
   useEffect(() => {
-    getMe()
-      .then(setUser)
-      .catch(() => setUser(null))
-      .finally(() => setIsLoading(false));
+    const controller = new AbortController();
+    bootstrap.current = controller;
+    const current = generation.current;
+    const isCurrent = () => !controller.signal.aborted && current === generation.current;
+    getMe(controller.signal)
+      .then(value => { if (isCurrent()) setUser(value); })
+      .catch(() => { if (isCurrent()) setUser(null); })
+      .finally(() => { if (isCurrent()) setIsLoading(false); });
+    return () => { controller.abort(); };
+  }, []);
+
+  const changeSession = useCallback(async (operation: () => Promise<AuthUser | null>) => {
+    const current = ++generation.current;
+    cancelPendingSessionRequests();
+    // Offline resume belongs to the last verified session, never its successor.
+    try { sessionStorage.removeItem('giz:session-user'); } catch { /* Browser storage is optional. */ }
+    bootstrap.current?.abort();
+    setUser(null);
+    setIsLoading(true);
+    // Cookie-changing requests run in order; the latest action owns client state.
+    const task = mutations.current.catch(() => undefined).then(async () => {
+      if (current !== generation.current) throw new Error('A sessão foi alterada. Tente novamente.');
+      try {
+        const value = await operation();
+        if (current !== generation.current) throw new Error('A sessão foi alterada. Tente novamente.');
+        setUser(value);
+      } finally {
+        if (current === generation.current) setIsLoading(false);
+      }
+    });
+    mutations.current = task.catch(() => undefined);
+    await task;
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { user: loggedInUser } = await apiLogin(email, password);
-    setUser(loggedInUser);
-  }, []);
+    await changeSession(async () => (await apiLogin(email, password)).user);
+  }, [changeSession]);
 
   const register = useCallback(
     async (name: string, email: string, password: string, inviteToken?: string) => {
-      const { user: registeredUser } = await apiRegister(
-        name,
-        email,
-        password,
-        inviteToken,
-      );
-      setUser(registeredUser);
-    },
-    [],
+      await changeSession(async () => (await apiRegister(name, email, password, inviteToken)).user);
+    }, [changeSession],
   );
 
   const logout = useCallback(async () => {
-    try {
-      await apiLogout();
-    } finally {
-      setUser(null);
-    }
-  }, []);
+    await changeSession(async () => { await apiLogout(); return null; });
+  }, [changeSession]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, getSessionGeneration, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

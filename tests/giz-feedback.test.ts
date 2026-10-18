@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { ApiRequestError, startAttempt, submitAttemptAnswer, type ApiAttemptResult, type ApiQuestion } from '../lib/apiClient';
-import { feedbackContent, questionsFromResult, responseFeedback, restoreAnswers, type RunnerSnapshot } from '../lib/gizRunner';
+import { mapApiQuestion } from '../lib/questionMapper';
+import { answerIsComplete, feedbackContent, makeAnswer, questionsFromResult, responseFeedback, restoreAnswers, type RunnerSnapshot } from '../lib/gizRunner';
 
 const question: ApiQuestion = { id: 'q', type: 'MULTIPLE_CHOICE', statement: 'Enunciado', tip: null, funFact: null, points: '1', order: 1, options: [{ id: 'a', optionKey: 'A', text: 'Alternativa A', groupKey: null, order: 1 }], answer: null };
 const feedback = { isCorrect: false, correctAnswer: { answer: 'A' }, tip: 'Relembre a pista.' };
@@ -72,4 +73,26 @@ test('explicit null redacts cached hint or curiosity while omitted fields retain
   assert.equal(feedbackContent(redacted?.funFact, 'Stale cached curiosity'), null);
   assert.equal(feedbackContent(omitted?.tip, 'Actual legacy hint'), 'Actual legacy hint');
   assert.equal(feedbackContent(omitted?.funFact, 'Actual legacy curiosity'), 'Actual legacy curiosity');
+});
+
+
+test('TEXT classification preserves literal maps, requires every item and survives direct result snapshots', () => {
+  const textQuestion: ApiQuestion = { ...question, type: 'CLASSIFICATION', classificationMode: 'TEXT', options: [
+    { id: 'a', optionKey: 'a', text: 'Primeira palavra', groupKey: null, order: 1 },
+    { id: 'b', optionKey: 'b', text: 'Segunda palavra', groupKey: null, order: 2 },
+  ] };
+  const mapped = mapApiQuestion(textQuestion);
+  assert.equal(mapped.classificationMode, 'TEXT');
+  assert.equal(answerIsComplete(mapped, { a: 'substantivo', b: ' ' }), false);
+  assert.equal(answerIsComplete(mapped, { a: 'substantivo', b: 5 }), false);
+  const literal = { a: '  Nome Próprio  ', b: 'Nome Comum' };
+  assert.equal(answerIsComplete(mapped, literal), true);
+  assert.deepEqual(makeAnswer(mapped, literal).body, literal);
+  assert.deepEqual(makeAnswer(mapped, literal, true).body, {});
+  assert.equal(answerIsComplete(mapApiQuestion({ ...textQuestion, classificationMode: undefined }), literal), false);
+  const result: ApiAttemptResult = { attempt: { id: 'a', simulationId: 's', status: 'FINISHED', score: '0', maxScore: '1', percentage: '0', correctCount: 0, wrongCount: 1 }, questions: [{ ...textQuestion, answer: literal, isCorrect: false, pointsEarned: '0', correctAnswer: { a: 'próprio', b: 'comum' } }] };
+  const source = questionsFromResult(result);
+  assert.equal(source.length, 1);
+  assert.equal(mapApiQuestion(source[0]).classificationMode, 'TEXT');
+  assert.deepEqual(source[0].answer, literal);
 });

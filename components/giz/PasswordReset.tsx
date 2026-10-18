@@ -2,54 +2,82 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
+import { ApiError, resetPassword } from '@/lib/apiClient';
 import { AuthField, AuthLayout, FormError } from './AuthLayout';
 import { Button } from './ui';
-import { isOffline, passwordError, resetPassword } from '@/lib/gizAccountApi';
 
 export default function PasswordReset() {
-  const [token, setToken] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
+  const [tokenReady, setTokenReady] = useState(false);
+  const [readyGeneration, setReadyGeneration] = useState(0);
+  const token = useRef<string | null>(null);
   const [password, setPassword] = useState('');
-  const [fieldError, setFieldError] = useState<string>();
-  const [error, setError] = useState<string>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
-  const confirmation = useRef<HTMLHeadingElement>(null);
-  const tokenRead = useRef(false);
+  const [confirmation, setConfirmation] = useState('');
+  const [pending, setPending] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const lifecycle = useRef<AbortController | null>(null);
+  const captured = useRef(false);
+  const linkGeneration = useRef(0);
+  const requestPending = useRef(false);
+  const confirmationMessage = useRef<HTMLParagraphElement>(null);
+  useEffect(() => { if (success) confirmationMessage.current?.focus(); }, [success]);
   useEffect(() => {
-    if (tokenRead.current) return;
-    tokenRead.current = true;
-    const value = new URLSearchParams(window.location.hash.slice(1)).get('token');
-    setToken(value && /^[A-Za-z0-9_-]{43}$/.test(value) ? value : null);
-    // The backend sends the secret in a fragment; keep it out of history and requests.
-    window.history.replaceState(null, '', window.location.pathname);
-    setReady(true);
+    const captureLink = () => {
+      lifecycle.current?.abort();
+      lifecycle.current = new AbortController();
+      const currentGeneration = ++linkGeneration.current;
+      const parameters = new URLSearchParams(window.location.hash.slice(1));
+      const value = parameters.get('token');
+      // Same-path links may only change the hash; each new link replaces the old one.
+      window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}`);
+      token.current = value && /^[A-Za-z0-9_-]{43}$/.test(value) && parameters.getAll('token').length === 1 ? value : null;
+      requestPending.current = false;
+      setPassword(''); setConfirmation(''); setPending(false); setSuccess(false); setError(null);
+      setReadyGeneration(currentGeneration); setTokenReady(true);
+    };
+    if (!captured.current) {
+      captured.current = true;
+      captureLink();
+    } else {
+      // StrictMode repeats effect setup after cleanup, after the initial hash is gone.
+      lifecycle.current = new AbortController();
+    }
+    window.addEventListener('hashchange', captureLink);
+    return () => {
+      window.removeEventListener('hashchange', captureLink);
+      lifecycle.current?.abort();
+    };
   }, []);
-  useEffect(() => { if (done) confirmation.current?.focus(); }, [done]);
-
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!token || isSubmitting) return;
-    setError(undefined);
-    const invalid = passwordError(password);
-    setFieldError(invalid);
-    if (invalid) { document.getElementById('reset-password')?.focus(); return; }
-    if (isOffline()) { setError('Você está sem conexão. Conecte-se para alterar a senha.'); return; }
-    setIsSubmitting(true);
+    const controller = lifecycle.current;
+    const currentGeneration = linkGeneration.current;
+    const activeToken = token.current;
+    if (requestPending.current || pending || !activeToken || !controller || controller.signal.aborted || readyGeneration !== currentGeneration) return;
+    const isCurrent = () => !controller.signal.aborted && currentGeneration === linkGeneration.current;
+    setError(null);
+    const bytes = new TextEncoder().encode(password).length;
+    if (Array.from(password).length < 8 || bytes > 72) { setError('A nova senha precisa ter pelo menos 8 caracteres e até 72 bytes.'); return; }
+    if (password !== confirmation) { setError('A confirmação precisa ser igual à nova senha.'); return; }
+    requestPending.current = true; setPending(true);
     try {
-      await resetPassword(token, password);
-      setPassword(''); setToken(null); setDone(true);
-      try { window.sessionStorage.removeItem('giz:session-user'); } catch { /* Storage is optional. */ }
-    } catch (err) { setError(isOffline() || err instanceof TypeError ? 'Não foi possível conectar. Verifique sua conexão e tente de novo.' : err instanceof Error ? err.message : 'Não foi possível alterar a senha. Tente de novo.'); }
-    finally { setIsSubmitting(false); }
+      await resetPassword(activeToken, password, controller.signal);
+      if (isCurrent()) { token.current = null; setPassword(''); setConfirmation(''); setSuccess(true); }
+    } catch (cause) {
+      if (isCurrent()) setError(cause instanceof ApiError && cause.status === 400 ? 'Este link é inválido, expirou ou já foi usado. Solicite outro link de recuperação.' : cause instanceof ApiError && cause.status === 429 ? 'Muitas tentativas. Aguarde um pouco e tente novamente.' : 'Não foi possível alterar a senha agora. Tente novamente.');
+    } finally { if (isCurrent()) { requestPending.current = false; setPending(false); } }
   }
-
-  return <AuthLayout title="Crie uma nova senha" subtitle="Escolha uma senha com pelo menos 8 caracteres.">
-    {!ready ? <p role="status">Conferindo o link…</p> : done ? <div className="account-confirmation" role="status"><h2 ref={confirmation} tabIndex={-1}>Senha alterada</h2><p>Entre com sua nova senha para continuar.</p><a href="/login" className="btn">Voltar para entrar</a></div> : token ? <form className="account-form" noValidate onSubmit={submit} aria-busy={isSubmitting}>
-      <AuthField id="reset-password" label="Nova senha" type="password" autoComplete="new-password" minLength={8} maxLength={72} required value={password} onChange={e => setPassword(e.target.value)} error={fieldError} />
-      {error && <FormError>{error}</FormError>}
-      <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Salvando…' : 'Salvar nova senha'}</Button>
-      <Link href="/recuperar-senha" className="account-link">Pedir outro link</Link>
-    </form> : <div className="account-confirmation"><FormError>Este link é inválido ou já foi usado. Peça um novo link para recuperar sua senha.</FormError><Link href="/recuperar-senha" className="btn">Pedir novo link</Link></div>}
+  return <AuthLayout title="Redefinir minha senha" subtitle="Escolha uma senha com pelo menos 8 caracteres.">
+    {!tokenReady ? <p role="status">Preparando recuperação…</p> : success ? <div className="account-confirmation"><p ref={confirmationMessage} tabIndex={-1} role="status">Senha alterada. Entre na sua conta com a nova senha.</p></div> : !token.current ? <FormError>Abra o link completo recebido por e-mail para redefinir a senha. Se ele não estiver disponível, solicite outro link.</FormError> : <>
+      <p>Escolha uma nova senha. O link pode ser usado uma única vez.</p>
+      <form className="account-form" noValidate onSubmit={event => void submit(event)} aria-busy={pending}>
+        <AuthField id="new-password" label="Nova senha" type="password" autoComplete="new-password" required minLength={8} value={password} onChange={event => setPassword(event.target.value)} disabled={pending} aria-describedby="password-hint" />
+        <p id="password-hint" className="muted">Use pelo menos 8 caracteres. Para senhas com acentos ou emojis, o limite de 72 bytes pode corresponder a menos de 72 caracteres.</p>
+        <AuthField id="password-confirmation" label="Confirmar nova senha" type="password" autoComplete="new-password" required minLength={8} value={confirmation} onChange={event => setConfirmation(event.target.value)} disabled={pending} />
+        {error && <FormError>{error}</FormError>}
+        <Button type="submit" disabled={pending}>{pending ? 'Salvando…' : 'Salvar nova senha'}</Button>
+      </form>
+    </>}
+    <div className="account-footer"><Link href="/login" className="account-link">Entrar na minha conta</Link>{!success && <Link href="/recuperar-senha" className="account-link">Solicitar outro link</Link>}</div>
   </AuthLayout>;
 }

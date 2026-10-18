@@ -1,15 +1,19 @@
 /// <reference types="jest" />
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { cleanup, render, screen } from '@testing-library/react-native';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react-native';
 import { tokens } from '../../src/generated/tokens';
-import { Copy, Loading, Screen } from '../../src/ui';
+import { Copy, Loading, Navigation, Screen } from '../../src/ui';
+let mockRole="STUDENT";
+let mockCleanupError:string|null=null;
+const mockCleanupMedia=jest.fn(async()=>true);
 const palette = Object.fromEntries(Object.entries(tokens.color.light).map(([key,value])=>[key,value.value]));
 jest.mock('expo-router',()=>({router:{push:jest.fn(),replace:jest.fn(),back:jest.fn(),canGoBack:()=>false},usePathname:()=>'/'}));
-jest.mock('../../src/session-context',()=>({useSession:()=>({session:{status:'authenticated',generation:1,user:{id:'test-user',name:'Pessoa de teste',role:'STUDENT'}}})}));
+jest.mock('../../src/session-context',()=>({useSession:()=>({session:{status:'authenticated',generation:1,user:{id:'test-user',name:'Pessoa de teste',role:mockRole}},cleanupError:mockCleanupError,cleanupMedia:mockCleanupMedia})}));
 jest.mock('../../src/theme',()=>{const source=require('../../src/generated/tokens').tokens;return{tokens:source,useTheme:()=>({colors:Object.fromEntries(Object.entries(source.color.light).map(([key,value]:[string,any])=>[key,value.value])),tokens:source,theme:'light',timer:true})};});
 jest.mock('react-native-safe-area-context',()=>{const{View}=require('react-native');return{SafeAreaView:({children,...props}:any)=><View testID="safe-area" {...props}>{children}</View>};});
 jest.mock('react-native-svg',()=>({SvgXml:()=>null}));
+beforeEach(()=>{mockRole='STUDENT';mockCleanupError=null;jest.clearAllMocks();});
 afterEach(cleanup);
 test('phone shell has exactly four accessible navigation tabs and a dark status safe area',async()=>{
  await render(<Screen title="Eu"><Copy>Conteúdo</Copy></Screen>);
@@ -36,4 +40,21 @@ test.each([[768,72],[1440,240]])('wide shell at %i uses the %i px side navigatio
   expect(screen.getAllByRole('tab')).toHaveLength(4);
   expect(StyleSheet.flatten(screen.getAllByTestId('safe-area')[1].props.style).width).toBe(expected);
  } finally { dimensions.mockRestore(); }
+});
+
+test('preserved practice screens can render their navigation without duplicating the Giz shell tabs',async()=>{
+ await render(<Screen title="Práticas"><Navigation/><Copy>Uma descoberta</Copy></Screen>);
+ expect(screen.getAllByRole('tab')).toHaveLength(4);
+});
+test('adult accounts keep accompaniment and profile navigation',async()=>{
+ mockRole='PARENT';
+ await render(<Screen title="Acompanhamento"><Copy>Alunos vinculados</Copy></Screen>);
+ expect(screen.getAllByRole('tab').map(item=>item.props.accessibilityLabel)).toEqual(['Alunos','Eu']);
+});
+test('media cleanup errors from the current provider remain visible and offer an explicit retry',async()=>{
+ mockCleanupError='A mídia temporária ainda precisa ser limpa.';
+ await render(<Screen title="Práticas"><Copy>Conteúdo</Copy></Screen>);
+ expect(screen.getByText(mockCleanupError)).toBeTruthy();
+ await fireEvent.press(screen.getByRole('button',{name:'Tentar limpeza'}));
+ expect(mockCleanupMedia).toHaveBeenCalledTimes(1);
 });

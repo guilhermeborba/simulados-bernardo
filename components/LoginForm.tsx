@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,7 +12,8 @@ import { Button } from '@/components/giz/ui';
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
+  const [completed, setCompleted] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fields, setFields] = useState<{ email?: string; password?: string }>({});
@@ -20,6 +21,12 @@ export default function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const returnTo = safeReturnTo(searchParams.get('returnTo'));
   const registerHref = returnTo ? `/registro?returnTo=${encodeURIComponent(returnTo)}` : '/registro';
+
+  useEffect(() => {
+    if (!completed || !user) return;
+    const destination = returnTo || (['GUARDIAN', 'TEACHER', 'ADMIN'].includes(user.role) ? '/acompanhamento' : lerTrilhaSalva() ? '/' : '/trilha');
+    router.push(destination);
+  }, [completed, user, returnTo, router]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -38,7 +45,7 @@ export default function LoginForm() {
     setIsSubmitting(true);
     try {
       await login(email.trim(), password);
-      router.push(returnTo || (lerTrilhaSalva() ? '/' : '/trilha'));
+      setCompleted(true);
     } catch (err) {
       setError(isOffline() || err instanceof TypeError ? 'Não foi possível conectar. Verifique sua conexão e tente de novo.' : err instanceof Error && /credentials|credenciais|senha|unauthorized/i.test(err.message) ? 'E-mail ou senha não conferem. Tente de novo.' : 'Não foi possível entrar agora. Tente de novo.');
     } finally {

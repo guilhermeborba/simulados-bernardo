@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme, tokens } from '../theme';
-import { Copy, Icon } from '../ui';
+import { Copy, Field, Icon } from '../ui';
 import type { TemplateQuestion } from './questions';
 import { parseStoredAnswer } from './questions';
 import { authorizedCorrectAnswer } from './model';
@@ -16,7 +16,8 @@ export function Options({ question, value, onChange, locked = false, isCorrect, 
   review?: boolean;
 }) {
   const { colors: c } = useTheme();
-  const answer = value && typeof value === 'object' ? value as Record<string, string> : {};
+  const displayValue = question.type === 'true_false_multiple' ? parseStoredAnswer(question.type, value) : value;
+  const answer = displayValue && typeof displayValue === 'object' ? displayValue as Record<string, unknown> : {};
   const authorized = locked ? authorizedCorrectAnswer(correctAnswer) : undefined;
   const correct = authorized ? parseStoredAnswer(question.type, authorized) : undefined;
   const correctMap = correct && typeof correct === 'object' ? correct as Record<string, unknown> : {};
@@ -44,6 +45,10 @@ export function Options({ question, value, onChange, locked = false, isCorrect, 
 
   if (question.type === 'multiple_choice') return <View accessibilityRole="radiogroup" accessibilityLabel={question.text} style={styles.group}>{question.options?.map((option, index) => choice(option.id, option.text, value === option.id, () => onChange?.(option.id), String.fromCharCode(65 + index), correct, isCorrect))}</View>;
   if (question.type === 'matching') return <View style={styles.group}>{question.pairs?.map(pair => <View key={pair.left.id} style={styles.group} accessibilityRole="radiogroup" accessibilityLabel={pair.left.text}><Copy>{pair.left.text}</Copy>{pair.right.map(option => choice(option.id, option.text, answer[pair.left.id] === option.id, () => onChange?.({ ...answer, [pair.left.id]: option.id }), undefined, correctMap[pair.left.id]))}</View>)}</View>;
+  if (question.type === 'classification' && question.classificationMode === 'TEXT') return <View style={styles.group}>{question.items?.map(item => <View key={item.id} style={styles.group}>
+    <Field label={item.text} value={typeof answer[item.id] === 'string' ? answer[item.id] as string : ''} onChangeText={text => onChange?.({...answer,[item.id]:text})} editable={!locked} accessibilityState={{disabled:locked}} autoCapitalize="sentences" autoCorrect={false} maxLength={2000} placeholder={locked?'Em branco':'Digite sua resposta'}/>
+    {typeof correctMap[item.id] === 'string' && <Copy>Resposta certa: {String(correctMap[item.id])}</Copy>}
+  </View>)}</View>;
   const choices = question.type === 'classification' ? [{ id: 'C', text: 'C' }, { id: 'P', text: 'P' }] : [{ id: 'V', text: 'Verdadeiro' }, { id: 'F', text: 'Falso' }];
   return <View style={styles.group}>{question.items?.map(item => <View key={item.id} style={styles.group} accessibilityRole="radiogroup" accessibilityLabel={item.text}><Copy>{item.text}</Copy>{choices.map(option => choice(option.id, option.text, answer[item.id] === option.id, () => onChange?.({ ...answer, [item.id]: option.id }), undefined, correctMap[item.id]))}</View>)}</View>;
 }

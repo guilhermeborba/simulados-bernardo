@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ApiRequestError, finishAttempt, getAttemptQuestions, getAttemptResult, getMe, startAttempt, submitAttemptAnswer } from '@/lib/apiClient';
+import { ApiRequestError, finishAttempt, getAttemptQuestions, getAttemptResult, getMe, getSimulationAttempt, startAttempt, submitAttemptAnswer } from '@/lib/apiClient';
 import { mapApiQuestion } from '@/lib/questionMapper';
 import { getTimerDefault } from '@/lib/gizPreferences';
-import { answerIsComplete, feedbackContent, getAttemptDetails, makeAnswer, persistSnapshot, QUESTION_TIME_MS, questionsFromResult, readSnapshot, responseFeedback, restoreAnswers, SESSION_USER_KEY, type RunnerSnapshot } from '@/lib/gizRunner';
+import { useAuth } from '@/contexts/AuthContext';
+import { answerIsComplete, feedbackContent, makeAnswer, persistSnapshot, QUESTION_TIME_MS, questionsFromResult, readSnapshot, responseFeedback, restoreAnswers, SESSION_USER_KEY, type RunnerSnapshot } from '@/lib/gizRunner';
 import { AppShell, Badge, Button, FeedbackBlock, Icon, Modal, Progress, ScreenState } from './giz/ui';
 import QuestionAnswers from './giz/QuestionAnswers';
 import RunnerResult from './giz/RunnerResult';
@@ -14,6 +15,12 @@ import './giz/runner.css';
 type Screen = 'loading' | 'ready' | 'result' | 'review' | 'error';
 
 export default function SimuladoRunner({ simulationId }: { simulationId: string }) {
+  const { isLoading, getSessionGeneration } = useAuth();
+  if (isLoading) return <AppShell title="Preparando o simulado" flow><ScreenState kind="loading" title="Conferindo sua sessão…" /></AppShell>;
+  return <ActiveSimuladoRunner key={`${getSessionGeneration()}:${simulationId}`} simulationId={simulationId} />;
+}
+
+function ActiveSimuladoRunner({ simulationId }: { simulationId: string }) {
   const router = useRouter();
   const params = useSearchParams();
   const requestedAttempt = params.get('attemptId');
@@ -56,7 +63,7 @@ export default function SimuladoRunner({ simulationId }: { simulationId: string 
     try {
       const user = await getMe();
       try { sessionStorage.setItem(SESSION_USER_KEY, user.id); } catch { /* Browser storage is optional. */ }
-      const attempt = requestedAttempt ? await getAttemptDetails(requestedAttempt) : await startAttempt(simulationId);
+      const attempt = requestedAttempt ? await getSimulationAttempt(requestedAttempt) : await startAttempt(simulationId);
       if (attempt.simulationId !== simulationId) throw new Error('Esta tentativa pertence a outro simulado. Abra pelo seu histórico.');
       const cached = readSnapshot(user.id, simulationId, attempt.id);
       const result = attempt.status === 'FINISHED' ? await getAttemptResult(attempt.id) : undefined;
@@ -85,7 +92,9 @@ export default function SimuladoRunner({ simulationId }: { simulationId: string 
       setOffline(false);
       setScreen(result ? requestedView === 'review' ? 'review' : 'result' : 'ready');
       clockBase.current = performance.now();
-      void synchronize().catch(() => undefined);
+      void synchronize().catch((cause) => {
+        if (loadRevision === revision.current) reportSyncFailure(cause);
+      });
     } catch (cause) {
       if (loadRevision !== revision.current) return;
       const disconnected = !navigator.onLine || cause instanceof TypeError;
@@ -115,6 +124,12 @@ export default function SimuladoRunner({ simulationId }: { simulationId: string 
     // Query parameters also support direct links from history and review.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulationId, requestedAttempt, requestedView, requestedTimer]);
+
+  function reportSyncFailure(cause: unknown) {
+    if (cause instanceof Error && cause.name === 'AbortError') return;
+    if (cause instanceof TypeError || !navigator.onLine) setOffline(true);
+    else setError(cause instanceof Error ? cause.message : 'Sua resposta está no aparelho. Tente sincronizar de novo.');
+  }
 
   async function synchronize() {
     if (syncing.current) return syncing.current;
@@ -153,7 +168,8 @@ export default function SimuladoRunner({ simulationId }: { simulationId: string 
   useEffect(() => {
     const online = () => {
       setOffline(false);
-      void synchronize().catch((cause) => setError(cause instanceof Error ? cause.message : 'Não foi possível sincronizar. Tente de novo.'));
+      setError('');
+      void synchronize().catch(reportSyncFailure);
     };
     const disconnected = () => setOffline(true);
     const visibility = () => { clockBase.current = performance.now(); };
@@ -217,10 +233,7 @@ export default function SimuladoRunner({ simulationId }: { simulationId: string 
     clockBase.current = now;
     commit({ ...current, spentMs: { ...current.spentMs, [question.id]: (current.spentMs[question.id] ?? 0) + partial }, answers: { ...current.answers, [question.id]: makeAnswer(mapped, value, blank) } });
     setError('');
-    if (navigator.onLine) void synchronize().catch((cause) => {
-      if (cause instanceof TypeError || !navigator.onLine) setOffline(true);
-      else setError(cause instanceof Error ? cause.message : 'Sua resposta está no aparelho. Tente sincronizar de novo.');
-    });
+    if (navigator.onLine) void synchronize().catch(reportSyncFailure);
     else setOffline(true);
   }
   confirmRef.current = confirm;
@@ -298,7 +311,7 @@ export default function SimuladoRunner({ simulationId }: { simulationId: string 
       if (event.key === 'Enter' && !target.closest('button, a, summary')) {
         event.preventDefault();
         if (!answered) confirm();
-        else if (current.attempt.immediateFeedback === true && !answered.synced && !offline) return;
+        else if (current.attempt.immediateFeedback === true && !answered.synced && !offline && !error) return;
         else if (current.currentIndex === current.questions.length - 1) void showResult();
         else goTo(current.currentIndex + 1);
       }
@@ -306,7 +319,7 @@ export default function SimuladoRunner({ simulationId }: { simulationId: string 
     window.addEventListener('keydown', keyboard);
     return () => window.removeEventListener('keydown', keyboard);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen, exitOpen, busy, offline]);
+  }, [screen, exitOpen, busy, offline, error]);
 
   if (screen === 'loading') return <AppShell title="Preparando o simulado" flow><ScreenState kind="loading" title="Preparando suas questões…" /></AppShell>;
   if (screen === 'error') return <AppShell title="Seu simulado" backHref="/" flow><ScreenState kind={offline ? 'offline' : 'error'} message={error} action={<Button onClick={() => void load()}>Tentar de novo</Button>} /></AppShell>;
@@ -333,8 +346,8 @@ export default function SimuladoRunner({ simulationId }: { simulationId: string 
     if (snapshot.answers[snapshot.questions[i].id]?.feedback?.isCorrect !== true) break;
     streak += 1;
   }
-  const retrySync = () => { setError(''); setBusy(true); void synchronize().catch((cause) => setError(cause instanceof Error ? cause.message : 'Não foi possível sincronizar.')).finally(() => setBusy(false)); };
-  const waitingFeedback = snapshot.attempt.immediateFeedback === true && Boolean(record && !record.synced && !offline);
+  const retrySync = () => { setError(''); setBusy(true); void synchronize().catch(reportSyncFailure).finally(() => setBusy(false)); };
+  const waitingFeedback = snapshot.attempt.immediateFeedback === true && Boolean(record && !record.synced && !offline && !error);
   const controls = <Button disabled={busy || waitingFeedback || (!record && !answerIsComplete(question, value))} onClick={() => record ? last ? void showResult() : goTo(snapshot.currentIndex + 1) : confirm()}>{busy ? 'Enviando…' : waitingFeedback ? 'Conferindo…' : record ? last ? 'Ver resultado' : 'Próxima' : 'Confirmar'}</Button>;
 
   return (
@@ -350,7 +363,7 @@ export default function SimuladoRunner({ simulationId }: { simulationId: string 
             <span className="giz-question-label">Questão {snapshot.currentIndex + 1} de {snapshot.questions.length}</span>
             <h1 ref={questionHeading} tabIndex={-1}>{question.text}</h1>
             <QuestionAnswers question={question} value={value} onChange={choose} locked={Boolean(record)} isCorrect={feedback?.isCorrect} correctAnswer={feedback?.correctAnswer} />
-            {(!snapshot.timerEnabled || offline || !storageOk || error) && <div className="giz-runner-notices">
+            {(!snapshot.timerEnabled || offline || !storageOk || pending > 0 || error) && <div className="giz-runner-notices">
               {!snapshot.timerEnabled && <p className="muted"><Icon name="clock" size={20} />Sem limite de tempo</p>}
               {offline && <p role="status"><Icon name="alert" size={20} />{storageOk ? 'Sem conexão. Seu progresso está salvo neste aparelho.' : 'Sem conexão. Mantenha esta página aberta para preservar as respostas.'}</p>}
               {!storageOk && <p role="alert">Este navegador não conseguiu guardar o progresso no aparelho. {pending ? 'Conecte-se para sincronizar antes de sair.' : 'As respostas enviadas continuam salvas na sua conta.'}</p>}

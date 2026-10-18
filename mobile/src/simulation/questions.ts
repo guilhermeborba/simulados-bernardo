@@ -18,6 +18,7 @@ export interface TemplatePair {
 export interface TemplateQuestion {
   id: string;
   type: 'multiple_choice' | 'true_false_multiple' | 'matching' | 'classification';
+  classificationMode?: 'CP' | 'TEXT';
   text: string;
   tip: string;
   points: number;
@@ -38,6 +39,7 @@ export function mapApiQuestion(question: ApiQuestion): TemplateQuestion {
   const base = {
     id: question.id,
     type: TYPE_MAP[question.type],
+    classificationMode: question.type === 'CLASSIFICATION' ? question.classificationMode ?? 'CP' : undefined,
     text: question.statement,
     tip: question.tip ?? '',
     points: Number(question.points),
@@ -97,7 +99,11 @@ export function parseStoredAnswer(
     return typeof value === 'string' && value !== '' ? value : undefined;
   }
 
-  return Object.keys(stored as Record<string, unknown>).length > 0 ? stored : undefined;
+  if (Object.keys(stored as Record<string, unknown>).length === 0) return undefined;
+  // Legacy true/false receipts used booleans. Normalize the display value only;
+  // callers keep the original server body for replay/idempotency comparisons.
+  if (type === 'true_false_multiple') return Object.fromEntries(Object.entries(stored).map(([key,value]) => [key, value === true ? 'V' : value === false ? 'F' : value]));
+  return stored;
 }
 
 export function buildAnswerBody(

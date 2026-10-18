@@ -2,6 +2,7 @@
 
 import { parseStoredAnswer, type TemplateQuestion } from '@/lib/questionMapper';
 import { Icon } from './ui';
+import { displayAnswerValue } from '@/lib/gizQuestionDisplay';
 
 interface Props {
   question: TemplateQuestion;
@@ -16,7 +17,7 @@ interface Props {
 export default function QuestionAnswers({ question, value, onChange, locked = false, isCorrect, correctAnswer, review = false }: Props) {
   // Even if a caller has a completed snapshot, an interactive question must not
   // render its answer key until confirmation has locked it.
-  const correctValue = locked ? parseStoredAnswer(question.type, correctAnswer) : undefined;
+  const correctValue = locked ? displayAnswerValue(question.type, parseStoredAnswer(question.type, correctAnswer)) : undefined;
   if (question.type === 'multiple_choice') {
     const correctId = typeof correctValue === 'string' ? correctValue : locked && isCorrect === true && typeof value === 'string' ? value : undefined;
     return (
@@ -41,13 +42,22 @@ export default function QuestionAnswers({ question, value, onChange, locked = fa
     );
   }
 
-  const selected = value && typeof value === 'object' ? value as Record<string, string> : {};
+  const shownValue = displayAnswerValue(question.type, value);
+  const selected = shownValue && typeof shownValue === 'object' ? shownValue as Record<string, string> : {};
   const correctMap = correctValue && typeof correctValue === 'object' ? correctValue as Record<string, unknown> : {};
   if (question.type === 'matching') {
     return <div className="giz-answer-group">{question.pairs?.map((pair) => {
       const right = pair.right.find((option) => option.id === correctMap[pair.left.id]);
       return <label className="giz-answer-row" key={pair.left.id}><span>{pair.left.text}</span><select aria-label={`${pair.left.text}${locked ? ', sua resposta' : ''}`} value={selected[pair.left.id] ?? ''} disabled={locked} onChange={(event) => onChange?.({ ...selected, [pair.left.id]: event.target.value })}><option value="">Escolha uma opção</option>{pair.right.map((option) => <option key={option.id} value={option.id}>{option.text}</option>)}</select>{right && <span className="giz-correct-map"><Icon name="check" size={20} /><span><strong>Resposta certa: </strong>{right.text}</span></span>}</label>;
     })}</div>;
+  }
+
+  if (question.type === 'classification' && question.classificationMode === 'TEXT') {
+    return <div className="giz-answer-group">{question.items?.map((item) => <div className="giz-answer-row" key={item.id}>
+      <label htmlFor={`question-${question.id}-${item.id}`}>{item.text}{locked && <span className="sr-only">, sua resposta</span>}</label>
+      <input id={`question-${question.id}-${item.id}`} type="text" value={typeof selected[item.id] === 'string' ? selected[item.id] : ''} maxLength={2000} disabled={locked} onChange={(event) => onChange?.({ ...selected, [item.id]: event.target.value })} />
+      {typeof correctMap[item.id] === 'string' && <span className="giz-correct-map"><Icon name="check" size={20} /><span><strong>Resposta certa: </strong>{correctMap[item.id] as string}</span></span>}
+    </div>)}</div>;
   }
 
   const choices = question.type === 'true_false_multiple' ? [{ value: 'V', label: 'Verdadeiro' }, { value: 'F', label: 'Falso' }] : [{ value: 'C', label: 'C' }, { value: 'P', label: 'P' }];

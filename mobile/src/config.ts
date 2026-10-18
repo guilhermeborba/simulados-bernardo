@@ -15,7 +15,7 @@ function origin(raw: string): string {
   return value.origin;
 }
 const configuredScheme = Constants.expoConfig?.scheme;
-const appScheme = typeof configuredScheme === 'string' && ['gizdev', 'gizdevinternal'].includes(configuredScheme) ? configuredScheme : 'gizdev';
+const appScheme = typeof configuredScheme === 'string' && ['simuladosbernardoproof', 'simuladosbernardointernal'].includes(configuredScheme) ? configuredScheme : 'simuladosbernardoproof';
 export const environment = {
   appScheme,
   apiOrigin: origin(

@@ -1,5 +1,7 @@
 # Redesign — Simulados Bernardo
 
+> **Documento histórico de junho de 2026.** Preserva o desenho original do redesign; exemplos, rotas, fontes e checkboxes não descrevem o estado atual nem definem trabalho pendente. As fontes passaram a ser WOFF2 locais e a aplicação recebeu as jornadas dos lotes 01–10. Consulte [PROGRESS.md](../../../PROGRESS.md) para entregas/pendências atuais e o [plano de evolução canônico](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-12-evolucao-quizzes-gamificacao-mobile-plan.md) para os lotes 11–12. Mobile ainda não foi iniciado.
+
 **Data:** 2026-06-11  
 **Status:** Aprovado — pronto para implementação
 

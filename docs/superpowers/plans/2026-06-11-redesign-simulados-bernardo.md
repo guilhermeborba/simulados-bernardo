@@ -1,5 +1,7 @@
 # Redesign Simulados Bernardo — Implementation Plan
 
+> **Documento histórico de junho de 2026.** Preserva o desenho original do redesign; exemplos, rotas, fontes e checkboxes não descrevem o estado atual nem definem trabalho pendente. As fontes passaram a ser WOFF2 locais e a aplicação recebeu as jornadas dos lotes 01–10. Consulte [PROGRESS.md](../../../PROGRESS.md) para entregas/pendências atuais e o [plano de evolução canônico](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-12-evolucao-quizzes-gamificacao-mobile-plan.md) para os lotes 11–12. Mobile ainda não foi iniciado.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Substituir o visual genérico pelo design system lúdico-profissional e introduzir as telas Hero e Seleção de Disciplina, mantendo toda a lógica de negócio existente.

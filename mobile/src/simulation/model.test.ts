@@ -72,3 +72,49 @@ test('explicitly null API feedback never revives an older correction from local 
 test('nullable hint fields from the real API keep their explicit redaction',()=>{
  assert.deepEqual(responseFeedback({feedback:{isCorrect:true,correctAnswer:{answer:'B'},tip:null,funFact:null,explanation:null}}),{isCorrect:true,correctAnswer:{answer:'B'},tip:null,funFact:null,explanation:null});
 });
+
+test('legacy boolean true/false receipts normalize their display without changing the server body',()=>{
+ const body={one:true,two:false};
+ const restored=restoreAnswers([{...question,answer:body}]);
+ assert.deepEqual(restored.q.value,{one:'V',two:'F'});
+ assert.deepEqual(restored.q.body,{one:true,two:false});
+ assert.strictEqual(restored.q.body,body);
+ assert.equal(restored.q.feedback,undefined);
+ assert.deepEqual(authorizedAnswerLines(mapApiQuestion(question),body),['Item um: Verdadeiro','Item dois: Falso']);
+});
+
+test('classification uses the explicit text mode and otherwise preserves the C/P default',()=>{
+ const cp=mapApiQuestion({...question,type:'CLASSIFICATION'});
+ assert.equal(cp.classificationMode,'CP');
+ assert.equal(answerIsComplete(cp,{one:'C',two:'P'}),true);
+ assert.equal(answerIsComplete(cp,{one:'palavra',two:'texto'}),false);
+ const text=mapApiQuestion({...question,type:'CLASSIFICATION',classificationMode:'TEXT'});
+ assert.equal(text.classificationMode,'TEXT');
+ assert.equal(answerIsComplete(text,{one:'Texto'}),false);
+ assert.equal(answerIsComplete(text,{one:'Texto',two:'  '}),false);
+ assert.equal(answerIsComplete(text,{one:'Texto',two:true}),false);
+ assert.equal(answerIsComplete(text,{one:'Texto',two:'x'.repeat(2001)}),false);
+ assert.equal(answerIsComplete(text,{one:'Texto',two:'x'.repeat(2000)}),true);
+ assert.equal(answerIsComplete(text,{one:'Texto',two:'Resposta',extra:'Valor'}),false);
+ assert.equal(answerIsComplete(text,['Texto','Resposta']),false);
+ assert.equal(answerIsComplete(text,{one:' Texto ',two:'Outra resposta'}),true);
+});
+
+test('text classification preserves the raw map and timeout still sends only an empty body',()=>{
+ const mapped=mapApiQuestion({...question,type:'CLASSIFICATION',classificationMode:'TEXT'});
+ const body={one:'  TEXTO Original  ',two:'Outro texto'};
+ const answer=makeAnswer(mapped,body);
+ assert.strictEqual(answer.body,body);
+ assert.deepEqual(answer.body,{one:'  TEXTO Original  ',two:'Outro texto'});
+ assert.deepEqual(makeAnswer(mapped,{one:'Rascunho parcial'},true).body,{});
+});
+
+test('legacy text classification receipts keep their original strings and never infer feedback',()=>{
+ const body={one:'  TEXTO Original  ',two:'Outro texto'};
+ const source={...question,type:'CLASSIFICATION' as const,classificationMode:'TEXT' as const,answer:body};
+ const restored=restoreAnswers([source]);
+ assert.strictEqual(restored.q.body,body);
+ assert.strictEqual(restored.q.value,body);
+ assert.equal(restored.q.feedback,undefined);
+ assert.deepEqual(authorizedAnswerLines(mapApiQuestion(source),{one:'Texto autorizado',two:'Outra resposta autorizada'}),['Item um: Texto autorizado','Item dois: Outra resposta autorizada']);
+});

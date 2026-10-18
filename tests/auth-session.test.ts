@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { NextResponse } from 'next/server';
 import { backendFetch } from '../lib/backendFetch.server';
+import { ApiError, ApiRequestError, cancelPendingSessionRequests, confirmQuizAnswer, getSimulationAttempt, quizMediaUrl, startAttempt } from '../lib/apiClient';
 import { createAuthenticatedBackendClient } from '../lib/authenticatedBackendClient.server';
 import { applyAuthenticatedFetchCookies } from '../lib/authenticatedFetchCookies.server';
 import {
@@ -576,4 +577,105 @@ test('credentials rotated successfully are persisted even if the authenticated r
     applyAuthenticatedFetchCookies(response, result);
     assertCookies(response, newA);
   }
+});
+
+test('binary media retries through the same session coordinator and forwards only the media response headers', { timeout: 5000 }, async (context) => {
+  const calls: Array<{ url: string; init?: RequestInit }> = [];
+  const media = new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 65, 86, 69]);
+  const path = '/attempts/attempt-1/questions/question-1/media/audio';
+  const mockFetch = context.mock.method(globalThis, 'fetch', async (input: string | URL | Request, init?: RequestInit) => {
+    const url = String(input);
+    calls.push({ url, init });
+    if (url.endsWith('/auth/refresh')) return new Response(JSON.stringify(newA), { status: 200 });
+    if (authorization(init) === `Bearer ${oldA.accessToken}`) return new Response(JSON.stringify(unauthorized.body), { status: 401 });
+    return new Response(media, {
+      status: 206, headers: {
+        'Content-Type': 'audio/wav', 'Content-Length': '12', 'Content-Range': 'bytes 0-11/128',
+        'Accept-Ranges': 'bytes', 'Set-Cookie': 'untrusted=forbidden', 'Location': 'https://example.invalid',
+      },
+    });
+  });
+  try {
+    const client = createAuthenticatedBackendClient(backendFetch);
+    const result = await client.fetch(path, { headers: { Range: 'bytes=0-11' } }, oldA);
+    assert.equal(result.status, 206);
+    assert.deepEqual(result.binary, media);
+    assert.equal(result.body, null);
+    assert.deepEqual(result.refreshedTokens, newA);
+    assert.deepEqual(result.mediaHeaders, {
+      'Content-Type': 'audio/wav', 'Content-Length': '12', 'Content-Range': 'bytes 0-11/128', 'Accept-Ranges': 'bytes',
+    });
+    const attempts = calls.filter(({ url }) => !url.endsWith('/auth/refresh'));
+    assert.equal(attempts.length, 2);
+    assert.ok(attempts.every(({ init }) => new Headers(init?.headers).get('Range') === 'bytes=0-11'));
+    assert.equal(authorization(attempts[0].init), `Bearer ${oldA.accessToken}`);
+    assert.equal(authorization(attempts[1].init), `Bearer ${newA.accessToken}`);
+  } finally { mockFetch.mock.restore(); }
+});
+
+test('media errors remain JSON and preserve the controlled unsatisfied range header', { timeout: 5000 }, async (context) => {
+  const mockFetch = context.mock.method(globalThis, 'fetch', async () => new Response(JSON.stringify({ message: 'Range not satisfiable' }), {
+    status: 416, headers: { 'Content-Type': 'application/json', 'Content-Range': 'bytes */128', 'Set-Cookie': 'not-forwarded=1' },
+  }));
+  try {
+    const result = await backendFetch('/attempts/a/questions/q/media/audio');
+    assert.deepEqual(result, { status: 416, body: { message: 'Range not satisfiable' }, mediaHeaders: { 'Content-Range': 'bytes */128' } });
+  } finally { mockFetch.mock.restore(); }
+});
+
+test('unexpected media types and inconsistent byte lengths produce a safe gateway error', { timeout: 5000 }, async (context) => {
+  for (const headers of [
+    { 'Content-Type': 'text/html', 'Content-Length': '3' },
+    { 'Content-Type': 'image/svg+xml', 'Content-Length': '8' },
+    { 'Content-Type': 'image/svg+xml', 'Content-Length': '99999999' },
+  ]) {
+    const mockFetch = context.mock.method(globalThis, 'fetch', async () => new Response('svg', { status: 200, headers }));
+    try {
+      const result = await backendFetch('/attempts/a/questions/q/media/image');
+      assert.equal(result.status, 502);
+      assert.equal(result.binary, undefined);
+      assert.deepEqual(result.body, { message: 'Mídia temporariamente indisponível.' });
+    } finally { mockFetch.mock.restore(); }
+  }
+});
+
+
+test('quizMediaUrl accepts only attempt-owned relative media paths', () => {
+  assert.equal(quizMediaUrl('/attempts/attempt-1/questions/question-1/media/image'), '/api/backend/attempts/attempt-1/questions/question-1/media/image');
+  for (const path of ['https://example.test/image.svg', '//example.test/x', '/attempts/a/questions/q/media/image?token=secret', '/attempts/a/questions/q/media/image#fragment', '/attempts/../questions/q/media/image', '/attempts/a/questions/q/media/document', '/attempts/a/questions/q/media/%69mage', '/api/backend/attempts/a/questions/q/media/image']) {
+    assert.equal(quizMediaUrl(path), null);
+  }
+});
+
+test('client errors retain the HTTP status needed to recover a confirmed quiz answer', async (context) => {
+  const mockFetch = context.mock.method(globalThis, 'fetch', async () => new Response(JSON.stringify({ message: 'Already confirmed' }), { status: 409 }));
+  try {
+    await assert.rejects(confirmQuizAnswer('a', 'q', 'B'), (error: unknown) => error instanceof ApiError && error.status === 409 && error.message === 'Already confirmed');
+  } finally { mockFetch.mock.restore(); }
+});
+
+
+test('simulation and quiz errors share the status contract during mixed journeys', async (context) => {
+  const mocked = context.mock.method(globalThis, 'fetch', async () => new Response(JSON.stringify({ message: 'Temporary limit' }), { status: 429 }));
+  try {
+    await assert.rejects(startAttempt('s'), (error: unknown) => error instanceof ApiError && error instanceof ApiRequestError && error.status === 429);
+  } finally { mocked.mock.restore(); }
+});
+
+test('changing session aborts a pending simulation read and prevents a late response from escaping', async (context) => {
+  const response = deferred<Response>();
+  let signal: AbortSignal | undefined;
+  const mocked = context.mock.method(globalThis, 'fetch', async (_input: unknown, init?: RequestInit) => {
+    signal = init?.signal ?? undefined;
+    // Even transports that deliver a response after cancellation cannot expose it.
+    return response.promise;
+  });
+  try {
+    const pending = getSimulationAttempt('previous-user-attempt');
+    assert.equal(signal?.aborted, false);
+    cancelPendingSessionRequests();
+    assert.equal(signal?.aborted, true);
+    response.resolve(new Response(JSON.stringify({ id: 'previous-user-attempt', simulationId: 's', status: 'IN_PROGRESS' })));
+    await assert.rejects(pending, (error: unknown) => error instanceof DOMException && error.name === 'AbortError');
+  } finally { mocked.mock.restore(); cancelPendingSessionRequests(); }
 });

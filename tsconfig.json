@@ -38,8 +38,7 @@
   ],
   "exclude": [
     "node_modules",
-    ".test-build",
     "mobile",
-    "packages"
+    ".test-build"
   ]
 }

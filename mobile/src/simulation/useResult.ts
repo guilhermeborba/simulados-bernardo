@@ -35,6 +35,7 @@ export function useAttemptResult(attemptId: string) {
         const questions: ApiQuestion[] = result.questions.map(question => ({
           id: question.id,
           type: question.type,
+          classificationMode: question.classificationMode ?? source.find(item => item.id === question.id)?.classificationMode,
           statement: question.statement,
           tip: question.tip,
           funFact: question.funFact,

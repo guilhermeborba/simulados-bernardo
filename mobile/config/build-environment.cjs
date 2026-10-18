@@ -21,8 +21,8 @@ function buildEnvironment(env) {
   }
   return {
     name: internal ? "Giz Kids · Interno" : "Giz Kids · Desenvolvimento",
-    identifier: internal ? "com.simuladosbernardo.gizdev.internal" : "com.simuladosbernardo.gizdev",
-    scheme: internal ? "gizdevinternal" : "gizdev",
+    identifier: internal ? "com.simuladosbernardo.proof.internal" : "com.simuladosbernardo.proof",
+    scheme: internal ? "simuladosbernardointernal" : "simuladosbernardoproof",
   };
 }
 

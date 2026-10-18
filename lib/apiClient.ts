@@ -1,34 +1,136 @@
-export interface AuthUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
+import type {
+  AuthUser,
+  ApiTurma,
+  ApiDiscipline,
+  ApiSimulation,
+  ApiAttempt,
+  ApiQuestionOption,
+  ApiQuestion,
+  ApiAnswerFeedback,
+  ApiAttemptResultQuestion,
+  ApiAttemptResult,
+  ApiMyAttempt,
+  ApiMinhaPontuacao,
+  ApiLinhaDoRanking,
+  ApiRanking,
+  LearningSegment,
+  ApiLearningPreferences,
+  ApiQuiz,
+  ApiQuizSummary,
+  ApiQuizAttempt,
+  ApiQuizFeedback,
+  ApiQuizQuestion,
+  ApiQuizConfirmation,
+  ApiQuizReward,
+  ApiQuizResult,
+  ApiLearningMissionActivity,
+  ApiLearningMission,
+  ApiLearningHome,
+  AvatarStyle,
+  ApiAvatarSelection,
+  ApiAvatarItem,
+  ApiMyAvatar,
+  ApiAchievement,
+  ApiMyAchievements,
+  ApiSkillProgress,
+  ApiReviewSuggestion,
+  ApiLearningProgress,
+  ApiOversightStudent,
+  ApiStudentLearningProgress,
+  ApiStudentSummary,
+  ApiStudentDisciplineSummary
+} from '../packages/api-contracts/src';
+export type {
+  AuthUser,
+  ApiTurma,
+  ApiDiscipline,
+  ApiSimulation,
+  ApiAttempt,
+  ApiQuestionOption,
+  ApiQuestion,
+  ApiAnswerFeedback,
+  ApiAttemptResultQuestion,
+  ApiAttemptResult,
+  ApiMyAttempt,
+  ApiMinhaPontuacao,
+  ApiLinhaDoRanking,
+  ApiRanking,
+  LearningSegment,
+  ApiLearningPreferences,
+  ApiQuiz,
+  ApiQuizSummary,
+  ApiQuizAttempt,
+  ApiQuizFeedback,
+  ApiQuizQuestion,
+  ApiQuizConfirmation,
+  ApiQuizReward,
+  ApiQuizResult,
+  ApiLearningMissionActivity,
+  ApiLearningMission,
+  ApiLearningHome,
+  AvatarStyle,
+  ApiAvatarSelection,
+  ApiAvatarItem,
+  ApiMyAvatar,
+  ApiAchievement,
+  ApiMyAchievements,
+  ApiSkillProgress,
+  ApiReviewSuggestion,
+  ApiLearningProgress,
+  ApiOversightStudent,
+  ApiStudentLearningProgress,
+  ApiStudentSummary,
+  ApiStudentDisciplineSummary
+} from '../packages/api-contracts/src';
+
+export class ApiError extends Error {
+  constructor(message: string, public readonly status: number) {
+    super(message);
+    this.name = 'ApiError';
+  }
 }
 
-export class ApiRequestError extends Error {
-  constructor(public readonly status: number, message: string) {
-    super(message);
+/** Keeps the Giz status-first constructor compatible with main's ApiError. */
+export class ApiRequestError extends ApiError {
+  constructor(status: number, message: string) {
+    super(message, status);
     this.name = 'ApiRequestError';
   }
 }
 
+let sessionRequests = new AbortController();
+
+/** Called synchronously before login/register/logout changes the browser's cookies. */
+export function cancelPendingSessionRequests() {
+  sessionRequests.abort();
+  sessionRequests = new AbortController();
+}
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
-    ...init,
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
-  });
-
-  const body = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const rawMessage = (body as { message?: string | string[] } | null)?.message;
-    const message = Array.isArray(rawMessage)
-      ? rawMessage.join(', ')
-      : rawMessage ?? 'Erro inesperado';
-    throw new ApiRequestError(response.status, message);
+  const authenticated = path === '/api/auth/me' || path.startsWith('/api/backend/');
+  const signals = [authenticated ? sessionRequests.signal : null, init?.signal].filter((signal): signal is AbortSignal => Boolean(signal));
+  const request = new AbortController();
+  const cancel = () => request.abort();
+  for (const signal of signals) {
+    if (signal.aborted) cancel();
+    else signal.addEventListener('abort', cancel, { once: true });
   }
-
-  return body as T;
+  try {
+    const response = await fetch(path, {
+      ...init, signal: request.signal,
+      headers: { 'Content-Type': 'application/json', ...init?.headers },
+    });
+    const body = await response.json().catch(() => null);
+    if (request.signal.aborted) throw new DOMException('Session request cancelled', 'AbortError');
+    if (!response.ok) {
+      const rawMessage = (body as { message?: string | string[] } | null)?.message;
+      const message = Array.isArray(rawMessage) ? rawMessage.join(', ') : rawMessage ?? 'Erro inesperado';
+      throw new ApiRequestError(response.status, message);
+    }
+    return body as T;
+  } finally {
+    for (const signal of signals) signal.removeEventListener('abort', cancel);
+  }
 }
 
 export function login(email: string, password: string) {
@@ -50,12 +152,6 @@ export function register(
   });
 }
 
-export interface ApiTurma {
-  id: string;
-  name: string;
-  slug: string;
-}
-
 /** Entrada na turma para quem já tinha conta antes de receber o convite. */
 export function joinTurma(token: string) {
   return apiFetch<{ turma: ApiTurma; alreadyMember: boolean }>(
@@ -72,32 +168,8 @@ export function logout() {
   return apiFetch<{ success: true }>('/api/auth/logout', { method: 'POST' });
 }
 
-export function getMe() {
-  return apiFetch<AuthUser>('/api/auth/me');
-}
-
-export interface ApiDiscipline {
-  id: string;
-  name: string;
-  slug: string;
-  icon: string | null;
-  themeColor: string | null;
-}
-
-export interface ApiSimulation {
-  id: string;
-  title: string;
-  subtitle: string | null;
-  slug: string;
-  schoolYear: number;
-  bimester: number;
-  assessment: string;
-  /** Eixo temático. Preenchido só em curso técnico, que não tem bimestre. */
-  topic: string | null;
-  totalQuestions: number;
-  maxScore: string;
-  estimatedDurationMinutes: number | null;
-  discipline: ApiDiscipline;
+export function getMe(signal?: AbortSignal) {
+  return apiFetch<AuthUser>('/api/auth/me', { signal });
 }
 
 export function getAvailableSimulations(params: {
@@ -115,59 +187,15 @@ export function getAvailableSimulations(params: {
   return apiFetch<ApiSimulation[]>(`/api/backend/simulations/available?${query.toString()}`);
 }
 
-export interface ApiAttempt {
-  id: string;
-  status: string;
-  simulationId: string;
-  /** Início da tentativa no servidor — base do cronômetro. */
-  startedAt?: string;
-  /** New attempts may opt in; an existing legacy attempt keeps its mode. */
-  immediateFeedback?: boolean;
-  /**
-   * Opcional de propósito: o front-end pode ir para produção antes do back-end
-   * que passou a devolver esse campo. Sem ele, a faixa cai no padrão.
-   */
-  simulation?: ApiSimulation;
-}
-
 export function startAttempt(simulationId: string) {
-  return apiFetch<ApiAttempt>(`/api/backend/simulations/${simulationId}/attempts`, {
+  return apiFetch<ApiAttempt>(`/api/backend/simulations/${encodeURIComponent(simulationId)}/attempts`, {
     method: 'POST',
     body: JSON.stringify({ immediateFeedback: true }),
   });
 }
 
-export interface ApiQuestionOption {
-  id: string;
-  optionKey: string;
-  text: string;
-  groupKey: string | null;
-  order: number;
-}
-
-export interface ApiAnswerFeedback {
-  isCorrect: boolean;
-  correctAnswer: Record<string, unknown>;
-  tip?: string | null;
-  funFact?: string | null;
-  explanation?: string | null;
-}
-
-export interface ApiQuestion {
-  id: string;
-  type: 'MULTIPLE_CHOICE' | 'TRUE_FALSE_MULTIPLE' | 'MATCHING' | 'CLASSIFICATION';
-  statement: string;
-  tip: string | null;
-  /** "Você sabia?" — curiosidade mostrada na tela de resultado, sempre. */
-  funFact: string | null;
-  points: string;
-  order: number;
-  options: ApiQuestionOption[];
-  /** Resposta que o próprio aluno já enviou nesta tentativa, se houver. */
-  answer?: unknown;
-  /** Present only after this question has been confirmed by the server. */
-  feedback?: ApiAnswerFeedback | null;
-  confirmedAt?: string | null;
+export function getSimulationAttempt(attemptId: string, signal?: AbortSignal) {
+  return apiFetch<ApiAttempt>(`/api/backend/attempts/${encodeURIComponent(attemptId)}`, { cache: 'no-store', signal });
 }
 
 export function getAttemptQuestions(attemptId: string) {
@@ -185,36 +213,6 @@ export function submitAttemptAnswer(
   });
 }
 
-export interface ApiAttemptResultQuestion {
-  id: string;
-  type: ApiQuestion['type'];
-  statement: string;
-  tip: string | null;
-  funFact: string | null;
-  points: string;
-  order: number;
-  answer: unknown;
-  isCorrect: boolean;
-  pointsEarned: string;
-  options?: ApiQuestionOption[];
-  correctAnswer?: Record<string, unknown> | null;
-  theme?: string | null;
-  explanation?: string | null;
-}
-
-export interface ApiAttemptResult {
-  attempt: ApiAttempt & {
-    score: string;
-    maxScore: string;
-    percentage: string;
-    correctCount: number;
-    wrongCount: number;
-  };
-  questions: ApiAttemptResultQuestion[];
-  topics?: { theme: string; correct: number; total: number }[];
-  unclassifiedQuestions?: number;
-}
-
 export function finishAttempt(attemptId: string) {
   return apiFetch<ApiAttemptResult>(`/api/backend/attempts/${attemptId}/finish`, {
     method: 'POST',
@@ -225,57 +223,120 @@ export function getAttemptResult(attemptId: string) {
   return apiFetch<ApiAttemptResult>(`/api/backend/attempts/${attemptId}/result`);
 }
 
-export interface ApiMyAttempt {
-  id: string;
-  status: string;
-  simulationId: string;
-  score: string | null;
-  maxScore: string;
-  percentage: string | null;
-  createdAt: string;
-  finishedAt: string | null;
-  simulation: {
-    title: string;
-    assessment: string;
-    discipline: { name: string };
-  };
-}
-
 export function getMyAttempts() {
   return apiFetch<ApiMyAttempt[]>('/api/backend/me/attempts');
-}
-
-export interface ApiMinhaPontuacao {
-  media: number;
-  simulados: number;
-  diasSeguidos: number;
-  melhorSimulado: { percentage: number; titulo: string; disciplina: string } | null;
 }
 
 export function getMinhaPontuacao() {
   return apiFetch<ApiMinhaPontuacao>('/api/backend/me/pontuacao');
 }
 
-export interface ApiLinhaDoRanking {
-  posicao: number;
-  nome: string;
-  media: number;
-  simulados: number;
-  ehVoce: boolean;
-}
-
-export interface ApiRanking {
-  turma: { id: string; name: string };
-  totalClassificados: number;
-  minimoDeSimulados: number;
-  meusSimuladosNaTurma: number;
-  faltamParaORanking: number;
-  minhaPosicao: ApiLinhaDoRanking | null;
-  podio: ApiLinhaDoRanking[];
-  vizinhanca: ApiLinhaDoRanking[];
-  podioAte: number;
-}
-
 export function getRankingDaTurma(turmaId: string) {
   return apiFetch<ApiRanking | null>(`/api/backend/me/turmas/${turmaId}/ranking`);
+}
+
+export { quizMediaUrl } from './quizMedia';
+
+export function getAvailableQuizzes(params: { schoolYear?: number; discipline?: string; topic?: string } = {}) {
+  const query = new URLSearchParams();
+  if (params.schoolYear !== undefined) query.set('schoolYear', String(params.schoolYear));
+  if (params.discipline) query.set('discipline', params.discipline);
+  if (params.topic) query.set('topic', params.topic);
+  return apiFetch<ApiQuiz[]>(`/api/backend/quizzes/available?${query.toString()}`);
+}
+
+export function startQuizAttempt(quizId: string) {
+  return apiFetch<ApiQuizAttempt>(`/api/backend/quizzes/${encodeURIComponent(quizId)}/attempts`, { method: 'POST' });
+}
+
+export function getQuizAttempt(attemptId: string) {
+  return apiFetch<ApiQuizAttempt>(`/api/backend/attempts/${encodeURIComponent(attemptId)}`);
+}
+
+export function getQuizAttemptQuestions(attemptId: string) {
+  return apiFetch<ApiQuizQuestion[]>(`/api/backend/attempts/${encodeURIComponent(attemptId)}/questions`);
+}
+
+export function confirmQuizAnswer(attemptId: string, questionId: string, optionKey: string) {
+  return apiFetch<ApiQuizConfirmation>(`/api/backend/attempts/${encodeURIComponent(attemptId)}/questions/${encodeURIComponent(questionId)}/answer`, {
+    method: 'POST', body: JSON.stringify({ answer: { optionKey } }),
+  });
+}
+
+export function finishQuizAttempt(attemptId: string) {
+  return apiFetch<ApiQuizResult>(`/api/backend/attempts/${encodeURIComponent(attemptId)}/finish`, { method: 'POST' });
+}
+
+export function getQuizAttemptResult(attemptId: string) {
+  return apiFetch<ApiQuizResult>(`/api/backend/attempts/${encodeURIComponent(attemptId)}/result`);
+}
+
+export function getMyQuizAttempts(signal?: AbortSignal) {
+  return apiFetch<ApiQuizAttempt[]>('/api/backend/me/quiz-attempts', { signal });
+}
+
+export function getLearningPreferences() {
+  return apiFetch<ApiLearningPreferences>('/api/backend/me/learning-preferences');
+}
+
+export function updateLearningPreferences(preferences: Partial<ApiLearningPreferences>) {
+  return apiFetch<ApiLearningPreferences>('/api/backend/me/learning-preferences', {
+    method: 'PATCH', body: JSON.stringify(preferences),
+  });
+}
+
+function learningYearQuery(schoolYear?: number) {
+  const query = new URLSearchParams();
+  if (schoolYear !== undefined) query.set('schoolYear', String(schoolYear));
+  return query.size ? `?${query.toString()}` : '';
+}
+
+export function getLearningHome(schoolYear?: number, signal?: AbortSignal) {
+  return apiFetch<ApiLearningHome>(`/api/backend/me/learning-home${learningYearQuery(schoolYear)}`, { signal });
+}
+
+export function getMyMissions(schoolYear?: number, signal?: AbortSignal) {
+  return apiFetch<ApiLearningMission[]>(`/api/backend/me/missions${learningYearQuery(schoolYear)}`, { signal });
+}
+
+export function getMyAchievements(signal?: AbortSignal) {
+  return apiFetch<ApiMyAchievements>('/api/backend/me/achievements', { signal });
+}
+
+export function getMyAvatar(signal?: AbortSignal) {
+  return apiFetch<ApiMyAvatar>('/api/backend/me/avatar', { signal });
+}
+
+export function updateMyAvatar(patch: Partial<ApiAvatarSelection>, signal?: AbortSignal) {
+  return apiFetch<ApiMyAvatar>('/api/backend/me/avatar', { method: 'PATCH', body: JSON.stringify(patch), signal });
+}
+
+export function getLearningProgress(schoolYear?: number, signal?: AbortSignal) {
+  return apiFetch<ApiLearningProgress>(`/api/backend/me/learning-progress${learningYearQuery(schoolYear)}`, { signal });
+}
+
+export function startReviewAttempt(quizId: string, signal?: AbortSignal) {
+  return apiFetch<ApiQuizAttempt>('/api/backend/me/review-attempts', {
+    method: 'POST', body: JSON.stringify({ quizId }), signal,
+  });
+}
+
+export function requestPasswordRecovery(email: string, signal?: AbortSignal) {
+  return apiFetch<{ message: string }>('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }), signal });
+}
+
+export function resetPassword(token: string, password: string, signal?: AbortSignal) {
+  return apiFetch<{ success: true }>('/api/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password }), signal });
+}
+export function getOversightStudents(signal?: AbortSignal) {
+  return apiFetch<ApiOversightStudent[]>('/api/backend/me/oversight-students', { signal });
+}
+export function getStudentLearningProgress(studentId: string, schoolYear?: number, signal?: AbortSignal) {
+  return apiFetch<ApiStudentLearningProgress>(`/api/backend/students/${encodeURIComponent(studentId)}/learning-progress${learningYearQuery(schoolYear)}`, { signal });
+}
+export function getStudentSummary(studentId: string, signal?: AbortSignal) {
+  return apiFetch<ApiStudentSummary>(`/api/backend/reports/student/${encodeURIComponent(studentId)}/summary`, { signal });
+}
+export function getStudentDisciplineSummary(studentId: string, signal?: AbortSignal) {
+  return apiFetch<ApiStudentDisciplineSummary[]>(`/api/backend/reports/student/${encodeURIComponent(studentId)}/by-discipline`, { signal });
 }

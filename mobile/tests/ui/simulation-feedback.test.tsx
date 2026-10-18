@@ -193,3 +193,63 @@ test('an explicitly redacted result answer key never revives a cached answer key
  expect(screen.getByRole('radio',{name:/A\. Primeira opção, Sua resposta, Vamos revisar/})).toBeTruthy();
  expect(screen.queryAllByRole('radio',{name:/Certa/})).toHaveLength(0);
 });
+
+test('legacy boolean true/false answers remain checked in read-only review and keep their original body',async()=>{
+ const legacy:ApiQuestion={...question,type:'TRUE_FALSE_MULTIPLE',statement:'Duas afirmações.',options:[{id:'one',optionKey:'one',text:'Primeira afirmação',groupKey:null,order:1},{id:'two',optionKey:'two',text:'Segunda afirmação',groupKey:null,order:2}]};
+ const body={one:true,two:false};
+ await render(<Options question={mapApiQuestion(legacy)} value={body} locked correctAnswer={{one:false,two:true}} review/>);
+ expect(screen.getAllByRole('radio',{name:/Verdadeiro, Sua resposta/})).toHaveLength(1);
+ expect(screen.getAllByRole('radio',{name:/Falso, Sua resposta/})).toHaveLength(1);
+ expect(screen.getAllByRole('radio',{name:/Certa/})).toHaveLength(2);
+ expect(body).toEqual({one:true,two:false});
+ expect(mockRequest).not.toHaveBeenCalled();
+});
+
+const textClassification:ApiQuestion={...question,id:'text-q',type:'CLASSIFICATION',classificationMode:'TEXT',statement:'Classifique os itens com texto.',options:[{id:'one',optionKey:'one',text:'Primeiro item textual',groupKey:null,order:1},{id:'two',optionKey:'two',text:'Segundo item textual',groupKey:null,order:2}]};
+const textFeedback={isCorrect:false,correctAnswer:{one:'Primeira resposta autorizada',two:'Segunda resposta autorizada'},tip:'Observe as características de cada item.'};
+
+test('text classification confirms only a complete nonblank map, preserves raw input and reveals text only after server confirmation',async()=>{
+ configureQuestions([textClassification],{feedback:textFeedback});
+ await render(<SimulationScreen/>);
+ await screen.findByLabelText('Primeiro item textual');
+ expect(screen.getByLabelText('Primeiro item textual').props.maxLength).toBe(2000);
+ expect(screen.queryAllByRole('radio')).toHaveLength(0);
+ expect(screen.queryByText(/Primeira resposta autorizada/)).toBeNull();
+ await fireEvent.changeText(screen.getByLabelText('Primeiro item textual'),'  TEXTO Original  ');
+ expect(screen.getByRole('button',{name:'Confirmar'})).toBeDisabled();
+ await fireEvent.changeText(screen.getByLabelText('Segundo item textual'),'  ');
+ expect(screen.getByRole('button',{name:'Confirmar'})).toBeDisabled();
+ await fireEvent.changeText(screen.getByLabelText('Segundo item textual'),'Outro texto');
+ await fireEvent.press(screen.getByRole('button',{name:'Confirmar'}));
+ await screen.findByText('Resposta certa: Primeira resposta autorizada');
+ expect(screen.getByText('Resposta certa: Segunda resposta autorizada')).toBeTruthy();
+ expect(screen.getByLabelText('Primeiro item textual')).toBeDisabled();
+ expect(screen.getByLabelText('Primeiro item textual')).toHaveDisplayValue('  TEXTO Original  ');
+ const posted=mockRequest.mock.calls.filter(([path])=>String(path).endsWith('/answer'));
+ expect(posted).toHaveLength(1);
+ expect(JSON.parse(posted[0][1].body)).toEqual({answer:{one:'  TEXTO Original  ',two:'Outro texto'}});
+});
+
+test('legacy text classification resume keeps the receipt locked without exposing an unauthorized key',async()=>{
+ mockParams={id:'simulation',attempt:'attempt',timer:'0'};
+ configureQuestions([{...textClassification,answer:{one:'  TEXTO Original  ',two:'Outro texto'},confirmedAt:'2026-10-18T12:00:00Z'}],undefined,true);
+ await render(<SimulationScreen/>);
+ await screen.findByLabelText('Primeiro item textual');
+ expect(screen.getByLabelText('Primeiro item textual')).toHaveDisplayValue('  TEXTO Original  ');
+ expect(screen.getByLabelText('Primeiro item textual')).toBeDisabled();
+ expect(screen.queryByText(/Resposta certa:/)).toBeNull();
+ expect(mockRequest.mock.calls.filter(([path])=>String(path).endsWith('/answer'))).toHaveLength(0);
+});
+
+test('direct text classification review uses snapshot mode and its authorized answer without a questions request',async()=>{
+ mockParams={id:'attempt'};
+ const result=resultFixture();
+ result.questions=[{...textClassification,answer:{one:'  TEXTO Original  ',two:'Outro texto'},isCorrect:false,pointsEarned:'0',correctAnswer:textFeedback.correctAnswer}];
+ mockRequest.mockImplementation(async(path:string)=>{if(path==='/attempts/attempt/result')return result;throw new Error('Review must use the result snapshot');});
+ await render(<AttemptResultScreen review/>);
+ await screen.findByText('Resposta certa: Primeira resposta autorizada');
+ expect(screen.getByLabelText('Primeiro item textual')).toHaveDisplayValue('  TEXTO Original  ');
+ expect(screen.getByLabelText('Primeiro item textual')).toBeDisabled();
+ expect(screen.queryAllByRole('radio',{name:/^C$|^P$/})).toHaveLength(0);
+ expect(mockRequest.mock.calls.map(([path])=>path)).toEqual(['/attempts/attempt/result']);
+});

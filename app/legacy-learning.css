@@ -1,0 +1,777 @@
+/* Existing learning journeys retain their scoped styles during the Giz rollout. */
+.legacy-learning {
+  --sky: #7AB8F5;
+  --sky-deep: #4A95E5;
+  --sun: #FFD66B;
+  --sun-deep: #F5B91E;
+  --grass: #5BD68A;
+  --grass-deep: #2FB867;
+  --bubble: #FF7AB6;
+  --bubble-deep: #E54F94;
+  --lilac: #B79DFF;
+  --lilac-deep: #8B6DE0;
+  --coral: #FF9B6A;
+  --coral-deep: #E87340;
+  --cream: #FFF8EE;
+  --paper: #FFFFFF;
+  --ink: #2B2240;
+  --ink-soft: #4B4263;
+  --muted: #8A819F;
+  --line: #EFE6D6;
+
+  --radius-sm: 14px;
+  --radius-md: 22px;
+  --radius-lg: 30px;
+  --radius-xl: 40px;
+  --radius-pill: 999px;
+
+  --shadow-1: 0 2px 0 rgba(43,34,64,.06), 0 6px 14px -4px rgba(43,34,64,.10);
+  --shadow-2: 0 4px 0 rgba(43,34,64,.08), 0 16px 30px -10px rgba(43,34,64,.18);
+  --shadow-3: 0 6px 0 rgba(43,34,64,.10), 0 24px 50px -16px rgba(43,34,64,.22);
+}
+
+.legacy-learning * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+.legacy-learning {
+    min-height: 100%;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+.legacy-learning {
+    min-height: 100vh;
+    font-family: var(--font-nunito), system-ui, sans-serif;
+    background:
+      radial-gradient(1200px 700px at 12% -10%, #FFE9C8 0%, transparent 60%),
+      radial-gradient(900px 600px at 100% 100%, #CFE7FF 0%, transparent 55%),
+      radial-gradient(700px 500px at 50% 110%, #FFDDEE 0%, transparent 60%),
+      var(--cream);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+.legacy-learning h1, .legacy-learning h2, .legacy-learning h3, .legacy-learning h4, .legacy-learning h5, .legacy-learning h6 {
+    font-family: var(--font-fredoka), system-ui, sans-serif;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+.legacy-learning p, .legacy-learning span, .legacy-learning label, .legacy-learning input, .legacy-learning select, .legacy-learning button, .legacy-learning a {
+    font-family: var(--font-nunito), system-ui, sans-serif;
+  }
+
+.legacy-learning button, .legacy-learning input, .legacy-learning select, .legacy-learning textarea {
+    font: inherit;
+  }
+
+.legacy-learning button {
+    cursor: pointer;
+  }
+
+.legacy-learning ::selection {
+    background: rgba(122, 184, 245, 0.35);
+    color: var(--ink);
+  }
+
+.legacy-learning .page-shell {
+    min-height: 100vh;
+    padding: 32px 20px;
+  }
+
+.legacy-learning .card {
+    background: var(--paper);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    box-shadow: var(--shadow-2);
+  }
+
+.legacy-learning .card--hero {
+    border-radius: var(--radius-xl);
+    padding: 36px;
+    box-shadow: var(--shadow-3);
+  }
+
+.legacy-learning .surface {
+    background: rgba(255,255,255,0.78);
+    border: 1px solid rgba(239,230,214,0.95);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-1);
+    backdrop-filter: blur(10px);
+  }
+
+.legacy-learning .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.95rem 1.6rem;
+    border-radius: var(--radius-pill);
+    border: none;
+    color: white;
+    font-weight: 600;
+    font-family: var(--font-fredoka), system-ui, sans-serif;
+    text-decoration: none;
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    box-shadow: var(--shadow-2), inset 0 -3px 0 rgba(43,34,64,.10);
+  }
+
+.legacy-learning .btn:hover {
+    transform: translateY(-2px);
+  }
+
+.legacy-learning .btn:active {
+    transform: translateY(1px);
+  }
+
+.legacy-learning .btn--lg {
+    border-radius: var(--radius-md);
+    padding: 1rem 2rem;
+  }
+
+.legacy-learning .btn--grass {
+    background: linear-gradient(180deg, #A6F1B8 0%, #5BD68A 55%, #2FB867 100%);
+  }
+
+.legacy-learning .btn--sky {
+    background: linear-gradient(180deg, #B4DAFF 0%, #7AB8F5 55%, #4A95E5 100%);
+  }
+
+.legacy-learning .btn--bubble {
+    background: linear-gradient(180deg, #FF9ED4 0%, #FF7AB6 55%, #E54F94 100%);
+  }
+
+.legacy-learning .btn--lilac {
+    background: linear-gradient(180deg, #D4C0FF 0%, #B79DFF 55%, #8B6DE0 100%);
+  }
+
+.legacy-learning .btn--sun {
+    background: linear-gradient(180deg, #FFE9A3 0%, #FFD66B 55%, #F5B91E 100%);
+    color: var(--ink);
+  }
+
+.legacy-learning .btn--coral {
+    background: linear-gradient(180deg, #FFB68A 0%, #FF9B6A 55%, #E87340 100%);
+  }
+
+.legacy-learning .btn--ghost {
+    background: rgba(255,255,255,0.86);
+    color: var(--ink);
+    border: 1px solid rgba(43,34,64,.12);
+    box-shadow: var(--shadow-1);
+  }
+
+.legacy-learning .input-field {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border-radius: var(--radius-md);
+    border: 2px solid #E9E1D8;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 1rem;
+  }
+
+.legacy-learning .input-field:focus {
+    border-color: var(--sky);
+    box-shadow: 0 0 0 4px rgba(122, 184, 245, .18);
+  }
+
+.legacy-learning .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: var(--radius-pill);
+    background: rgba(255,255,255,0.9);
+    color: var(--ink-soft);
+    border: 1px solid rgba(239,230,214,0.95);
+    font-weight: 700;
+  }
+
+.legacy-learning .text-muted {
+    color: var(--muted);
+  }
+
+.legacy-learning .shadow-card {
+    box-shadow: var(--shadow-2);
+  }
+
+.legacy-learning .shadow-hero {
+    box-shadow: var(--shadow-3);
+  }
+
+/* Animações customizadas */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.legacy-learning .animate-in.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* ==========================================================================
+   Faixas visuais do simulado
+   --------------------------------------------------------------------------
+   Um mesmo runner atende três públicos. O que muda entre eles é a camada de
+   tokens abaixo — não o componente. Ver lib/tier.ts para o mapeamento de
+   ano escolar para faixa.
+   ========================================================================== */
+
+.legacy-learning [data-tier] {
+  --t-surface: #FFFFFF;
+  --t-accent-ink: #FFFFFF;
+
+  /* Certo/errado é cor semântica: não acompanha o accent da faixa. */
+  --t-correct: #2FB867;
+  --t-correct-soft: #EDFFF5;
+  --t-wrong: #E54F94;
+  --t-wrong-soft: #FFF0F7;
+}
+
+/* ---- lúdico: Infantil e Fundamental 1 (visual original) ---- */
+.legacy-learning [data-tier='ludico'] {
+  --t-ground: transparent;
+  --t-ink: #2B2240;
+  --t-ink-soft: #4B4263;
+  --t-muted: #8A819F;
+  --t-line: #EFE6D6;
+
+  --t-accent: #FF7AB6;
+  --t-accent-soft: #FFF0F7;
+  --t-accent-line: #FF7AB6;
+  --t-answered: #5BD68A;
+
+  --t-font-ui: var(--font-fredoka), system-ui, sans-serif;
+  --t-font-q: var(--font-nunito), system-ui, sans-serif;
+  --t-q-size: 18px;
+  --t-q-weight: 700;
+  --t-q-lh: 1.55;
+  --t-opt-size: 15px;
+  --t-opt-weight: 600;
+
+  --t-radius-card: 1.75rem;
+  --t-radius-opt: var(--radius-md);
+  --t-radius-btn: var(--radius-pill);
+  --t-shadow-card: var(--shadow-3);
+  --t-shadow-opt: var(--shadow-1);
+  --t-opt-border: 2px;
+
+  --t-bul-size: 34px;
+  --t-bul-radius: 50%;
+  --t-bul-bg: #FFE9A3;
+  --t-bul-ink: #8B6000;
+  --t-bul-weight: 800;
+}
+
+/* ---- jovem: Fundamental 2 ---- */
+.legacy-learning [data-tier='jovem'] {
+  --t-ground: #F8FAFC;
+  --t-ink: #0F172A;
+  --t-ink-soft: #334155;
+  --t-muted: #64748B;
+  --t-line: #E2E8F0;
+
+  --t-accent: #2563EB;
+  --t-accent-soft: #EFF6FF;
+  --t-accent-line: #2563EB;
+  --t-answered: #93C5FD;
+
+  --t-font-ui: var(--font-jakarta), system-ui, sans-serif;
+  --t-font-q: var(--font-jakarta), system-ui, sans-serif;
+  --t-q-size: 16px;
+  --t-q-weight: 600;
+  --t-q-lh: 1.55;
+  --t-opt-size: 14px;
+  --t-opt-weight: 500;
+
+  --t-radius-card: 12px;
+  --t-radius-opt: 10px;
+  --t-radius-btn: 8px;
+  --t-shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06);
+  --t-shadow-opt: none;
+  --t-opt-border: 1.5px;
+
+  --t-bul-size: 24px;
+  --t-bul-radius: 6px;
+  --t-bul-bg: #F1F5F9;
+  --t-bul-ink: #64748B;
+  --t-bul-weight: 700;
+
+  --t-correct: #16A34A;
+  --t-correct-soft: #F0FDF4;
+  --t-wrong: #DC2626;
+  --t-wrong-soft: #FEF2F2;
+}
+
+/* ---- exame: Ensino Médio e Cursos Técnicos ---- */
+.legacy-learning [data-tier='exame'] {
+  --t-ground: #FAF9F7;
+  --t-ink: #1C1917;
+  --t-ink-soft: #292524;
+  --t-muted: #78716C;
+  --t-line: #E7E5E4;
+
+  --t-accent: #0E7490;
+  --t-accent-soft: #F0FDFA;
+  --t-accent-line: #0E7490;
+  --t-answered: #99D5D0;
+
+  --t-font-ui: var(--font-plex), system-ui, sans-serif;
+  --t-font-q: var(--font-serif), Georgia, serif;
+  --t-q-size: 17px;
+  --t-q-weight: 400;
+  --t-q-lh: 1.65;
+  --t-opt-size: 15px;
+  --t-opt-weight: 400;
+
+  --t-radius-card: 4px;
+  --t-radius-opt: 3px;
+  --t-radius-btn: 3px;
+  --t-shadow-card: none;
+  --t-shadow-opt: none;
+  --t-opt-border: 1px;
+
+  --t-bul-size: auto;
+  --t-bul-radius: 0;
+  --t-bul-bg: transparent;
+  --t-bul-ink: #78716C;
+  --t-bul-weight: 600;
+
+  --t-correct: #15803D;
+  --t-correct-soft: #F0FDF4;
+  --t-wrong: #B91C1C;
+  --t-wrong-soft: #FEF2F2;
+}
+
+/* ==========================================================================
+   Runner do simulado — estrutura única, aparência vinda dos tokens acima
+   ========================================================================== */
+
+.legacy-learning .sim-shell {
+  min-height: 100vh;
+  background: var(--t-ground);
+  color: var(--t-ink);
+}
+
+.legacy-learning .sim-brand,
+.legacy-learning .sim-step {
+  font-family: var(--t-font-ui);
+  color: var(--t-ink);
+}
+
+.legacy-learning .sim-step {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t-muted);
+}
+
+.legacy-learning .sim-track {
+  flex: 1;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--t-line);
+  overflow: hidden;
+}
+
+.legacy-learning .sim-track-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--t-accent);
+  transition: width 0.4s ease;
+}
+
+.legacy-learning .sim-count {
+  font-family: var(--t-font-ui);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--t-ink);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.legacy-learning .sim-card {
+  background: var(--t-surface);
+  border-radius: var(--t-radius-card);
+  box-shadow: var(--t-shadow-card);
+  padding: 24px;
+}
+
+.legacy-learning .sim-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: 800;
+  background: var(--t-accent-soft);
+  color: var(--t-accent);
+  margin-bottom: 20px;
+  font-family: var(--t-font-ui);
+}
+
+.legacy-learning .sim-statement {
+  font-family: var(--t-font-q);
+  font-weight: var(--t-q-weight);
+  font-size: var(--t-q-size);
+  line-height: var(--t-q-lh);
+  color: var(--t-ink);
+  margin-bottom: 24px;
+}
+
+.legacy-learning .sim-opt {
+  width: 100%;
+  text-align: left;
+  padding: 14px 18px;
+  border-radius: var(--t-radius-opt);
+  border: var(--t-opt-border) solid var(--t-line);
+  background: var(--t-surface);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--t-font-q);
+  font-weight: var(--t-opt-weight);
+  font-size: var(--t-opt-size);
+  color: var(--t-ink);
+  cursor: pointer;
+  box-shadow: var(--t-shadow-opt);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.legacy-learning .sim-opt:hover {
+  border-color: var(--t-accent-line);
+}
+
+.legacy-learning .sim-opt[aria-pressed='true'] {
+  border-color: var(--t-accent-line);
+  background: var(--t-accent-soft);
+}
+
+.legacy-learning .sim-bullet {
+  width: var(--t-bul-size);
+  height: var(--t-bul-size);
+  min-width: var(--t-bul-size);
+  border-radius: var(--t-bul-radius);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--t-font-ui);
+  font-size: 14px;
+  font-weight: var(--t-bul-weight);
+  background: var(--t-bul-bg);
+  color: var(--t-bul-ink);
+}
+
+.legacy-learning .sim-opt[aria-pressed='true'] .sim-bullet {
+  background: var(--t-accent);
+  color: var(--t-accent-ink);
+}
+
+.legacy-learning .sim-seg {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--t-line);
+  transition: background 0.2s;
+}
+
+.legacy-learning .sim-seg[data-state='answered'] { background: var(--t-answered); }
+.legacy-learning .sim-seg[data-state='current'] { background: var(--t-accent); }
+
+.legacy-learning .sim-btn {
+  font-family: var(--t-font-ui);
+  border-radius: var(--t-radius-btn);
+  padding: 10px 22px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  border: var(--t-opt-border) solid transparent;
+  transition: opacity 0.15s;
+}
+
+.legacy-learning .sim-btn--ghost {
+  background: var(--t-surface);
+  border-color: var(--t-line);
+  color: var(--t-ink-soft);
+  box-shadow: var(--t-shadow-opt);
+}
+
+.legacy-learning .sim-btn--primary {
+  background: var(--t-accent);
+  color: var(--t-accent-ink);
+}
+
+.legacy-learning .sim-btn--primary:disabled {
+  background: var(--t-line);
+  color: var(--t-muted);
+  cursor: not-allowed;
+}
+
+.legacy-learning .sim-error {
+  color: #E54F94;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---- linhas de V/F, associação e classificação ---- */
+.legacy-learning .sim-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--t-radius-opt);
+  border: var(--t-opt-border) solid var(--t-line);
+  background: var(--t-surface);
+  box-shadow: var(--t-shadow-opt);
+}
+
+.legacy-learning .sim-row-text {
+  flex: 1;
+  font-family: var(--t-font-q);
+  font-weight: var(--t-opt-weight);
+  font-size: var(--t-opt-size);
+  color: var(--t-ink);
+  line-height: 1.45;
+}
+
+.legacy-learning .sim-vf {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: var(--t-radius-opt);
+  font-family: var(--t-font-ui);
+  font-weight: 700;
+  font-size: 16px;
+  background: var(--t-line);
+  color: var(--t-muted);
+  cursor: pointer;
+}
+
+.legacy-learning .sim-vf[aria-pressed='true'] {
+  background: var(--t-accent);
+  color: var(--t-accent-ink);
+}
+
+.legacy-learning [data-tier='ludico'] .sim-vf[aria-pressed='true'][data-value='V'] { background: var(--grass); }
+.legacy-learning [data-tier='ludico'] .sim-vf[aria-pressed='true'][data-value='F'] { background: var(--bubble); }
+
+.legacy-learning [data-tier='exame'] .sim-vf {
+  width: 40px;
+  height: 34px;
+  border: 1px solid var(--t-line);
+  font-size: 14px;
+  background: var(--t-surface);
+}
+
+.legacy-learning .sim-select {
+  padding: 8px 12px;
+  border-radius: var(--t-radius-opt);
+  border: var(--t-opt-border) solid var(--t-line);
+  font-family: var(--t-font-q);
+  font-weight: var(--t-opt-weight);
+  font-size: 14px;
+  background: var(--t-surface);
+  color: var(--t-ink);
+  cursor: pointer;
+}
+
+.legacy-learning .sim-select[data-filled='true'] {
+  border-color: var(--t-accent-line);
+  background: var(--t-accent-soft);
+}
+
+.legacy-learning .sim-divider {
+  border-top: 1.5px solid var(--t-line);
+}
+
+.legacy-learning .sim-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--t-radius-opt);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--t-font-ui);
+  background: var(--t-wrong-soft);
+  color: var(--t-wrong);
+}
+
+.legacy-learning .sim-mark[data-correct='true'] {
+  background: var(--t-correct-soft);
+  color: var(--t-correct);
+}
+
+.legacy-learning .sim-tip {
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  border-radius: var(--t-radius-opt);
+  border: 1px solid var(--t-line);
+  background: var(--t-surface);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--t-ink-soft);
+  font-family: var(--t-font-q);
+}
+
+.legacy-learning [data-tier='ludico'] .sim-tip {
+  background: #FFF8D6;
+  border-color: var(--sun);
+  color: #6B4A00;
+}
+
+/* "Você sabia?" é recompensa, não correção — cor própria pra não confundir
+   com a dica (amarela) mostrada acima quando a questão foi errada. */
+.legacy-learning .sim-tip--funfact {
+  background: rgba(183,157,255,.14);
+  border-color: #E2D9FF;
+  color: var(--lilac-deep, #8B6DE0);
+}
+
+.legacy-learning [data-tier='ludico'] .sim-tip--funfact {
+  background: rgba(183,157,255,.18);
+  border-color: #E2D9FF;
+  color: var(--lilac-deep, #8B6DE0);
+}
+
+/* ---- ajustes estruturais: onde a faixa muda mais que um token ---- */
+
+/* No registro de prova a alternativa é uma linha, não um cartão. */
+.legacy-learning [data-tier='exame'] .sim-opt {
+  border-width: 0;
+  border-top: 1px solid var(--t-line);
+  border-radius: 0;
+  padding: 12px 10px;
+  align-items: flex-start;
+}
+
+.legacy-learning [data-tier='exame'] .sim-opt:first-of-type {
+  border-top: none;
+}
+
+.legacy-learning [data-tier='exame'] .sim-opt[aria-pressed='true'] {
+  box-shadow: inset 2px 0 0 var(--t-accent);
+}
+
+.legacy-learning [data-tier='exame'] .sim-bullet {
+  padding-top: 1px;
+}
+
+/* A letra continua letra: selecionar muda a cor, não desenha um badge. */
+.legacy-learning [data-tier='exame'] .sim-opt[aria-pressed='true'] .sim-bullet {
+  background: transparent;
+  color: var(--t-accent);
+}
+
+.legacy-learning [data-tier='exame'] .sim-chip,
+.legacy-learning [data-tier='jovem'] .sim-chip {
+  background: transparent;
+  color: var(--t-muted);
+  padding: 0;
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.legacy-learning [data-tier='exame'] .sim-chip { font-weight: 500; }
+.legacy-learning [data-tier='jovem'] .sim-chip { font-weight: 700; }
+
+/* O fundo lúdico da página não combina com as outras faixas. */
+.legacy-learning [data-tier='jovem'] .sim-shell,
+.legacy-learning [data-tier='exame'] .sim-shell {
+  background-image: none;
+}
+
+/* ---- cronômetro (faixas jovem e exame) ---- */
+.legacy-learning .sim-timer {
+  font-family: var(--t-font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--t-ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.legacy-learning [data-tier='exame'] .sim-timer {
+  font-size: 14px;
+  color: var(--t-accent);
+  background: var(--t-accent-soft);
+  border: 1px solid var(--t-accent-line);
+  border-radius: var(--t-radius-btn);
+  padding: 2px 8px;
+}
+
+/* ---- navegador de questões (faixas jovem e exame) ---- */
+.legacy-learning .sim-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.legacy-learning .sim-nav-item {
+  width: 26px;
+  height: 26px;
+  border: 1px solid transparent;
+  border-radius: var(--t-radius-opt);
+  background: var(--t-line);
+  color: var(--t-muted);
+  font-family: var(--t-font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.legacy-learning .sim-nav-item:hover {
+  border-color: var(--t-accent-line);
+}
+
+.legacy-learning .sim-nav-item[data-state='answered'] {
+  background: var(--t-accent-soft);
+  color: var(--t-accent);
+}
+
+.legacy-learning .sim-nav-item[data-state='current'] {
+  background: var(--t-accent);
+  color: var(--t-accent-ink);
+}
+
+.legacy-learning .sim-nav-item:focus-visible {
+  outline: 2px solid var(--t-accent);
+  outline-offset: 2px;
+}
+
+.legacy-learning .sim-answered-count {
+  font-family: var(--t-font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--t-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Honor motion choices across the application, including existing simulation screens. */
+.legacy-learning html[data-learning-motion='off'], .legacy-learning html[data-learning-motion='off'] *, .legacy-learning html[data-learning-motion='off'] *::before, .legacy-learning html[data-learning-motion='off'] *::after {
+  scroll-behavior: auto !important;
+  animation: none !important;
+  transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .legacy-learning, .legacy-learning html *, .legacy-learning html *::before, .legacy-learning html *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+}

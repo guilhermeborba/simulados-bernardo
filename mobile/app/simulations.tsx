@@ -59,7 +59,7 @@ export default function Simulations() {
     setAssessment('Todos');
   }
 
-  return <Screen title="Simulados" subtitle="Encontre sua próxima descoberta." student>
+  return <Screen title="Simulados" subtitle="Encontre sua próxima descoberta." student><Button title="Outras faixas e avaliações na web" secondary onPress={()=>router.push('/official-simulations')}/>
     {sims.loading ? <Loading /> : sims.error ? <Empty title="Vamos tentar de novo?" message={sims.error} onRetry={sims.reload} /> : <>
       <Field label="Buscar simulados" placeholder="Buscar por título ou disciplina" value={query} onChangeText={setQuery} returnKeyType="search" autoCorrect={false} clearButtonMode="while-editing" />
       <Chips label="Disciplina" values={[...new Set(kids.map(sim => sim.discipline.name))]} value={discipline} onChange={setDiscipline} />

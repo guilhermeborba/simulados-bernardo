@@ -7,3 +7,6 @@ ios/
 .env
 .env.*
 !.env.example
+
+# Distribution artifacts
+*.tsbuildinfo

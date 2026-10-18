@@ -57,9 +57,10 @@ export function restoreAnswers(questions: ApiQuestion[], cached?: RunnerSnapshot
 
 export function answerIsComplete(question: TemplateQuestion, value: unknown): boolean {
   if (question.type === 'multiple_choice') return typeof value === 'string' && Boolean(question.options?.some((option) => option.id === value));
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const values = value as Record<string, unknown>;
   if (question.type === 'matching') return Boolean(question.pairs?.length) && question.pairs!.every((pair) => pair.right.some((option) => option.id === values[pair.left.id]));
+  if (question.type === 'classification' && question.classificationMode === 'TEXT') return Boolean(question.items?.length) && Object.keys(values).length === question.items!.length && question.items!.every(item => typeof values[item.id] === 'string' && (values[item.id] as string).trim().length > 0 && (values[item.id] as string).length <= 2000);
   const allowed = question.type === 'classification' ? ['C', 'P'] : ['V', 'F'];
   return Boolean(question.items?.length) && question.items!.every((item) => allowed.includes(String(values[item.id])));
 }
@@ -96,7 +97,7 @@ export function isBlankAnswer(value: unknown): boolean {
 export function authorizedCorrectAnswer(value: unknown): Record<string, unknown> | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
   const entries = Object.entries(value);
-  return entries.length > 0 && entries.every(([key, item]) => key.length > 0 && typeof item === 'string')
+  return entries.length > 0 && entries.every(([key, item]) => key.length > 0 && (typeof item === 'string' || typeof item === 'boolean'))
     ? Object.fromEntries(entries) : undefined;
 }
 
@@ -110,8 +111,9 @@ export function equivalentAnswerBodies(left: unknown, right: unknown): boolean {
 }
 
 export function authorizedAnswerLines(question: TemplateQuestion | null, body: unknown): string[] {
-  const answer = authorizedCorrectAnswer(body);
-  if (!answer) return [];
+  const raw = authorizedCorrectAnswer(body);
+  if (!raw) return [];
+  const answer = question?.type === 'true_false_multiple' ? parseStoredAnswer(question.type, raw) as Record<string, unknown> : raw;
   if (question?.type === 'multiple_choice' || (!question && typeof answer.answer === 'string')) {
     const id = String(answer.answer ?? '');
     const option = question?.options?.find(item => item.id === id);
