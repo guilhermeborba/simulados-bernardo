@@ -3,7 +3,7 @@ import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-na
 import { router } from 'expo-router';
 import { useRemote, type ApiSimulation } from '../src/data';
 import { useTheme, tokens } from '../src/theme';
-import { compareSchoolYears, schoolYearLabel, trackOfSchoolYear } from '../src/core/track';
+import { compareSchoolYears, periodLabel, schoolYearLabel, trackOfSchoolYear } from '../src/core/track';
 import { Button, Card, Copy, Empty, Field, Heading, Loading, Screen, styles } from '../src/ui';
 
 export function Chips({ label, values, value, onChange }: {
@@ -78,7 +78,7 @@ export default function Simulations() {
         {list.map(sim => <View key={sim.id} testID="simulation-grid-cell" style={{ width: `${100 / columns}%`, minWidth: 0, padding: tokens.space[2] }}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`${sim.title}, ${schoolYearLabel(sim.schoolYear)}, ${sim.bimester}º bimestre, ${sim.assessment}, ${sim.totalQuestions} questões. Ver simulado.`}
+            accessibilityLabel={`${[sim.title, schoolYearLabel(sim.schoolYear), periodLabel(sim.bimester, sim.assessment), `${sim.totalQuestions} questões`].filter(Boolean).join(', ')}. Ver simulado.`}
             onPress={() => router.push({ pathname: '/detail/[id]', params: { id: sim.id } })}
             style={({ pressed }) => [styles.card, {
               minWidth: 0,
@@ -91,7 +91,7 @@ export default function Simulations() {
           >
             <Copy muted>{sim.discipline.name}</Copy>
             <Heading level={3}>{sim.title}</Heading>
-            <Copy muted>{schoolYearLabel(sim.schoolYear)} · {sim.bimester}º bimestre · {sim.assessment}</Copy>
+            <Copy muted>{[schoolYearLabel(sim.schoolYear),periodLabel(sim.bimester,sim.assessment)].filter(Boolean).join(' · ')}</Copy>
             <Copy>{sim.totalQuestions} questões</Copy>
           </Pressable>
         </View>)}

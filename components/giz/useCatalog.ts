@@ -3,11 +3,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { ApiMyAttempt, ApiMinhaPontuacao, ApiSimulation, getAvailableSimulations, getMinhaPontuacao, getMyAttempts } from '@/lib/apiClient';
-import { schoolYearLabel, trackOfSchoolYear, useGizTrack } from '@/lib/gizTrack';
+import { periodLabel, schoolYearLabel, trackOfSchoolYear, useGizTrack } from '@/lib/gizTrack';
 type CatalogState = { simulations: ApiSimulation[]; attempts: ApiMyAttempt[]; score: ApiMinhaPontuacao | null };
 const emptyData: CatalogState = { simulations: [], attempts: [], score: null };
 export function isFinished(attempt: ApiMyAttempt) { return attempt.finishedAt !== null || ['COMPLETED', 'FINISHED'].includes(attempt.status); }
-export function simulationSubtitle(simulation: ApiSimulation) { return `${schoolYearLabel(simulation.schoolYear)} · ${simulation.bimester}º bimestre · ${simulation.assessment} · ${simulation.totalQuestions} questões`; }
+export function simulationSubtitle(simulation: ApiSimulation) { return [schoolYearLabel(simulation.schoolYear), periodLabel(simulation.bimester, simulation.assessment), `${simulation.totalQuestions} questões`].filter(Boolean).join(' · '); }
 export function useCatalog() {
   const { user, isLoading: sessionLoading } = useAuth();
   const [data, setData] = useState<CatalogState>(emptyData);

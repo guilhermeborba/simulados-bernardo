@@ -25,6 +25,11 @@ export function schoolYearLabel(schoolYear: number): string {
   return `${schoolYear}º ano`;
 }
 
+/** Técnico courses have a single exam (bimester 0, assessment UNICO), so the period is omitted. */
+export function periodLabel(bimester: number, assessment: string): string {
+  return [bimester > 0 ? `${bimester}º bimestre` : null, assessment === 'UNICO' ? null : assessment].filter(Boolean).join(' · ');
+}
+
 /** 4 anos, 5 anos, 1º ano … 3ª série, then técnico. */
 export function compareSchoolYears(a: number, b: number): number {
   const rank = (year: number) => (year === 0 ? 100 : year < 0 ? -10 - year : year);

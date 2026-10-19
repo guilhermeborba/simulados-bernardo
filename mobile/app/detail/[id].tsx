@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { schoolYearLabel } from '../../src/core/track';
+import { periodLabel, schoolYearLabel } from '../../src/core/track';
 import { Switch, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRemote, type ApiAttempt, type ApiSimulation, type ApiMyAttempt } from '../../src/data';
@@ -25,7 +25,7 @@ export default function Detail() {
 
   return <Screen title={sim.data?.title || 'Seu próximo simulado'} flow student>
     {sim.loading ? <Loading /> : sim.error ? <Empty title="Vamos tentar de novo?" message={sim.error} onRetry={sim.reload} /> : sim.data && <Card>
-      <Copy muted>{schoolYearLabel(sim.data.schoolYear)} · {sim.data.bimester}º bimestre · {sim.data.assessment}</Copy>
+      <Copy muted>{[schoolYearLabel(sim.data.schoolYear),periodLabel(sim.data.bimester,sim.data.assessment)].filter(Boolean).join(' · ')}</Copy>
       <Copy>{sim.data.totalQuestions} questões · cerca de {Math.floor(duration / 60)} min{duration % 60 ? ` ${duration % 60} s` : ''}</Copy>
       <Copy>{explanation}</Copy>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}><Copy>Cronômetro</Copy><Switch accessibilityLabel="Cronômetro" value={timer} onValueChange={setTimer} trackColor={{ false: colors.line, true: colors.primary }} thumbColor={colors['on-primary']} /></View>

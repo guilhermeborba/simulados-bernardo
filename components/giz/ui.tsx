@@ -4,7 +4,7 @@ import { ButtonHTMLAttributes, ReactNode, useEffect, useId, useRef } from 'react
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { TRACK_INFO, useGizTrack } from '@/lib/gizTrack';
+import { TRACK_INFO, applyTrack, useGizTrack } from '@/lib/gizTrack';
 
 export function Icon({ name, size = 24 }: { name: string; size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="giz-icon"><use href={`/giz/icones/_sprite.svg#i-${name}`} /></svg>;
@@ -24,7 +24,9 @@ export function Badge({ children, tone = 'soft' }: { children: ReactNode; tone?:
 const navItems = [ ['/', 'home', 'Início'], ['/simulados', 'book', 'Simulados'], ['/ranking', 'cup', 'Ranking'], ['/eu', 'user', 'Eu'] ];
 export function AppShell({ title, subtitle, children, backHref, flow = false, actions }: { title: string; subtitle?: string; children: ReactNode; backHref?: string; flow?: boolean; actions?: ReactNode }) {
   const pathname = usePathname();
-  const brand = TRACK_INFO[useGizTrack() ?? 'kids'].name;
+  const track = useGizTrack();
+  const brand = TRACK_INFO[track ?? 'kids'].name;
+  useEffect(() => { if (track !== undefined) applyTrack(track); }, [track]);
   const Heading = pathname.startsWith('/simulado/') ? 'h2' : 'h1';
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { heading.current?.focus({ preventScroll: true }); }, [pathname]);
