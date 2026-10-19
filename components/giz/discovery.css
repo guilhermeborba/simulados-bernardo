@@ -1,4 +1,4 @@
-.simulation-card{display:flex;flex-direction:column;gap:var(--s-3);color:var(--ink);text-decoration:none;transition:border-color var(--motion-fast),box-shadow var(--motion-fast)}
+.simulation-card{border-top:var(--s-1) solid var(--track-accent);display:flex;flex-direction:column;gap:var(--s-3);color:var(--ink);text-decoration:none;transition:border-color var(--motion-fast),box-shadow var(--motion-fast)}
 .simulation-card:hover{border-color:var(--primary);box-shadow:var(--e2)}
 .simulation-card p{font-size:var(--text-body-sm);line-height:var(--text-body-sm-line);color:var(--muted)}
 .simulation-icon{display:grid;place-items:center;width:var(--size-touch);height:var(--size-touch);border-radius:var(--r-md);background:var(--soft)}
@@ -26,10 +26,12 @@
 .timer-toggle span span{display:block;font-size:var(--text-body-sm)}
 .trail-intro{display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--s-4);margin-bottom:var(--s-4);padding:var(--s-5);border-radius:var(--r-lg);background:var(--surface)}
 .trail-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:var(--s-4)}
-.trail-card--kids{border:var(--border) solid var(--primary)}
-.trail-card--kids:hover{background:var(--sel-bg)}
-.trail-card--kids .btn{margin-top:auto}
-.trail-card[aria-disabled=true]{background:var(--soft)}
+.trail-card{border:var(--border) solid var(--line);border-top:var(--s-2) solid var(--trail-kids)}
+.trail-card--escola{border-top-color:var(--trail-escola)}
+.trail-card--tecnico{border-top-color:var(--trail-tecnico)}
+.trail-card:hover,.trail-card[aria-pressed=true]{background:var(--sel-bg)}
+.trail-card[aria-pressed=true]{border-color:var(--primary)}
+.trail-card .btn{margin-top:auto}
 .giz-offline{display:flex;gap:var(--s-2);align-items:center;background:var(--hl-bg);padding:var(--s-4);border-radius:var(--r-md)}
 @media(max-width:599px){.welcome-card{flex-wrap:wrap}.welcome-card .tuca{margin-left:auto}.welcome-card .btn{width:100%}.detail-facts{grid-template-columns:minmax(0,1fr)}.detail-facts>div{display:grid;grid-template-columns:var(--s-6) 1fr;align-items:center}.detail-facts span{grid-column:2}.discovery-coming{flex-wrap:wrap}}
 @media(min-width:600px) and (max-width:1023px){.trail-grid{grid-template-columns:1fr}}

@@ -25,7 +25,10 @@ for (const [key, value] of Object.entries(source.layout)) {
 lines.push(`  --border-thin: ${source.border.thin}px; --border: ${source.border.default}px; --focus-ring: ${source.border.focus}px; --overlay: ${source.overlay.value};`);
 lines.push('  --motion-fast: '+source.motion.rapido+'; --motion-standard: '+source.motion.padrao+';');
 lines.push('  --font-d: var(--font-fredoka), '+source.font.display.fallback+'; --font-b: var(--font-nunito), '+source.font.body.fallback+';');
+for (const [track, value] of Object.entries(source.color.trilha)) lines.push(`  --trail-${track}: ${value.destaque}; --trail-${track}-soft: ${value['fundo-suave']};`);
+lines.push('  --track-accent: var(--trail-kids);');
 lines.push('}');
+for (const track of Object.keys(source.color.trilha)) lines.push(`:root[data-track="${track}"] { --track-accent: var(--trail-${track}); }`);
 lines.push('@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {', ...colorDeclarations('dark'), '  color-scheme: dark;', '} }');
 lines.push(':root[data-theme="dark"] {', ...colorDeclarations('dark'), '  color-scheme: dark;', '}');
 lines.push(`@media (min-width: ${source.breakpoint['desktop-min']}px) { :root {`);

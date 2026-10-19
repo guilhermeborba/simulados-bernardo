@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { trackOfSchoolYear } from '../core/track';
 import { AccessibilityInfo, findNodeHandle, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import Svg, { Circle } from 'react-native-svg';
@@ -26,7 +27,7 @@ export default function AttemptResultScreen({review=false}:{review?:boolean}){
  const wrong=Math.max(0,total-correct-blank);
  const percentage=total?Math.round(correct/total*100):0;
  const message=percentage>=80?{title:'Mandou bem!',detail:`Você acertou ${correct} de ${total}.`}:percentage>=50?{title:'Bom caminho!',detail:'Vamos rever as dicas?'}:{title:'Vale tentar de novo!',detail:'Cada tentativa te deixa mais forte.'};
- const isKids=Boolean(snapshot?.attempt.simulation&&snapshot.attempt.simulation.schoolYear>0&&snapshot.attempt.simulation.schoolYear<=5);
+ const isKids=Boolean(snapshot?.attempt.simulation&&trackOfSchoolYear(snapshot.attempt.simulation.schoolYear)==='kids');
  const times=questions.map(question=>snapshot?.spentMs[question.id]);
  const average=times.length&&times.every(time=>typeof time==='number')?Math.round(times.reduce<number>((sum,time)=>sum+(time??0),0)/total/1000):null;
  const visible=questions.filter(question=>filter==='blank'?isBlankAnswer(question.answer):filter==='wrong'?!question.isCorrect&&!isBlankAnswer(question.answer):true);

@@ -3,7 +3,8 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { bloquearTrocaDeTrilha, salvarTrilha } from '@/lib/trilha';
+import { bloquearTrocaDeTrilha } from '@/lib/trilha';
+import { saveTrack } from '@/lib/gizTrack';
 import { isOffline, passwordError, safeReturnTo } from '@/lib/gizAccountApi';
 import { AuthField, AuthLayout, FormError } from '@/components/giz/AuthLayout';
 import { Button } from '@/components/giz/ui';
@@ -41,7 +42,7 @@ export default function RegisterForm({ inviteToken }: RegisterFormProps = {}) {
     setIsSubmitting(true);
     try {
       await register(name.trim(), email.trim(), password, token);
-      if (token) { salvarTrilha('basica'); bloquearTrocaDeTrilha(); }
+      if (token) { saveTrack('kids'); bloquearTrocaDeTrilha(); }
       router.push(token ? '/' : (returnTo || '/trilha'));
     } catch (err) {
       setError(isOffline() || err instanceof TypeError ? 'Não foi possível conectar. Verifique sua conexão e tente de novo.' : err instanceof Error ? err.message : 'Não foi possível criar a conta. Tente de novo.');

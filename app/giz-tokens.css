@@ -79,7 +79,14 @@
   --border-thin: 1px; --border: 2px; --focus-ring: 3px; --overlay: rgb(13 21 24 / .55);
   --motion-fast: 120ms ease-out; --motion-standard: 250ms ease-out;
   --font-d: var(--font-fredoka), Nunito, system-ui, sans-serif; --font-b: var(--font-nunito), system-ui, sans-serif;
+  --trail-kids: #FF7B54; --trail-kids-soft: #FFE9DF;
+  --trail-escola: #2F66DB; --trail-escola-soft: #DCE8FF;
+  --trail-tecnico: #1E8C77; --trail-tecnico-soft: #D3EFE8;
+  --track-accent: var(--trail-kids);
 }
+:root[data-track="kids"] { --track-accent: var(--trail-kids); }
+:root[data-track="escola"] { --track-accent: var(--trail-escola); }
+:root[data-track="tecnico"] { --track-accent: var(--trail-tecnico); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --page: #0B1215;
   --bg: #121C20;
