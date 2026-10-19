@@ -16,7 +16,8 @@
     "lib/authenticatedFetchCookies.server.ts",
     "lib/serverCookies.ts",
     "lib/questionMapper.ts",
-    "lib/apiClient.ts"
+    "lib/apiClient.ts",
+    "tests/**/*.test.ts"
   ],
   "exclude": [
     "node_modules",

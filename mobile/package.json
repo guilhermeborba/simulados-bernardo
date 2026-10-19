@@ -1,5 +1,5 @@
 {
-  "name": "simulados-bernardo-mobile-proof",
+  "name": "giz-mobile",
   "version": "0.0.1",
   "private": true,
   "main": "expo-router/entry",
@@ -8,12 +8,13 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test src/core/*.test.ts src/platform/*.test.ts src/navigation/*.test.ts config/*.test.ts",
-    "test:integration": "node scripts/run-integration.mjs",
+    "test": "node --import tsx --test src/core/*.test.ts src/simulation/*.test.ts src/platform/*.test.ts src/navigation/*.test.ts config/*.test.ts",
     "export:android": "expo export --platform android --output-dir .proof/android",
     "export:ios": "expo export --platform ios --output-dir .proof/ios",
     "prebuild": "expo prebuild --no-install",
+    "generate:tokens": "node ../scripts/generate-giz-mobile.mjs",
     "test:ui": "jest --config jest.config.cjs --runInBand",
+    "test:integration": "node scripts/run-integration.mjs",
     "device:fixture": "node scripts/run-integration.mjs --device"
   },
   "dependencies": {
@@ -32,7 +33,8 @@
     "react-native": "0.86.3",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
-    "react-native-svg": "15.15.4"
+    "react-native-svg": "15.15.4",
+    "expo-font": "~57.0.4"
   },
   "devDependencies": {
     "@react-native/jest-preset": "0.86.3",
@@ -48,5 +50,6 @@
   },
   "engines": {
     "node": ">=22.13.0"
-  }
+  },
+  "description": "Giz Kids \u2014 aplicativo nativo em desenvolvimento"
 }

@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import ConviteView from '@/components/ConviteView';
 
 export const metadata = {
-  title: 'Convite de turma — Simulados Bernardo',
+  title: 'Convite de turma',
 };
 
 export default function ConvitePage() {

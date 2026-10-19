@@ -1,0 +1,87 @@
+/* Giz Design System v1 - gerado de tokens.json. Não edite à mão. */
+:root {
+  --page: #EDE8DB;
+  --bg: #F7F3EA;
+  --surface: #FFFFFF;
+  --ink: #1B2A2F;
+  --muted: #4A5A5E;
+  --line: #E7E0CF;
+  --soft: #F0EBDD;
+  --primary: #FF7B54;
+  --on-primary: #1B2A2F;
+  --hl: #FFC93C;
+  --hl-bg: #FFF1C2;
+  --info: #2F66DB;
+  --ok: #1E8C77;
+  --ok-ink: #0D4A3E;
+  --ok-bg: #D3EFE8;
+  --err: #C8452A;
+  --err-bg: #FFE0D6;
+  --sel-bg: #FFE9DF;
+  --urgent: #FF9A78;
+  --head: #1B2A2F;
+  --head-ink: #F7F3EA;
+  --head-muted: #B9C6C8;
+  --font-d: 'Fredoka', 'Nunito', system-ui, sans-serif;
+  --font-b: 'Nunito', system-ui, sans-serif;
+  --r-sm: 8px; --r-md: 12px; --r-lg: 20px; --r-xl: 28px; --r-full: 999px;
+  --e1: 0 1px 2px rgba(27,42,47,.08); --e2: 0 4px 12px rgba(27,42,47,.10); --e3: 0 12px 28px rgba(27,42,47,.16); --e-sheet: 0 -6px 20px rgba(27,42,47,.14);
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-14: 56px; --s-18: 72px;
+  --touch-min: 48px; --touch-kids: 56px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --page: #0B1215;
+  --bg: #121C20;
+  --surface: #1B2A2F;
+  --ink: #F7F3EA;
+  --muted: #B9C6C8;
+  --line: #2E4046;
+  --soft: #243539;
+  --primary: #FF7B54;
+  --on-primary: #1B2A2F;
+  --hl: #FFC93C;
+  --hl-bg: #4A4018;
+  --info: #8FB0F7;
+  --ok: #1E8C77;
+  --ok-ink: #BFEDE2;
+  --ok-bg: #16403A;
+  --err: #FF9A78;
+  --err-bg: #4A2A22;
+  --sel-bg: #3A2E2B;
+  --urgent: #FF9A78;
+  --head: #0B1215;
+  --head-ink: #F7F3EA;
+  --head-muted: #B9C6C8;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0B1215;
+  --bg: #121C20;
+  --surface: #1B2A2F;
+  --ink: #F7F3EA;
+  --muted: #B9C6C8;
+  --line: #2E4046;
+  --soft: #243539;
+  --primary: #FF7B54;
+  --on-primary: #1B2A2F;
+  --hl: #FFC93C;
+  --hl-bg: #4A4018;
+  --info: #8FB0F7;
+  --ok: #1E8C77;
+  --ok-ink: #BFEDE2;
+  --ok-bg: #16403A;
+  --err: #FF9A78;
+  --err-bg: #4A2A22;
+  --sel-bg: #3A2E2B;
+  --urgent: #FF9A78;
+  --head: #0B1215;
+  --head-ink: #F7F3EA;
+  --head-muted: #B9C6C8;
+  color-scheme: dark;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}

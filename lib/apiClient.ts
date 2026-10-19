@@ -6,6 +6,7 @@ import type {
   ApiAttempt,
   ApiQuestionOption,
   ApiQuestion,
+  ApiAnswerFeedback,
   ApiAttemptResultQuestion,
   ApiAttemptResult,
   ApiMyAttempt,
@@ -47,6 +48,7 @@ export type {
   ApiAttempt,
   ApiQuestionOption,
   ApiQuestion,
+  ApiAnswerFeedback,
   ApiAttemptResultQuestion,
   ApiAttemptResult,
   ApiMyAttempt,
@@ -88,6 +90,14 @@ export class ApiError extends Error {
   }
 }
 
+/** Keeps the Giz status-first constructor compatible with main's ApiError. */
+export class ApiRequestError extends ApiError {
+  constructor(status: number, message: string) {
+    super(message, status);
+    this.name = 'ApiRequestError';
+  }
+}
+
 let sessionRequests = new AbortController();
 
 /** Called synchronously before login/register/logout changes the browser's cookies. */
@@ -115,7 +125,7 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     if (!response.ok) {
       const rawMessage = (body as { message?: string | string[] } | null)?.message;
       const message = Array.isArray(rawMessage) ? rawMessage.join(', ') : rawMessage ?? 'Erro inesperado';
-      throw new ApiError(message, response.status);
+      throw new ApiRequestError(response.status, message);
     }
     return body as T;
   } finally {
@@ -178,9 +188,14 @@ export function getAvailableSimulations(params: {
 }
 
 export function startAttempt(simulationId: string) {
-  return apiFetch<ApiAttempt>(`/api/backend/simulations/${simulationId}/attempts`, {
+  return apiFetch<ApiAttempt>(`/api/backend/simulations/${encodeURIComponent(simulationId)}/attempts`, {
     method: 'POST',
+    body: JSON.stringify({ immediateFeedback: true }),
   });
+}
+
+export function getSimulationAttempt(attemptId: string, signal?: AbortSignal) {
+  return apiFetch<ApiAttempt>(`/api/backend/attempts/${encodeURIComponent(attemptId)}`, { cache: 'no-store', signal });
 }
 
 export function getAttemptQuestions(attemptId: string) {

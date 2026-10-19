@@ -1,0 +1,126 @@
+{
+  "measurements": [
+    {
+      "width": 360,
+      "url": "/sobre",
+      "viewport": 360,
+      "scroll": 360,
+      "title": "BODY",
+      "brokenImages": []
+    },
+    {
+      "width": 360,
+      "url": "/historico",
+      "viewport": 360,
+      "scroll": 360,
+      "title": "H1",
+      "brokenImages": []
+    },
+    {
+      "width": 360,
+      "url": "/ranking",
+      "viewport": 360,
+      "scroll": 360,
+      "title": "H1",
+      "brokenImages": []
+    },
+    {
+      "width": 390,
+      "url": "/sobre",
+      "viewport": 390,
+      "scroll": 390,
+      "title": "H1",
+      "brokenImages": []
+    },
+    {
+      "width": 390,
+      "url": "/historico",
+      "viewport": 390,
+      "scroll": 390,
+      "title": "H1",
+      "brokenImages": []
+    },
+    {
+      "width": 390,
+      "url": "/ranking",
+      "viewport": 390,
+      "scroll": 390,
+      "title": "H1",
+      "brokenImages": []
+    },
+    {
+      "width": 768,
+      "url": "/sobre",
+      "viewport": 768,
+      "scroll": 768,
+      "title": "H1",
+      "brokenImages": []
+    },
+    {
+      "width": 768,
+      "url": "/historico",
+      "viewport": 768,
+      "scroll": 768,
+      "title": "H1",
+      "brokenImages": []
+    },
+    {
+      "width": 768,
+      "url": "/ranking",
+      "viewport": 768,
+      "scroll": 768,
+      "title": "H1",
+      "brokenImages": []
+    },
+    {
+      "width": 1024,
+      "url": "/sobre",
+      "viewport": 1024,
+      "scroll": 1024,
+      "title": "H1",
+      "brokenImages": []
+    },
+    {
+      "width": 1024,
+      "url": "/historico",
+      "viewport": 1024,
+      "scroll": 1024,
+      "title": "H1",
+      "brokenImages": []
+    },
+    {
+      "width": 1024,
+      "url": "/ranking",
+      "viewport": 1024,
+      "scroll": 1024,
+      "title": "H1",
+      "brokenImages": []
+    },
+    {
+      "width": 1440,
+      "url": "/sobre",
+      "viewport": 1440,
+      "scroll": 1440,
+      "title": "H1",
+      "brokenImages": []
+    },
+    {
+      "width": 1440,
+      "url": "/historico",
+      "viewport": 1440,
+      "scroll": 1440,
+      "title": "H1",
+      "brokenImages": []
+    },
+    {
+      "width": 1440,
+      "url": "/ranking",
+      "viewport": 1440,
+      "scroll": 1440,
+      "title": "H1",
+      "brokenImages": []
+    }
+  ],
+  "interactions": "history filter, sort, result link, empty, error/retry; ranking privacy, class switch, unavailable general",
+  "errors": []
+}

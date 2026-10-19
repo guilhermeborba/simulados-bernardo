@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   readEntryLink,
+  readPublicAppPath,
   receiveEntryLink,
   peekEntryLink,
   forgetEntryLink,
@@ -43,4 +44,22 @@ test("new link replaces memory and cleanup drops it without route parameters", (
   assert.ok(peekEntryLink().revision > initial.revision);
   forgetEntryLink();
   assert.equal(peekEntryLink().entry, null);
+});
+
+test("invite supports the current web t parameter without accepting extra keys", () => {
+  assert.deepEqual(readEntryLink(`${origin}/convite?t=${token}`, origin), {kind:"invite",token});
+  assert.equal(readEntryLink(`${origin}/convite?t=${token}&token=${token}`, origin), null);
+});
+
+test("custom navigation accepts only the active development/internal scheme and never secrets", () => {
+ for (const active of ['simuladosbernardoproof','simuladosbernardointernal']) {
+  assert.equal(readPublicAppPath(`${active}://profile`,active),'/profile');
+  assert.equal(readPublicAppPath(`${active}:///history`,active),'/history');
+  assert.equal(readPublicAppPath(`${active==='simuladosbernardoproof'?'simuladosbernardointernal':'simuladosbernardoproof'}://profile`,active),null);
+  for (const suffix of ['?token=secret','#token=secret','?ordinary=value','#anchor']) assert.equal(readPublicAppPath(`${active}://profile${suffix}`,active),null);
+  assert.equal(readPublicAppPath(`${active}://user:secret@profile`,active),null);
+  assert.equal(readPublicAppPath(`${active}://profile:123`,active),null);
+  assert.equal(readPublicAppPath(`${active}://entry`,active),null);
+  for(const route of ['quizzes','progress','oversight','learning','practice-history','official-simulations']) assert.equal(readPublicAppPath(`${active}://${route}`,active),`/${route}`);
+ }
 });

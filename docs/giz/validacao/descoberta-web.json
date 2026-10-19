@@ -1,0 +1,136 @@
+{
+  "passed": true,
+  "report": [
+    {
+      "path": "/",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "path": "/",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "/",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "path": "/",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "path": "/",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "/simulados",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "path": "/simulados",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "/simulados",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "path": "/simulados",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "path": "/simulados",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "/simulados/geo",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "path": "/simulados/geo",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "/simulados/geo",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "path": "/simulados/geo",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "path": "/simulados/geo",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "/trilha",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "path": "/trilha",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "/trilha",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "path": "/trilha",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "path": "/trilha",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "/simulados/novo",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "path": "/simulados/novo",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "/simulados/novo",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "path": "/simulados/novo",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "path": "/simulados/novo",
+      "width": 1440,
+      "overflow": false
+    }
+  ],
+  "filters": true,
+  "search": true,
+  "timerEstimate": true,
+  "resume": true,
+  "retry": true,
+  "zoom200": true
+}

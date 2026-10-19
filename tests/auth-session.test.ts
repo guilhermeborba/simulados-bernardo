@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { NextResponse } from 'next/server';
 import { backendFetch } from '../lib/backendFetch.server';
-import { ApiError, confirmQuizAnswer, quizMediaUrl } from '../lib/apiClient';
+import { ApiError, ApiRequestError, cancelPendingSessionRequests, confirmQuizAnswer, getSimulationAttempt, quizMediaUrl, startAttempt } from '../lib/apiClient';
 import { createAuthenticatedBackendClient } from '../lib/authenticatedBackendClient.server';
 import { applyAuthenticatedFetchCookies } from '../lib/authenticatedFetchCookies.server';
 import {
@@ -652,4 +652,30 @@ test('client errors retain the HTTP status needed to recover a confirmed quiz an
   try {
     await assert.rejects(confirmQuizAnswer('a', 'q', 'B'), (error: unknown) => error instanceof ApiError && error.status === 409 && error.message === 'Already confirmed');
   } finally { mockFetch.mock.restore(); }
+});
+
+
+test('simulation and quiz errors share the status contract during mixed journeys', async (context) => {
+  const mocked = context.mock.method(globalThis, 'fetch', async () => new Response(JSON.stringify({ message: 'Temporary limit' }), { status: 429 }));
+  try {
+    await assert.rejects(startAttempt('s'), (error: unknown) => error instanceof ApiError && error instanceof ApiRequestError && error.status === 429);
+  } finally { mocked.mock.restore(); }
+});
+
+test('changing session aborts a pending simulation read and prevents a late response from escaping', async (context) => {
+  const response = deferred<Response>();
+  let signal: AbortSignal | undefined;
+  const mocked = context.mock.method(globalThis, 'fetch', async (_input: unknown, init?: RequestInit) => {
+    signal = init?.signal ?? undefined;
+    // Even transports that deliver a response after cancellation cannot expose it.
+    return response.promise;
+  });
+  try {
+    const pending = getSimulationAttempt('previous-user-attempt');
+    assert.equal(signal?.aborted, false);
+    cancelPendingSessionRequests();
+    assert.equal(signal?.aborted, true);
+    response.resolve(new Response(JSON.stringify({ id: 'previous-user-attempt', simulationId: 's', status: 'IN_PROGRESS' })));
+    await assert.rejects(pending, (error: unknown) => error instanceof DOMException && error.name === 'AbortError');
+  } finally { mocked.mock.restore(); cancelPendingSessionRequests(); }
 });

@@ -277,19 +277,13 @@ test('recuperação por teclado usa fragmento privado, encerra sessões antigas 
   await page.request.post('/api/auth/logout');
   await page.goto('/login');
   await page
-    .getByRole('link', { name: 'Esqueci minha senha', exact: true })
+    .getByRole('link', { name: 'Esqueci a senha', exact: true })
     .click();
-  await expect(page).toHaveURL(/\/esqueci-senha$/);
-  await page
-    .getByLabel('E-mail da sua conta', { exact: true })
-    .fill(account.email);
-  await page
-    .getByRole('button', { name: 'Enviar link de recuperação', exact: true })
-    .focus();
+  await expect(page).toHaveURL(/\/recuperar-senha$/);
+  await page.getByLabel('E-mail', { exact: true }).fill(account.email);
+  await page.getByRole('button', { name: 'Enviar link', exact: true }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('status')).toHaveText(
-    'Se houver uma conta ativa para este e-mail, enviaremos as instruções de recuperação.',
-  );
+  await expect(page.getByRole('status')).toContainText('Se o e-mail estiver cadastrado, você vai receber o link.');
   await accessible(page);
   const token = await mailToken(page.request, account.email);
   // Login an old session before the public reset; the reset endpoint must not renew it.
@@ -334,7 +328,7 @@ test('recuperação por teclado usa fragmento privado, encerra sessões antigas 
   await page.getByLabel('E-mail', { exact: true }).fill(account.email);
   await page.getByLabel('Senha', { exact: true }).fill(replacement);
   await page.getByRole('button', { name: /Entrar$/ }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/trilha$/);
   expect((await (await page.request.get('/api/auth/me')).json()).id).toBe(
     account.id,
   );

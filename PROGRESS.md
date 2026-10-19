@@ -250,3 +250,15 @@ local. Inclui a navegação para simulados da PR #50, ainda não integrada à ma
 na criação desta branch. Typecheck, 60 testes de lógica e 7 testes de telas
 passaram. [Operação e instalação](mobile/docs/android-internal-eas.md).
 Layout provisório; design system completo web/mobile permanece futuro.
+
+---
+
+## Giz — implementação local em 17/10/2026
+
+O redesign web e o aplicativo Expo estão implementados a partir de `giz-handoff`, com tokens/assets comuns, telas MVP, autenticação, catálogo, execução, resultado/revisão, histórico, ranking e perfil. Painel dos pais, montagem de simulado e trilhas futuras aparecem como “Em breve”, conforme o escopo. Esta entrega ainda não foi publicada.
+
+Novas tentativas solicitam feedback por confirmação à API compatível. Gabarito, dicas e curiosidades vêm da confirmação do servidor; restauração e conflito respeitam o registro persistido. Resultado/revisão usam opções do snapshot e temas editoriais reais. Tentativas legadas preservam o comportamento anterior. A migration `20261017120000_simulation_immediate_feedback` e a API precisam ser instaladas antes dos clientes.
+
+O lint web foi configurado sem interação e com zero avisos; testes e builds web/Expo integram a validação. O [registro de implementação Giz](docs/giz/IMPLEMENTACAO.md) reúne comandos, resultados, decisões e limites de aceite. Execução física Android/iOS, leitor de tela, e-mail real e decisões de marca/distribuição continuam pendentes. Não houve deploy ou alteração em banco existente.
+
+A integração de 18/10 preserva os recursos já existentes na main, os controles de sessão e as rotas de quizzes/missões; `/aprender` mantém a jornada anterior. Publicação em produção autorizada pelo responsável e em preparação; resultados e versões serão registrados após a implantação.

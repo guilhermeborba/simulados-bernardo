@@ -126,7 +126,7 @@ function StudentProgress() {
               </article>)}
             {reviewError && <div className={styles.error} role="alert"><p>{reviewError}</p><button className={styles.secondary} type="button" disabled={Boolean(starting)} onClick={() => setRetry(value => value + 1)}>Recarregar sugestões</button></div>}
           </section>
-          <footer className={styles.footer}><Link className={styles.link} href="/quizzes/historico">Ver histórico de prática →</Link><Link className={styles.link} href="/historico">Ver histórico de simulados →</Link><Link className={styles.link} href="/">Aprender hoje →</Link></footer>
+          <footer className={styles.footer}><Link className={styles.link} href="/quizzes/historico">Ver histórico de prática →</Link><Link className={styles.link} href="/historico">Ver histórico de simulados →</Link><Link className={styles.link} href="/aprender">Aprender hoje →</Link></footer>
         </>}
     </main>
   </div>;

@@ -78,3 +78,9 @@ Os runners integrados exigem a API compilada e Prisma gerado. Usam PostgreSQL e 
 - [CI e regressão](docs/guia-ci-regressao.md): execução local e cobertura.
 - [Decisões arquiteturais](docs/decisions/): BFF, sessão, quizzes, gamificação, progresso e recuperação.
 - [Fontes locais e licenças](app/fonts/README.md): cinco famílias WOFF2, sem download durante o build.
+
+## Giz web e Expo
+
+O redesign Giz está integrado às jornadas existentes. As rotas de quizzes, missões, progresso, coleções e acompanhamento são preservadas; Aprender hoje fica em `/aprender`. O app inicia na home Giz e oferece seu catálogo do Fundamental I.
+
+Veja [a implementação e os contratos Giz](docs/giz/IMPLEMENTACAO.md), inclusive a ordem migration/API/clientes. Tokens: `npm run tokens:generate`; validação: `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`.

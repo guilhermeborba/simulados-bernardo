@@ -280,7 +280,7 @@ function QuizResult({ result, infant, onRetry }: { result: ApiQuizResult; infant
         : result.reward.reason === 'ALREADY_REWARDED' ? 'Este quiz já registrou XP no dia desta conclusão. Praticar novamente ajuda a revisar o que você aprendeu.'
         : result.reward.reason === 'DAILY_LIMIT' ? 'O limite diário de XP já tinha sido registrado no dia desta conclusão. Suas respostas e este resultado continuam salvos.'
         : 'Este resultado foi concluído antes do registro de XP. Você pode consultar sua prática no histórico.'}</p>
-      <Link href="/">Ver missões e progresso em Aprender hoje →</Link>
+      <Link href="/aprender">Ver missões e progresso em Aprender hoje →</Link>
       <Link href="/colecao">Ver minha coleção e conquistas →</Link>
       <Link href="/progresso">Consultar habilidades e sugestões de revisão →</Link>
     </section>

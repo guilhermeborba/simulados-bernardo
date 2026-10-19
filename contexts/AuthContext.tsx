@@ -58,6 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const changeSession = useCallback(async (operation: () => Promise<AuthUser | null>) => {
     const current = ++generation.current;
     cancelPendingSessionRequests();
+    // Offline resume belongs to the last verified session, never its successor.
+    try { sessionStorage.removeItem('giz:session-user'); } catch { /* Browser storage is optional. */ }
     bootstrap.current?.abort();
     setUser(null);
     setIsLoading(true);

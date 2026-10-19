@@ -2,12 +2,12 @@ import { Suspense } from 'react';
 import LoginForm from '@/components/LoginForm';
 
 export const metadata = {
-  title: 'Entrar — Simulados Bernardo',
+  title: 'Entrar — Giz',
 };
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center p-6">Carregando...</div>}>
+    <Suspense fallback={<div className="page-shell" role="status">Carregando...</div>}>
       <LoginForm />
     </Suspense>
   );

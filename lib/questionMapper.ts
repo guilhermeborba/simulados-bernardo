@@ -18,6 +18,7 @@ export interface TemplatePair {
 export interface TemplateQuestion {
   id: string;
   type: 'multiple_choice' | 'true_false_multiple' | 'matching' | 'classification';
+  classificationMode?: 'CP' | 'TEXT';
   text: string;
   tip: string;
   points: number;
@@ -55,6 +56,7 @@ export function mapApiQuestion(question: ApiQuestion): TemplateQuestion {
     return {
       ...base,
       items: question.options.map((option) => ({ id: option.optionKey, text: option.text })),
+      ...(question.type === 'CLASSIFICATION' ? { classificationMode: question.classificationMode ?? 'CP' } : {}),
     };
   }
 

@@ -1,0 +1,68 @@
+# Giz — etapas de continuação e protocolo entre agentes
+
+O trabalho restante do Giz está dividido em etapas independentes. **Cada etapa é uma issue no GitHub**, com escopo, critérios de aceite e status ao vivo. A issue é a fonte da verdade: está visível para qualquer sessão no mesmo instante, sem depender de merge.
+
+```bash
+gh issue list --repo guilhermeborba/simulados-bernardo --label giz --state open
+gh issue view <n> --repo guilhermeborba/simulados-bernardo --comments
+```
+
+O que já foi implementado está em [IMPLEMENTACAO.md](IMPLEMENTACAO.md).
+
+## Etapas
+
+| Etapa | Issue | Repositório | Depende de | Onda |
+|---|---|---|---|---|
+| E01 · Trilhas por público no catálogo | [#53](https://github.com/guilhermeborba/simulados-bernardo/issues/53) | web + Expo | decisão | 1 — **bloqueia deploy** |
+| E02 · Convite de turma direto aos simulados | [#54](https://github.com/guilhermeborba/simulados-bernardo/issues/54) | web + Expo | E01 | 1 |
+| E03 · API: importar `theme` pelo seed | [#55](https://github.com/guilhermeborba/simulados-bernardo/issues/55) | API | api#222 | 1 |
+| E04 · Temas editoriais nas questões | [#56](https://github.com/guilhermeborba/simulados-bernardo/issues/56) | API (conteúdo) | E03 | 2 — divisível em lotes |
+| E05 · Superfícies legadas | [#57](https://github.com/guilhermeborba/simulados-bernardo/issues/57) | web + Expo | decisão | 2 |
+| E06 · Validar app Giz no Android | [#58](https://github.com/guilhermeborba/simulados-bernardo/issues/58) | Expo | — | 2 |
+| E07 · Aceite web e acessibilidade | [#59](https://github.com/guilhermeborba/simulados-bernardo/issues/59) | web | — | 2 |
+| E08 · Ranking geral e pontos | [#60](https://github.com/guilhermeborba/simulados-bernardo/issues/60) | API + web | decisão | backlog |
+| E09 · Tempo de resposta no servidor | [#61](https://github.com/guilhermeborba/simulados-bernardo/issues/61) | API + web | — | backlog |
+| E10 · Publicação | [#62](https://github.com/guilhermeborba/simulados-bernardo/issues/62) | ambos | api#222, #52, E01 | 3 |
+| E11 · Painel dos pais / monte seu simulado | [#63](https://github.com/guilhermeborba/simulados-bernardo/issues/63) | ambos | decisão | backlog |
+
+Todas as issues vivem no repositório `simulados-bernardo`, inclusive as etapas de API.
+
+**Paralelismo seguro:** E01 e E02 mexem na mesma persistência de trilha; faça E02 depois de E01. Os demais pares da mesma onda tocam áreas diferentes. E04 aceita várias sessões ao mesmo tempo, uma por lote (ano + disciplina).
+
+## Protocolo
+
+### Antes de começar
+1. Leia a issue inteira e o último comentário **Ponto de parada**.
+2. Se a issue tem o label `em-andamento` e o último comentário tem menos de 24 h, outra sessão está nela. Escolha outra etapa. Com mais de 24 h sem comentário, considere a etapa abandonada e assuma a partir do último ponto de parada.
+3. Se a issue tem `precisa-decisao`, não implemente antes de a decisão estar registrada em comentário do responsável.
+4. Assuma: comente `Assumido por <nome da sessão>` e adicione o label `em-andamento`.
+
+```bash
+gh issue comment <n> --repo guilhermeborba/simulados-bernardo --body "Assumido por <sessão>"
+gh issue edit <n> --repo guilhermeborba/simulados-bernardo --add-label em-andamento
+```
+
+### Durante
+- Branch da etapa: `giz/eNN-<slug>`, criada a partir de `main` depois do merge de #52; antes disso, a partir de `codex/giz-production`.
+- **Commit e push a cada passo concluído.** Commits `wip:` são aceitos na branch da etapa. Trabalho só local se perde quando a sessão acaba.
+- Rode a validação da etapa antes de cada push que se diga “pronto”.
+
+### Ao parar — por fim de sessão, limite de uso, bloqueio ou conclusão
+Antes de o limite chegar, pare num ponto estável: commit, push e o comentário abaixo. Prefira parar cedo a deixar trabalho sem registro.
+
+```markdown
+## Ponto de parada — AAAA-MM-DD HH:MM — <sessão>
+- **Branch / último commit:** `giz/eNN-...` @ `abc1234` (enviado: sim)
+- **Feito:** itens do escopo concluídos (marque também a checklist da issue)
+- **Próximo passo exato:** arquivo/função e o que fazer
+- **Validação rodada:** comandos e resultado
+- **Bloqueios / decisões pendentes:** …
+```
+
+Depois remova o label: `gh issue edit <n> --repo guilhermeborba/simulados-bernardo --remove-label em-andamento`.
+
+### Ao concluir
+Abra o PR com `Closes guilhermeborba/simulados-bernardo#<n>` na descrição (vale também para PRs no repositório da API) e deixe o último ponto de parada com o link do PR. Merge, deploy, seed em produção e builds remotos só com pedido explícito do responsável.
+
+### Trabalho novo
+Bug ou tarefa descoberta fora do escopo: abra uma issue nova com o label `giz`, no mesmo formato, e acrescente uma linha na tabela acima no próximo PR.

@@ -11,6 +11,10 @@ import {
   type SecureCredentialStore,
 } from "../../src/core/session.js";
 
+import { mapApiQuestion } from '../../src/simulation/questions';
+import { answerIsComplete, makeAnswer, restoreAnswers } from '../../src/simulation/model';
+import type { ApiAttempt, ApiAttemptResult, ApiQuestion } from '../../../packages/api-contracts/src';
+
 if (
   !process.env.E2E_API_URL ||
   !process.env.E2E_FIXTURE_PATH ||
@@ -158,6 +162,53 @@ describe(
       assert.equal(store.writes, 2);
       await successor.logout();
       assert.equal(store.value, null);
+    });
+
+    test("TEXT classification uses the real mode, protects the answer key, preserves raw requests and supports canonical replay/result/legacy", async () => {
+      const posted:string[]=[];
+      const transport:typeof fetch=async(input,init)=>{
+        if(String(input).endsWith('/answer')&&typeof init?.body==='string')posted.push(init.body);
+        return fetch(input,init);
+      };
+      const {session}=await signed(transport);
+      const simulationId=fixture.textClassificationSimulation;
+      const attempt=await session.request<ApiAttempt>(`/simulations/${simulationId}/attempts`,jsonPost({immediateFeedback:true}));
+      const questions=await session.request<ApiQuestion[]>(`/attempts/${attempt.id}/questions`);
+      assert.equal(questions.length,1);
+      assert.equal(questions[0].classificationMode,'TEXT');
+      privateFieldsAbsent(questions);
+      const mapped=mapApiQuestion(questions[0]);
+      assert.equal(answerIsComplete(mapped,{one:'Primeiro'}),false);
+      const raw={one:'  PRIMEIRO  ',two:'segundo'};
+      const answer=makeAnswer(mapped,raw);
+      assert.strictEqual(answer.body,raw);
+      const path=`/attempts/${attempt.id}/questions/${questions[0].id}/answer`;
+      const receipt=await session.request<{feedback:{isCorrect:boolean;correctAnswer:Record<string,unknown>}}>(path,jsonPost({answer:answer.body}));
+      assert.equal(posted[0],JSON.stringify({answer:raw}));
+      assert.equal(receipt.feedback.isCorrect,true);
+      assert.deepEqual(receipt.feedback.correctAnswer,{one:'Primeiro',two:'Segundo'});
+      const replay=await session.request(path,jsonPost({answer:{one:'primeiro',two:'  SEGUNDO  '}}));
+      assert.deepEqual(replay,receipt);
+      const confirmed=await session.request<ApiQuestion[]>(`/attempts/${attempt.id}/questions`);
+      assert.equal(restoreAnswers(confirmed)[questions[0].id].feedback?.isCorrect,true);
+      const result=await session.request<ApiAttemptResult>(`/attempts/${attempt.id}/finish`,jsonPost());
+      assert.equal(result.questions[0].classificationMode,'TEXT');
+      assert.equal(result.questions[0].options?.length,2);
+      assert.deepEqual(result.questions[0].correctAnswer,receipt.feedback.correctAnswer);
+      await assert.rejects(session.request(path,jsonPost({answer:raw})),status(409));
+      const legacy=await session.request<ApiAttempt>(`/simulations/${simulationId}/attempts`,jsonPost());
+      assert.equal(legacy.immediateFeedback===true,false);
+      const legacyQuestions=await session.request<ApiQuestion[]>(`/attempts/${legacy.id}/questions`);
+      assert.equal(legacyQuestions[0].classificationMode,'TEXT');
+      const legacyBody={one:' Primeiro ',two:'Segundo'};
+      await session.request(`/attempts/${legacy.id}/questions/${legacyQuestions[0].id}/answer`,jsonPost({answer:legacyBody}));
+      const restored=await session.request<ApiQuestion[]>(`/attempts/${legacy.id}/questions`);
+      assert.deepEqual(restored[0].answer,legacyBody);
+      assert.equal(restoreAnswers(restored)[legacyQuestions[0].id].feedback,undefined);
+      const legacyResult=await session.request<ApiAttemptResult>(`/attempts/${legacy.id}/finish`,jsonPost());
+      assert.equal(legacyResult.questions[0].classificationMode,'TEXT');
+      assert.equal(legacyResult.questions[0].correctAnswer,undefined);
+      await session.logout();
     });
 
     test("all 15 school-year values use the same catalogue, home/progress and account preference contracts", async () => {

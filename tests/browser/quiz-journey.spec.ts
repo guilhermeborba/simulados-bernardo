@@ -183,6 +183,7 @@ test('catálogo cobre as 15 faixas, filtros persistem e uma segunda conta conser
   await expect(page.getByLabel('Habilitar áudio das questões')).not.toBeChecked();
   await expect(page.getByLabel('Permitir animações')).toBeChecked();
   await page.getByRole('button', { name: 'Sair', exact: true }).click();
+  await page.goto('/login?returnTo=%2F');
   await page.getByLabel('E-mail', { exact: true }).fill(email);
   await page.getByLabel('Senha', { exact: true }).fill(password);
   await page.getByRole('button', { name: /Entrar$/, exact: false }).click();
@@ -250,11 +251,14 @@ test('consulta inicial atrasada não sobrescreve uma nova sessão', async ({ pag
   await page.getByLabel('E-mail', { exact: true }).fill(email);
   await page.getByLabel('Senha', { exact: true }).fill(password);
   await page.getByRole('button', { name: /Entrar$/ }).click();
-  await expect(page.getByText('Olá, Conta atual de teste! Aqui estão seus simulados.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Histórico', exact: true })).toBeVisible();
   release();
   await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
-  await expect(page.getByText('Olá, Conta atual de teste! Aqui estão seus simulados.', { exact: true })).toBeVisible();
-  await page.getByRole('link', { name: '‹ Início', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Histórico', exact: true })).toBeVisible();
+  expect((await (await page.request.get('/api/auth/me')).json()).name).toBe('Conta atual de teste');
+  await page.locator('a[href="/eu"]').filter({ visible: true }).first().click();
+  await expect(page.getByRole('heading', { name: 'Conta atual de teste', exact: true })).toBeVisible();
+  await page.goto('/aprender');
   await page.locator('a[href="/quizzes"]').first().click();
   await expect(page.getByLabel('Ano ou idade')).toHaveValue('0');
 });

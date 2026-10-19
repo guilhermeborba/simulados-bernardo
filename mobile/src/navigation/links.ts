@@ -20,7 +20,7 @@ export function readEntryLink(
       !url.hash &&
       [...url.searchParams.keys()].length === 1
     ) {
-      const token = url.searchParams.get("token");
+      const token = url.searchParams.get("t") ?? url.searchParams.get("token");
       return token && /^[A-Za-z0-9_-]{20,200}$/.test(token)
         ? { kind: "invite", token }
         : null;
@@ -61,4 +61,15 @@ export function subscribeEntryLink(listener: () => void) {
   return () => {
     listeners.delete(listener);
   };
+}
+
+/** App schemes are ordinary navigation only. Secret links require the exact configured HTTPS origin. */
+export function readPublicAppPath(input: string, activeScheme: string): string | null {
+  if (!['simuladosbernardoproof', 'simuladosbernardointernal'].includes(activeScheme)) return null;
+  try {
+    const url = new URL(input);
+    if (url.protocol !== `${activeScheme}:` || url.search || url.hash || url.username || url.password || url.port) return null;
+    const screen = (url.hostname ? `/${url.hostname}${url.pathname}` : url.pathname).replace(/\/$/, '') || '/';
+    return ['/', '/ranking', '/profile', '/simulations', '/history', '/track', '/quizzes', '/progress', '/oversight', '/learning', '/practice-history', '/official-simulations'].includes(screen) ? screen : null;
+  } catch { return null; }
 }

@@ -41,6 +41,7 @@ jest.mock("expo-router", () => ({
     replace: (...args: unknown[]) => mockReplace(...args),
   },
   useLocalSearchParams: () => mockParams,
+  usePathname: () => "/profile",
 }));
 jest.mock("../../src/session-context", () => ({
   useSession: () => ({
@@ -52,6 +53,7 @@ jest.mock("../../src/session-context", () => ({
     cleanupError: null,
   }),
 }));
+jest.mock('../../src/theme',()=>{const source=require('../../src/generated/tokens').tokens;return{tokens:source,useTheme:()=>({colors:Object.fromEntries(Object.entries(source.color.light).map(([key,value]:[string,any])=>[key,value.value])),tokens:source,theme:'light',timer:true,setTimer:jest.fn()})};});
 jest.mock("../../src/config", () => ({
   environment: {
     webOrigin: "https://web.example.test",
@@ -303,7 +305,7 @@ test("successful password reset removes the in-memory link and preserves the suc
     screen.getByRole("button", { name: "Redefinir senha" }),
   );
   await screen.findByText(
-    "Sua senha foi atualizada. Entre com ela quando quiser continuar.",
+    "Sua senha foi alterada. Entre com a nova senha para continuar.",
   );
   expect(peekEntryLink().entry).toBeNull();
   expect(screen.queryByLabelText("Nova senha")).toBeNull();
@@ -340,7 +342,7 @@ test("a new reset link cancels an older pending reset and ignores its late succe
     kind: "password-reset",
     token: "b".repeat(43),
   });
-  expect(screen.queryByText(/Sua senha foi atualizada/)).toBeNull();
+  expect(screen.queryByText(/Sua senha foi alterada/)).toBeNull();
   await fireEvent.changeText(
     screen.getByLabelText("Nova senha"),
     "second-password",
@@ -352,7 +354,7 @@ test("a new reset link cancels an older pending reset and ignores its late succe
   await fireEvent.press(
     screen.getByRole("button", { name: "Redefinir senha" }),
   );
-  await screen.findByText(/Sua senha foi atualizada/);
+  await screen.findByText(/Sua senha foi alterada/);
   expect(JSON.parse(mockPublicRequest.mock.calls[1][1].body).token).toBe(
     "b".repeat(43),
   );

@@ -49,7 +49,7 @@ async function login(page: Page, email: string) {
   await page.getByLabel('E-mail', { exact: true }).fill(email);
   await page.getByLabel('Senha', { exact: true }).fill(password);
   await page.getByRole('button', { name: /Entrar$/ }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/trilha$/);
 }
 
 test('coleção inicial protege a rota, bloqueia itens não ganhos e adapta AUTO às 15 faixas', async ({ page }) => {

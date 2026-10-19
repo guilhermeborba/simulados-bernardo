@@ -93,7 +93,7 @@ function LearningHome() {
 
     {loading ? <p className={styles.loading} role="status">Carregando missões e progresso…</p> : currentError ? <div className={styles.error} role="alert"><p>{currentError}</p>
       <button type="button" className={styles.secondary} onClick={() => setRetry(value => value + 1)}>Tentar novamente</button>
-      <Link href="/login?returnTo=/">Entrar novamente</Link></div> : data && <>
+      <Link href="/login?returnTo=/aprender">Entrar novamente</Link></div> : data && <>
       <section className={styles.xp} aria-labelledby="learning-xp-heading">
         <div><h3 id="learning-xp-heading">Seu XP</h3><p>XP registra a prática em quizzes. Suas notas são calculadas pelas respostas.</p></div>
         <dl className={styles.xpStats}><div><dt>XP acumulado</dt><dd>{data.xp.total.toLocaleString('pt-BR')}</dd></div>

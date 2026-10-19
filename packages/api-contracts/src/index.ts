@@ -43,6 +43,8 @@ export interface ApiAttempt {
   simulationId: string;
   /** Início da tentativa no servidor — base do cronômetro. */
   startedAt?: string;
+  /** Opt-in Giz feedback; older attempts and servers may omit it. */
+  immediateFeedback?: boolean;
   /**
    * Opcional de propósito: o front-end pode ir para produção antes do back-end
    * que passou a devolver esse campo. Sem ele, a faixa cai no padrão.
@@ -58,11 +60,21 @@ export interface ApiQuestionOption {
   order: number;
 }
 
+export interface ApiAnswerFeedback {
+  isCorrect: boolean;
+  correctAnswer: Record<string, unknown>;
+  tip?: string | null;
+  funFact?: string | null;
+  explanation?: string | null;
+}
+
 export interface ApiQuestion {
   id: string;
   type:
     "MULTIPLE_CHOICE" | "TRUE_FALSE_MULTIPLE" | "MATCHING" | "CLASSIFICATION";
   statement: string;
+  /** Input shape only; correct values remain protected until confirmation. */
+  classificationMode?: "CP" | "TEXT";
   tip: string | null;
   /** "Você sabia?" — curiosidade mostrada na tela de resultado, sempre. */
   funFact: string | null;
@@ -71,12 +83,18 @@ export interface ApiQuestion {
   options: ApiQuestionOption[];
   /** Resposta que o próprio aluno já enviou nesta tentativa, se houver. */
   answer?: unknown;
+  /** Present only after a confirmation authorized by the attempt. */
+  confirmedAt?: string | null;
+  feedback?: ApiAnswerFeedback | null;
+  theme?: string | null;
 }
 
 export interface ApiAttemptResultQuestion {
   id: string;
   type: ApiQuestion["type"];
   statement: string;
+  /** Input shape only; correct values remain protected until confirmation. */
+  classificationMode?: "CP" | "TEXT";
   tip: string | null;
   funFact: string | null;
   points: string;
@@ -84,6 +102,12 @@ export interface ApiAttemptResultQuestion {
   answer: unknown;
   isCorrect: boolean;
   pointsEarned: string;
+  options?: ApiQuestionOption[];
+  correctAnswer?: Record<string, unknown> | null;
+  theme?: string | null;
+  explanation?: string | null;
+  confirmedAt?: string | null;
+  feedback?: ApiAnswerFeedback | null;
 }
 
 export interface ApiAttemptResult {
@@ -95,6 +119,8 @@ export interface ApiAttemptResult {
     wrongCount: number;
   };
   questions: ApiAttemptResultQuestion[];
+  topics?: { theme: string; correct: number; total: number }[];
+  unclassifiedQuestions?: number;
 }
 
 export interface ApiMyAttempt {

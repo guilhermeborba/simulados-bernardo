@@ -25,7 +25,7 @@ async function chooseYear(page: Page, year = 3) {
   for (const row of fixture.missionsByYear[String(year)]) await expect(page.getByRole('heading', { name: row.title, exact: true })).toBeVisible();
 }
 async function home(page: Page, year = 3) {
-  await page.goto('/');
+  await page.goto('/aprender');
   await expect(page.getByRole('heading', { name: 'Aprender hoje', exact: true })).toBeVisible();
   await chooseYear(page, year);
 }
@@ -50,7 +50,7 @@ async function assertAccessible(page: Page) {
 const xpTotal = (page: Page) => page.getByRole('region', { name: 'Seu XP', exact: true }).locator('dd').first();
 
 test('Aprender hoje cobre duas missões para cada faixa e mantém navegação acessível', async ({ page }, testInfo) => {
-  await page.goto('/');
+  await page.goto('/aprender');
   await assertAccessible(page);
   await register(page);
   await home(page);
@@ -82,7 +82,7 @@ test('retomar pela home mantém resposta confirmada, concede XP uma vez e atuali
   await page.getByRole('radio', { name: 'O balão vermelho', exact: true }).check();
   await page.getByRole('button', { name: 'Confirmar resposta', exact: true }).click();
   await expect(page.getByText('O balão do meio é vermelho.', { exact: true })).toBeVisible();
-  await page.goto('/');
+  await page.goto('/aprender');
   const resume = page.getByRole('link', { name: 'Continuar quiz: Quiz sintético jornada-web', exact: true });
   await expect(resume).toBeVisible();
   await expect(resume).toHaveAttribute('href', `/quiz/${fixture.publicQuiz}?attempt=${id}`);
@@ -134,10 +134,11 @@ test('XP e progresso da primeira conta não aparecem ao entrar em outra conta', 
   expect(state.missions.every((row: { completedActivities: number }) => row.completedActivities === 0)).toBeTruthy();
   await expect(page.getByRole('link', { name: 'Rever atividade: Quiz sintético jornada-web', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Sair', exact: true }).click();
+  await page.goto('/login?returnTo=%2Faprender');
   await page.getByLabel('E-mail', { exact: true }).fill(first.email);
   await page.getByLabel('Senha', { exact: true }).fill(password);
   await page.getByRole('button', { name: /Entrar$/ }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/aprender$/);
   await expect(page.getByRole('link', { name: 'Rever atividade: Quiz sintético jornada-web', exact: true })).toBeVisible();
   await expect(xpTotal(page)).toHaveText('10');
   expect((await (await page.request.get('/api/backend/me/learning-home')).json()).xp.total).toBe(10);
@@ -171,6 +172,7 @@ test('resposta atrasada da home anterior não troca XP nem cookies da nova conta
   await started;
   await page.getByRole('button', { name: 'Sair', exact: true }).click();
   await expect(page).toHaveURL(/\/login/);
+  await page.goto('/login?returnTo=%2Faprender');
   await page.getByLabel('E-mail', { exact: true }).fill(email);
   await page.getByLabel('Senha', { exact: true }).fill(password);
   await page.getByRole('button', { name: /Entrar$/ }).click();
@@ -203,7 +205,7 @@ test('falha ao carregar aprendizado permite tentar novamente e acessar o catálo
   await register(page);
   let fail = true;
   await page.route('**/api/backend/me/learning-home*', route => fail ? route.abort('failed') : route.continue());
-  await page.goto('/');
+  await page.goto('/aprender');
   await expect(page.getByRole('heading', { name: 'Aprender hoje', exact: true })).toBeVisible();
   const retry = page.getByRole('button', { name: 'Tentar novamente', exact: true });
   await expect(retry).toBeVisible();
@@ -217,7 +219,7 @@ test('falha ao carregar aprendizado permite tentar novamente e acessar o catálo
 });
 
 test('faixa do perfil aparece na primeira visita sem salvar preferências automaticamente', async ({ page }) => {
-  await page.goto('/login');
+  await page.goto('/login?returnTo=%2Faprender');
   await page.getByLabel('E-mail', { exact: true }).fill(fixture.profileStudent.email);
   await page.getByLabel('Senha', { exact: true }).fill(password);
   await page.getByRole('button', { name: /Entrar$/ }).click();

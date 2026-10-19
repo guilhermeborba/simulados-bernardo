@@ -267,6 +267,18 @@ try {
     { cwd: apiRoot, env: apiEnvironment },
   );
   const fixture = await createFixture(prisma, hash, { apiRoot });
+  // Synthetic TEXT classification only, inside the harness-owned schema.
+  const reference = await prisma.simulation.findUniqueOrThrow({ where: { id: fixture.publicSimulation } });
+  const textSimulation = await prisma.simulation.create({data:{
+    title:'Classificação textual sintética mobile',slug:'mobile-text-classification',schoolYear:3,bimester:1,assessment:'AV1',
+    disciplineId:reference.disciplineId,createdById:fixture.admin.id,status:'PUBLISHED',totalQuestions:1,maxScore:1,
+    questions:{create:[{type:'CLASSIFICATION',statement:'Classifique os dois itens sintéticos.',sortOrder:1,points:1,
+      tip:'Dica sintética textual.',funFact:'Curiosidade sintética textual.',
+      options:{create:[{optionKey:'one',text:'Primeiro item',sortOrder:1},{optionKey:'two',text:'Segundo item',sortOrder:2}]},
+      answers:{create:[{answerKey:'one',answerValue:'Primeiro'},{answerKey:'two',answerValue:'Segundo'}]}
+    }]}
+  }});
+  fixture.textClassificationSimulation=textSimulation.id;
   const fixturePath = resolve(temporaryDirectory, "fixture.json");
   writeFileSync(fixturePath, JSON.stringify(fixture), { mode: 0o600 });
   // Device sessions remain loopback-only without changing the production bootstrap.

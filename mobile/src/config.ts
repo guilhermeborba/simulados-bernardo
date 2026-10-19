@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 function origin(raw: string): string {
   const value = new URL(raw);
   if (
@@ -13,7 +14,10 @@ function origin(raw: string): string {
     throw new Error("A versão distribuída exige HTTPS.");
   return value.origin;
 }
+const configuredScheme = Constants.expoConfig?.scheme;
+const appScheme = typeof configuredScheme === 'string' && ['simuladosbernardoproof', 'simuladosbernardointernal'].includes(configuredScheme) ? configuredScheme : 'simuladosbernardoproof';
 export const environment = {
+  appScheme,
   apiOrigin: origin(
     process.env.EXPO_PUBLIC_API_URL ?? "https://api.example.invalid",
   ),

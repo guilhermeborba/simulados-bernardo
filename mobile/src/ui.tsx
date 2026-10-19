@@ -1,313 +1,49 @@
-import React from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  type TextInputProps,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { router, type Href } from "expo-router";
-import { useSession } from "./session-context";
-import { years } from "./data";
-export const colors = {
-  ink: "#18213B",
-  muted: "#56617C",
-  purple: "#5933B0",
-  pale: "#F1EBFF",
-  background: "#F6F7FC",
-  teal: "#166C63",
-  line: "#D7DAE6",
-};
-export function Copy({
-  children,
-  muted = false,
-}: {
-  children: React.ReactNode;
-  muted?: boolean;
-}) {
-  return (
-    <Text style={[styles.copy, muted && { color: colors.muted }]}>
-      {children}
-    </Text>
-  );
+import React, { createContext, useContext, forwardRef, useEffect, useRef } from 'react';
+import { AccessibilityInfo, findNodeHandle, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View, type TextInputProps } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router, usePathname, type Href } from 'expo-router';
+import { SvgXml } from 'react-native-svg';
+import { years } from './data';
+import { useSession } from './session-context';
+import { useTheme, tokens } from './theme';
+import { assets } from './generated/assets';
+const palette = Object.fromEntries(Object.entries(tokens.color.light).map(([key,value]) => [key,value.value])) as Record<keyof typeof tokens.color.light,string>;
+// Compatibility aliases for the current practice/media screens, using the Giz palette.
+export const colors = {...palette, purple:palette.info, pale:palette.soft, background:palette.bg, teal:palette['ok-ink']};
+const NestedNavigation = createContext(false);
+const s = tokens.space;
+export function Copy({ children, muted = false }: { children: React.ReactNode; muted?: boolean }) {
+ const { colors:c }=useTheme();return <Text style={[styles.copy,{color:muted?c.muted:c.ink}]}>{children}</Text>;
 }
-export function Button({
-  title,
-  onPress,
-  disabled = false,
-  secondary = false,
-}: {
-  title: string;
-  onPress: () => void;
-  disabled?: boolean;
-  secondary?: boolean;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ disabled }}
-      disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.button,
-        secondary && styles.secondary,
-        (disabled || pressed) && { opacity: 0.6 },
-      ]}
-    >
-      <Text style={[styles.buttonText, secondary && { color: colors.purple }]}>
-        {title}
-      </Text>
-    </Pressable>
-  );
+export function Heading({children,level=2}:{children:React.ReactNode;level?:2|3}) {const {colors:c}=useTheme();return <Text accessibilityRole="header" style={[level===2?styles.cardTitle:styles.subheading,{color:c.ink}]}>{children}</Text>;}
+export function Icon({name,size=24}:{name:string;size?:number}) {const {colors:c}=useTheme();const xml=assets[`icones/${name}`];return xml?<SvgXml xml={xml.replaceAll('currentColor',c.ink)} width={size} height={size} accessible={false}/>:null;}
+export function Tuca({pose='feliz',size=96}:{pose?:string;size?:number}) {return <SvgXml xml={assets[`tuca/tuca-${pose}`] || assets['tuca/tuca-feliz']} width={size} height={size} accessible={false}/>;}
+export function Illustration({name,size=160}:{name:string;size?:number}) {return <SvgXml xml={assets[`ilustracoes/${name}`]||assets['ilustracoes/em-breve']} width={size} height={size} accessible={false}/>;}
+export function Button({title,onPress,disabled=false,secondary=false}:{title:string;onPress:()=>void;disabled?:boolean;secondary?:boolean}) {const {colors:c}=useTheme();return <Pressable accessibilityRole="button" accessibilityState={{disabled}} disabled={disabled} onPress={onPress} style={({pressed})=>[styles.button,{backgroundColor:secondary?c.surface:c.primary,borderColor:secondary?c.info:c.primary},(pressed||disabled)&&{opacity:.6}]}><Text style={[styles.buttonText,{color:secondary?c.info:c['on-primary']}]}>{title}</Text></Pressable>;}
+export function Card({title,children}:{title?:string;children:React.ReactNode}) {const {colors:c}=useTheme();return <View style={[styles.card,{backgroundColor:c.surface,borderColor:c.line}]}>{title&&<Heading>{title}</Heading>}{children}</View>;}
+export const Field=forwardRef<TextInput,TextInputProps&{label:string;error?:string}>(({label,error,...props},ref)=>{const {colors:c}=useTheme();return <View style={{gap:s[2]}}><Text style={[styles.label,{color:c.ink}]}>{label}</Text><TextInput ref={ref} accessibilityLabel={label} autoCapitalize="none" placeholderTextColor={c.muted} style={[styles.input,{color:c.ink,backgroundColor:c.surface,borderColor:error?c.err:c.line}]} {...props}/>{error&&<Text accessibilityLiveRegion="polite" style={[styles.copy,{color:c.err}]}>{error}</Text>}</View>;});Field.displayName='Field';
+export function Notice({children}:{children:React.ReactNode}) {const {colors:c}=useTheme();return <View accessibilityLiveRegion="polite" style={[styles.notice,{backgroundColor:c['hl-bg']}]}>{React.Children.toArray(children).map((child,index)=>typeof child==='string'||typeof child==='number'?<Copy key={index}>{child}</Copy>:child)}</View>;}
+export function Badge({children}:{children:React.ReactNode}) {const {colors:c}=useTheme();return <Text style={[styles.badge,{backgroundColor:c.soft,color:c.ink}]}>{children}</Text>;}
+export function Loading(){const{colors:c}=useTheme();return <View accessible accessibilityRole="progressbar" accessibilityLabel="Carregando" style={{padding:tokens.space[4],gap:tokens.space[3]}}><View style={{height:tokens.space[8]*2,borderRadius:tokens.radius.lg,backgroundColor:c.soft}}/><View style={{height:tokens.space[6],width:'85%',borderRadius:tokens.radius.sm,backgroundColor:c.soft}}/><View style={{height:tokens.space[6],width:'65%',borderRadius:tokens.radius.sm,backgroundColor:c.soft}}/></View>;}
+export function Empty({title,message,onRetry,mascot=true}:{title:string;message:string;onRetry?:()=>void;mascot?:boolean}) {return <Card>{mascot&&<Tuca pose="lupa" size={140}/>}<Heading>{title}</Heading><Copy muted>{message}</Copy>{onRetry&&<Button title="Tentar de novo" secondary onPress={onRetry}/>}</Card>;}
+export function Progress({value,max}:{value:number;max:number}) {const{colors:c}=useTheme();return <View accessible accessibilityRole="progressbar" accessibilityValue={{min:0,max,now:value,text:`${value} de ${max}`}} style={{gap:s[2]}}><View style={{height:s[2],borderRadius:tokens.radius.full,backgroundColor:c.soft,overflow:'hidden'}}><View style={{height:'100%',width:`${Math.max(0,Math.min(100,value/Math.max(max,1)*100))}%`,backgroundColor:c.hl}}/></View><Copy muted>{value} de {max}</Copy></View>;}
+export function Screen({title,subtitle,children,student=false,publicScreen=false,flow=false,footer,onBack}:{title:string;subtitle?:string;children:React.ReactNode;student?:boolean;publicScreen?:boolean;flow?:boolean;footer?:React.ReactNode;onBack?:()=>void}) {
+ const {session,cleanupError,cleanupMedia}=useSession();const{colors:c}=useTheme();const heading=useRef<Text>(null);const pathname=usePathname();const{width}=useWindowDimensions();const sidebar=width>=tokens.breakpoint['tablet-min']&&!flow&&!publicScreen;
+ useEffect(()=>{const task=setTimeout(()=>{const id=findNodeHandle(heading.current);if(id) AccessibilityInfo.setAccessibilityFocus(id);},100);return()=>clearTimeout(task);},[pathname,title]);
+ return <SafeAreaView style={{flex:1,backgroundColor:c.head,flexDirection:sidebar?'row':'column'}} edges={['top','left','right']}>{sidebar&&<Navigation vertical/>}<View style={{flex:1,backgroundColor:c.bg}}><View style={[styles.header,{backgroundColor:c.head}]}>{flow&&<Pressable accessibilityRole="button" accessibilityLabel="Voltar" style={styles.back} onPress={()=>onBack?onBack():router.canGoBack()?router.back():router.replace('/')}><Text style={[styles.buttonText,{color:c['head-ink']}]}>‹</Text></Pressable>}<Text ref={heading} accessible accessibilityRole="header" style={[styles.heading,{color:c['head-ink']}]}>{title}</Text>{subtitle&&<Text style={[styles.copy,{color:c['head-muted']}]}>{subtitle}</Text>}</View><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.page}><NestedNavigation.Provider value={true}>{cleanupError&&<Notice>{cleanupError}<Button title="Tentar limpeza" secondary onPress={()=>{void cleanupMedia();}}/></Notice>}{!publicScreen&&session.status!=='authenticated'?<Card title="Entre para continuar"><Button title="Ir para o acesso" onPress={()=>router.replace('/')}/></Card>:student&&session.user?.role!=='STUDENT'?<Card title="Acompanhe seus alunos"><Button title="Abrir acompanhamento" onPress={()=>router.replace('/oversight')}/></Card>:children}</NestedNavigation.Provider></ScrollView>{footer&&<SafeAreaView edges={['bottom']} style={{padding:s[4],backgroundColor:c.bg}}>{footer}</SafeAreaView>}{!sidebar&&!flow&&!publicScreen&&<Navigation/>}</View></SafeAreaView>;
 }
-export function Card({
-  title,
-  children,
-}: {
-  title?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <View style={styles.card}>
-      {title && <Text style={styles.cardTitle}>{title}</Text>}
-      {children}
-    </View>
-  );
+export function Navigation({vertical=false}:{vertical?:boolean}){const nested=useContext(NestedNavigation);const{session}=useSession();const pathname=usePathname();const{colors:c}=useTheme();const{width}=useWindowDimensions();const compact=vertical&&width<tokens.breakpoint['desktop-min'];const entries=session.user?.role==='STUDENT'?[['Início','/','home'],['Simulados','/simulations','book'],['Ranking','/ranking','cup'],['Eu','/profile','user']]:[['Alunos','/oversight','users'],['Eu','/profile','user']];if(nested)return null;return <SafeAreaView edges={vertical?['bottom']:['bottom']} style={{backgroundColor:c.surface,...(vertical?{width:compact?tokens.breakpoint['sidebar-tablet']:tokens.breakpoint['sidebar-desktop']}:{})}}><View style={[styles.nav,{borderColor:c.line,...(vertical?{flexDirection:'column',height:'100%',paddingVertical:s[6]}:{})}]}>{entries.map(([label,href,icon])=><Pressable key={href} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{selected:pathname===href}} onPress={()=>router.replace(href as Href)} style={[styles.navLink,{backgroundColor:pathname===href?c['sel-bg']:c.surface,...(vertical?{flex:0,flexDirection:compact?'column':'row',justifyContent:compact?'center':'flex-start',padding:s[4]}:{})}]}><Icon name={icon}/>{!compact&&<Text style={[styles.navText,{color:c.ink}]}>{label}</Text>}</Pressable>)}</View></SafeAreaView>;}
+export function YearPicker({year,onChange}:{year:number|null;onChange:(year:number)=>void}) {
+ const {colors:c}=useTheme();
+ return <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:s[2],paddingVertical:s[2]}}>{years.map(item=><Pressable key={item.value} accessibilityRole="button" accessibilityLabel={item.label} accessibilityState={{selected:item.value===year}} onPress={()=>onChange(item.value)} style={{minHeight:tokens.size['touch-kids'],borderRadius:tokens.radius.full,borderWidth:2,borderColor:c.info,backgroundColor:item.value===year?c.info:c.surface,paddingHorizontal:s[4],paddingVertical:s[3],justifyContent:'center'}}><Text style={[styles.copy,{color:item.value===year?c['on-primary']:c.ink}]}>{item.label}</Text></Pressable>)}</ScrollView>;
 }
-export function Field({ label, ...props }: TextInputProps & { label: string }) {
-  return (
-    <View style={{ gap: 6 }}>
-      <Text style={styles.label}>{label}</Text>
-      <TextInput
-        accessibilityLabel={label}
-        autoCapitalize="none"
-        style={styles.input}
-        {...props}
-      />
-    </View>
-  );
-}
-export function Notice({ children }: { children: React.ReactNode }) {
-  return (
-    <View accessibilityLiveRegion="polite" style={styles.notice}>
-      <Copy>{children}</Copy>
-    </View>
-  );
-}
-export function Loading() {
-  return (
-    <View style={{ padding: 24, gap: 12 }}>
-      <ActivityIndicator size="large" color={colors.purple} />
-      <Copy>Carregando sua jornada…</Copy>
-    </View>
-  );
-}
-export function Screen({
-  title,
-  subtitle,
-  children,
-  student = false,
-  publicScreen = false,
-}: {
-  title: string;
-  subtitle?: string;
-  children: React.ReactNode;
-  student?: boolean;
-  publicScreen?: boolean;
-}) {
-  const { session, cleanupError, cleanupMedia } = useSession();
-  const authenticated = session.status === "authenticated" && session.user;
-  return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      edges={["left", "right", "bottom"]}
-    >
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.page}
-      >
-        <Text accessibilityRole="header" style={styles.heading}>
-          {title}
-        </Text>
-        {subtitle && <Copy muted>{subtitle}</Copy>}
-        {cleanupError && (
-          <Notice>
-            {cleanupError}
-            <Button
-              title="Tentar limpeza"
-              secondary
-              onPress={() => {
-                void cleanupMedia();
-              }}
-            />
-          </Notice>
-        )}
-        {!publicScreen && !authenticated ? (
-          <Card title="Entre para continuar">
-            <Button
-              title="Ir para o acesso"
-              onPress={() => router.replace("/")}
-            />
-          </Card>
-        ) : student && session.user?.role !== "STUDENT" ? (
-          <Card title="Acompanhe seus alunos">
-            <Button
-              title="Abrir acompanhamento"
-              onPress={() => router.replace("/oversight")}
-            />
-          </Card>
-        ) : (
-          children
-        )}
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
-export function Navigation() {
-  const { session } = useSession();
-  const entries =
-    session.user?.role === "STUDENT"
-      ? [
-          ["Hoje", "/"],
-          ["Quizzes", "/quizzes"],
-          ["Simulados", "/simulations"],
-          ["Progresso", "/progress"],
-          ["Perfil", "/profile"],
-        ]
-      : [
-          ["Alunos", "/oversight"],
-          ["Perfil", "/profile"],
-        ];
-  return (
-    <View style={styles.nav}>
-      {entries.map(([title, href]) => (
-        <Pressable
-          accessibilityRole="link"
-          key={href}
-          onPress={() => router.push(href as Href)}
-          style={styles.navLink}
-        >
-          <Text style={styles.navText}>{title}</Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-}
-export function YearPicker({
-  year,
-  onChange,
-}: {
-  year: number | null;
-  onChange: (year: number) => void;
-}) {
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ gap: 8, paddingVertical: 8 }}
-    >
-      {years.map((item) => (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={item.label}
-          accessibilityState={{ selected: item.value === year }}
-          key={item.value}
-          onPress={() => onChange(item.value)}
-          style={[
-            styles.pill,
-            item.value === year && { backgroundColor: colors.purple },
-          ]}
-        >
-          <Text
-            style={{
-              color: item.value === year ? "#FFF" : colors.ink,
-              fontWeight: "700",
-            }}
-          >
-            {item.label}
-          </Text>
-        </Pressable>
-      ))}
-    </ScrollView>
-  );
-}
-export const styles = StyleSheet.create({
-  page: {
-    padding: 22,
-    gap: 18,
-    maxWidth: 640,
-    width: "100%",
-    alignSelf: "center",
-    paddingBottom: 40,
-  },
-  heading: {
-    fontSize: 32,
-    fontWeight: "800",
-    color: colors.ink,
-    letterSpacing: -1,
-  },
-  copy: { fontSize: 16, color: colors.ink, lineHeight: 24 },
-  card: {
-    backgroundColor: "#FFF",
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "#E7E8F2",
-    padding: 20,
-    gap: 12,
-  },
-  cardTitle: { fontSize: 21, fontWeight: "800", color: colors.ink },
-  button: {
-    backgroundColor: colors.purple,
-    borderRadius: 16,
-    padding: 15,
-    minHeight: 50,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonText: {
-    color: "#FFF",
-    fontSize: 16,
-    fontWeight: "800",
-    textAlign: "center",
-  },
-  secondary: { backgroundColor: colors.pale },
-  label: { color: colors.ink, fontSize: 15, fontWeight: "700" },
-  input: {
-    backgroundColor: "#FFF",
-    borderColor: colors.line,
-    borderWidth: 1,
-    borderRadius: 14,
-    padding: 14,
-    fontSize: 17,
-    color: colors.ink,
-    minHeight: 52,
-  },
-  notice: { backgroundColor: "#E9F3F0", borderRadius: 16, padding: 16 },
-  nav: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    backgroundColor: "#FFF",
-    borderRadius: 16,
-  },
-  navLink: {
-    flexGrow: 1,
-    minHeight: 48,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 12,
-  },
-  navText: { color: colors.purple, fontWeight: "800", fontSize: 15 },
-  pill: {
-    backgroundColor: "#FFF",
-    borderWidth: 1,
-    borderColor: colors.line,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 24,
-    minHeight: 44,
-  },
+export function Grid({children}:{children:React.ReactNode}){const{width}=useWindowDimensions();const columns=width>=tokens.breakpoint['desktop-min']?3:width>=tokens.breakpoint['tablet-min']?2:1;return <View style={{flexDirection:'row',flexWrap:'wrap',margin:-s[2]}}>{React.Children.map(children,child=><View style={{width:`${100/columns}%`,padding:s[2]}}>{child}</View>)}</View>;}
+export const styles=StyleSheet.create({
+ page:{padding:s[4],gap:s[4],maxWidth:tokens.breakpoint['container-max'],width:'100%',alignSelf:'center',paddingBottom:s[8]},
+ header:{padding:s[5],gap:s[2]},heading:{fontFamily:'Fredoka',fontSize:tokens.type.h1.mobile[0],lineHeight:tokens.type.h1.mobile[1],fontWeight:'600'},
+ copy:{fontFamily:'Nunito',fontSize:tokens.type.body.mobile[0],lineHeight:tokens.type.body.mobile[1],fontWeight:'600'},
+ card:{borderRadius:tokens.radius.lg,borderWidth:1,padding:s[5],gap:s[3]},cardTitle:{fontFamily:'Fredoka',fontSize:tokens.type.h2.mobile[0],lineHeight:tokens.type.h2.mobile[1],fontWeight:'600'},subheading:{fontFamily:'Fredoka',fontSize:tokens.type.h3.mobile[0],lineHeight:tokens.type.h3.mobile[1],fontWeight:'600'},
+ button:{borderRadius:tokens.radius.full,borderWidth:2,padding:s[3],minHeight:tokens.size['button-height'],alignItems:'center',justifyContent:'center'},buttonText:{fontFamily:'Fredoka',fontSize:tokens.type.h3.mobile[0],lineHeight:tokens.type.h3.mobile[1],fontWeight:'600',textAlign:'center'},
+ label:{fontFamily:'Nunito',fontSize:tokens.type.body.mobile[0],fontWeight:'800'},input:{borderWidth:2,borderRadius:tokens.radius.md,padding:s[4],fontSize:tokens.type.body.mobile[0],fontFamily:'Nunito',minHeight:tokens.size['field-height']},notice:{borderRadius:tokens.radius.md,padding:s[4],gap:s[3]},badge:{fontFamily:'Nunito',fontSize:tokens.type['body-sm'].mobile[0],lineHeight:tokens.type['body-sm'].mobile[1],fontWeight:'800',borderRadius:tokens.radius.full,paddingVertical:s[1],paddingHorizontal:s[3],alignSelf:'flex-start'},
+ nav:{flexDirection:'row',minHeight:tokens.size['bottom-nav-height'],borderTopWidth:1,padding:s[1]},navLink:{flex:1,minHeight:tokens.size['touch-kids'],justifyContent:'center',alignItems:'center',borderRadius:tokens.radius.md,gap:s[1]},navText:{fontFamily:'Nunito',fontSize:tokens.type.caption.mobile[0],fontWeight:'800'},back:{minWidth:tokens.size['touch-kids'],minHeight:tokens.size['touch-kids'],alignSelf:'flex-start',justifyContent:'center'},
 });

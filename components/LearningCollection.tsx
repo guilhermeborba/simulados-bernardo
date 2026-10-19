@@ -113,7 +113,7 @@ function StudentCollection() {
                     </select>
                   </label>
                   <p className={styles.hint}>A apresentação automática usa Bolinha na Educação Infantil, Capelo no Fundamental I e selos nas outras faixas. Você pode escolher qualquer estilo.</p>
-                  <p className={styles.hint}>Sua faixa acompanha a escolha em Aprender hoje ou o ano do seu cadastro. <Link href="/">Alterar minha faixa →</Link></p>
+                  <p className={styles.hint}>Sua faixa acompanha a escolha em Aprender hoje ou o ano do seu cadastro. <Link href="/aprender">Alterar minha faixa →</Link></p>
                 </div>
               </div>
               <fieldset className={styles.itemFieldset} disabled={saving}>
@@ -147,7 +147,7 @@ function StudentCollection() {
               </article>;
             })}</div>
           </section>
-          <footer className={styles.footer}><p>Seu progresso e seus itens ficam guardados. A personalização não altera notas nem o XP.</p><Link className={styles.link} href="/">Voltar para Aprender hoje →</Link></footer>
+          <footer className={styles.footer}><p>Seu progresso e seus itens ficam guardados. A personalização não altera notas nem o XP.</p><Link className={styles.link} href="/aprender">Voltar para Aprender hoje →</Link></footer>
         </>}
     </main>
   </div>;

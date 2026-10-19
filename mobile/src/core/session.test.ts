@@ -886,3 +886,34 @@ void test("JSON buffering enforces 2 MiB even when content-length understates th
   await assert.rejects(session.request("/students/me"), ApiResponseError);
   assert.equal(session.getSnapshot().status, "authenticated");
 });
+
+void test("registration adopts the real API session and persists only its secure refresh", async () => {
+  const calls: string[] = [];
+  const current=client((path,init)=>{
+    calls.push(path);
+    if (path==='/auth/register') {
+      assert.deepEqual(body(init),{name:'Pessoa de teste',email:'qa@example.test',password:'qa-password',inviteToken:'invitation-synthetic-12345'});
+      return json(pair('registered'),201);
+    }
+    return json({success:true});
+  });
+  await current.client.register({name:'Pessoa de teste',email:'qa@example.test',password:'qa-password',inviteToken:'invitation-synthetic-12345'});
+  assert.equal(current.client.getSnapshot().status,'authenticated');
+  assert.equal(current.client.getSnapshot().user?.id,'registered');
+  assert.equal(current.store.value,pair('registered').refreshToken);
+  assert.deepEqual(calls,['/auth/register']);
+});
+void test("successful reset explicitly ends the local session even when remote logout is unavailable", async () => {
+  const current=client((path)=>{
+    if(path==='/auth/login')return json(pair('reset-user'));
+    if(path==='/auth/reset-password')return json({success:true});
+    if(path==='/auth/logout')throw new Error('offline after reset');
+    throw new Error('Unexpected path');
+  });
+  await current.client.login({email:'qa@example.test',password:'old-password'});
+  await current.client.publicRequest('/auth/reset-password',{method:'POST',body:JSON.stringify({token:'a'.repeat(43),password:'new-password'})});
+  await current.client.logout();
+  assert.equal(current.client.getSnapshot().status,'signed-out');
+  assert.equal(current.client.getSnapshot().user,null);
+  assert.equal(current.store.value,null);
+});

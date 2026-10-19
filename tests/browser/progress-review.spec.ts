@@ -48,7 +48,7 @@ async function login(page: Page, email: string) {
   await page.getByLabel('E-mail', { exact: true }).fill(email);
   await page.getByLabel('Senha', { exact: true }).fill(password);
   await page.getByRole('button', { name: /Entrar$/ }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/trilha$/);
 }
 async function confirm(page: Page, keyboard = false) {
   const blue = page.getByRole('radio', { name: 'Azul de teste', exact: true });

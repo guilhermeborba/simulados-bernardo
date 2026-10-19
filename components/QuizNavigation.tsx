@@ -12,7 +12,7 @@ export default function QuizNavigation({ current }: { current: 'catalog' | 'hist
     <nav className={styles.navigation} aria-label="Navegação dos quizzes">
       <Link href="/" className={styles.brand}><span className={styles.brandMark} aria-hidden="true">B</span><span>Simulados Bernardo</span></Link>
       <div className={styles.navLinks}>
-        {user?.role === 'STUDENT' && <Link href="/">Aprender hoje</Link>}
+        {user?.role === 'STUDENT' && <Link href="/aprender">Aprender hoje</Link>}
         {user && ['GUARDIAN', 'TEACHER', 'ADMIN'].includes(user.role) && <Link href="/acompanhamento" aria-current={current === 'oversight' ? 'page' : undefined}>Acompanhamento</Link>}
         {user?.role === 'STUDENT' && <Link href="/progresso" aria-current={current === 'progress' ? 'page' : undefined}>Meu progresso</Link>}
         {user?.role === 'STUDENT' && <Link href="/colecao" aria-current={current === 'collection' ? 'page' : undefined}>Minha coleção</Link>}

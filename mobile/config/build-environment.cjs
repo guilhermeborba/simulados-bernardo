@@ -20,7 +20,7 @@ function buildEnvironment(env) {
     }
   }
   return {
-    name: internal ? "Simulados Bernardo · Interno" : "Simulados Bernardo · Prova",
+    name: internal ? "Giz Kids · Interno" : "Giz Kids · Desenvolvimento",
     identifier: internal ? "com.simuladosbernardo.proof.internal" : "com.simuladosbernardo.proof",
     scheme: internal ? "simuladosbernardointernal" : "simuladosbernardoproof",
   };

@@ -28,3 +28,13 @@ test("unknown environments and malformed development origins fail explicitly", (
   assert.throws(() => buildEnvironment({ EXPO_PUBLIC_API_URL: "not-a-url" }));
   assert.doesNotThrow(() => buildEnvironment({ EXPO_PUBLIC_API_URL: "http://127.0.0.1:3333" }));
 });
+
+test("Giz preserves the existing EAS development and internal application identities", () => {
+ const dev=buildEnvironment({});
+ const internal=buildEnvironment({MOBILE_APP_ENV:'internal',EXPO_PUBLIC_API_URL:'https://api.example.com',EXPO_PUBLIC_WEB_ORIGIN:'https://example.com'});
+ assert.equal(dev.identifier,'com.simuladosbernardo.proof');
+ assert.equal(dev.scheme,'simuladosbernardoproof');
+ assert.equal(internal.identifier,'com.simuladosbernardo.proof.internal');
+ assert.equal(internal.scheme,'simuladosbernardointernal');
+ assert.match(dev.name,/Giz Kids/);
+});

@@ -1,8 +1,9 @@
 # APK interno Android — Expo/EAS
 
 Configuração preparada em 15/10/2026, com autorização do responsável para usar a
-API Railway e a aplicação Vercel existentes. O redesign completo web/mobile será
-uma frente posterior; este APK mantém o layout funcional atual.
+API Railway e a aplicação Vercel existentes. Este registro descreve a configuração e o primeiro envio anteriores ao redesign.
+A integração Giz de 18/10/2026 preserva o projeto, as identidades e este perfil;
+um novo APK precisa ser gerado e validado para conter as telas atuais.
 
 ## Projeto e perfil
 
@@ -17,8 +18,10 @@ uma frente posterior; este APK mantém o layout funcional atual.
 Os endereços são públicos e estão no perfil, sem segredos no bundle. O app usa
 a base real da plataforma: contas, respostas e tentativas são persistidas nesse
 ambiente. Não há importação de conteúdo ou alteração de backend durante o build.
-Os simulados abrem na web e podem exigir login próprio no navegador; quizzes
-continuam no runner nativo. Cadastro e recuperação dependem do fluxo web existente.
+Na versão Giz, simulados Kids e quizzes têm runners nativos; outras faixas
+continuam disponíveis no catálogo que abre a web e pode exigir login próprio
+no navegador. Cadastro e recuperação usam a API real. A migration e a API
+compatíveis com feedback imediato devem ser implantadas antes do novo app.
 
 ## Gerar e instalar
 
@@ -42,7 +45,7 @@ o APK e autorize a instalação por esse navegador quando solicitado. A versão
 interna funciona sem Metro ou computador ligado; exige internet para acessar a
 plataforma. Não é publicação na Google Play.
 
-Validação local: typecheck, 60 testes de lógica e 7 testes de telas passaram.
+Validação local após a integração Giz: typecheck, 79 testes de lógica e 36 testes de telas passaram.
 A instalação em aparelho físico e o aceite das jornadas continuam necessários.
 
 Primeiro build enviado: [15e0ba42](https://expo.dev/accounts/guilhermesborbas-team/projects/simulados-bernardo/builds/15e0ba42-3920-4a49-ace3-34b74b5fc9a6), versão 0.0.1, versionCode 2. A assinatura foi criada pelo EAS e o bundle Android exportou localmente com os dois endereços HTTPS. O estado final do build deve ser conferido antes de divulgar a instalação.

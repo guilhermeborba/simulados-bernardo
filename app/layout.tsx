@@ -1,8 +1,11 @@
-import type { Metadata } from 'next'
+import { gizTokens } from '@/lib/gizTokens.generated'
+import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
-import { AuthProvider } from '@/contexts/AuthContext'
 import { LearningPreferencesProvider } from '@/contexts/LearningPreferencesContext'
+import LegacySurface from '@/components/LegacySurface'
+import { AuthProvider } from '@/contexts/AuthContext'
 import './globals.css'
+import GizPreferencesProvider from '@/components/giz/GizPreferencesProvider'
 
 const fredoka = localFont({
   src: './fonts/fredoka-latin.woff2',
@@ -21,9 +24,12 @@ const nunito = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'Simulados Bernardo',
-  description: 'Aplicação interativa de simulados escolares para Ensino Fundamental',
+  title: { default: 'Giz Kids — Aprender a cada tentativa', template: '%s — Giz Kids' },
+  description: 'Simulados escolares para aprender com dicas e curiosidades, uma questão de cada vez.',
+  icons: { icon: '/giz/brand/app-kids.svg', apple: '/giz/brand/png/app-kids-180.png' },
 }
+
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: gizTokens.color.light.head.value }
 
 export default function RootLayout({
   children,
@@ -33,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${fredoka.variable} ${nunito.variable}`}>
       <body>
-        <AuthProvider><LearningPreferencesProvider>{children}</LearningPreferencesProvider></AuthProvider>
+        <AuthProvider><LearningPreferencesProvider><GizPreferencesProvider><LegacySurface>{children}</LegacySurface></GizPreferencesProvider></LearningPreferencesProvider></AuthProvider>
       </body>
     </html>
   )

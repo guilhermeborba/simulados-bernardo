@@ -1,114 +1,102 @@
-# Simulados Bernardo — prova mobile (lote 11)
+# Giz Kids — aplicativo Expo
 
-Protótipo nativo em **Expo 57.0.28 / React Native 0.86.3 / React 19.2.3**, separado das dependências Next/React 18 da web. A prova usa a API diretamente com Bearer e compartilha apenas tipos públicos de `../packages/api-contracts`.
+Base nativa em **Expo 57.0.28, React Native 0.86.3 e React 19.2.3**, separada das dependências Next/React 18 da web. A escolha Expo foi autorizada pelo responsável. A implementação inclui as telas do MVP e entradas “Em breve” para painel dos pais e criação de simulados. Não há publicação, APK/IPA assinado, associação de domínio ou validação em aparelho nesta entrega.
 
-**Estado: implementação e prova automatizada disponíveis; validação física pendente.** A escolha Expo é provisória. APK debug x86_64 compilado e instalado localmente no emulador Android 17 em 14/10/2026; login, retomada/finalização de quiz (+10 XP), histórico e restauração de sessão foram verificados com API descartável. O perfil de APK interno via EAS está configurado; o resultado do primeiro build é registrado no guia abaixo. Não há IPA, publicação em loja, associação de domínio ou aceite físico concluído. Mídia continua pendente. Os bundles Android/iOS e projetos de prebuild têm alcance diferente de uma instalação nativa.
+## Executar
 
-## Rodar e verificar
+Atualize primeiro a API com a migration de snapshots/feedback imediato e publique a versão compatível da API; só depois instale esta versão do aplicativo. O modo de tentativas em andamento não é alterado: tentativas legadas mantêm a correção ao concluir.
 
-Requer Node 22.13+ (validado com 22.23.2). Na raiz da aplicação web:
+Requer Node 22.13+; a verificação local usa Node 22.23.2.
 
 ```bash
 npm ci --prefix mobile
+cp mobile/.env.example mobile/.env
+# Ajuste as duas origens públicas em mobile/.env.
+npm run start --prefix mobile
+```
+
+O cliente usa a API diretamente com Bearer, sem passar pelo BFF Next. Configure:
+
+- `EXPO_PUBLIC_API_URL`: origem da API, por exemplo `http://127.0.0.1:3333` durante desenvolvimento local.
+- `EXPO_PUBLIC_WEB_ORIGIN`: origem web autorizada para convites e links de recuperação.
+- `MOBILE_APP_ENV`: `development` ou `internal`, selecionado ao gerar a configuração/build.
+
+Essas variáveis são públicas. Nunca coloque JWTs, senhas ou chaves de e-mail nelas. O telefone precisa alcançar a API e o Metro; `localhost` no telefone é o próprio aparelho. HTTP é permitido apenas no desenvolvimento. O ambiente `internal` exige as duas origens HTTPS explícitas e recusa placeholders `.invalid`. Nenhum servidor ou túnel é provisionado por esses comandos.
+
+Para compilar/instalar uma versão de desenvolvimento local, use Android SDK/JDK/ADB ou macOS/Xcode já configurados:
+
+```bash
+npm run android --prefix mobile
+npm run ios --prefix mobile
+```
+
+No primeiro uso, instale o development client com um dos comandos `android` ou `ios` acima e depois abra o app pelo Metro. O comando `start` usa esse development client. Exportar um bundle não cria uma instalação independente de Metro e não comprova execução nativa. Um aparelho/emulador e a toolchain correspondente ainda são necessários para aceitar o app.
+
+## Rotas e dados
+
+| Rota | Comportamento |
+|---|---|
+| `/` | Entrar/criar conta quando deslogado; início com nome, catálogo, resultado e tentativa em andamento reais quando autenticado |
+| `/recovery`, `/entry` | Recuperação real, redefinição por fragmento e entrada por convite |
+| `/track` | Kids ativa; Escola e Técnico como “Em breve” |
+| `/simulations`, `/detail/[id]` | Catálogo Kids com busca e filtros combinados, cartões inteiros acionáveis em grade de 1/2/3 colunas e detalhe com cronômetro opcional |
+| `/simulation/[id]` | Questões dos quatro tipos atuais da API, confirmação, tempo, saída e retomada |
+| `/result/[id]`, `/review/[id]` | Resultado e revisão da tentativa, sem inventar correção ou curiosidades |
+| `/history`, `/ranking` | Tentativas e ranking de turma; classificação e média fornecidas pela API |
+| `/profile` | Identidade, pontuação, conquistas reais, cronômetro, preferências de aprendizagem, coleção desbloqueada, links e logout |
+| `/learning`, `/quizzes`, `/quiz/[id]` | Início de práticas, missões, XP e runner de quiz com mídia autenticada, preservados da versão atual |
+| `/progress`, `/practice-history` | Progresso por habilidade, sugestões de revisão e histórico de quizzes |
+| `/official-simulations` | Catálogo de todas as faixas atuais; avaliações fora do catálogo Kids continuam na web |
+| `/oversight` | Acompanhamento dos alunos vinculados para responsáveis e professores |
+| `/parents`, `/create` | Novos painéis do handoff “Em breve”; o acompanhamento atual segue em `/oversight` |
+
+O catálogo mostra os simulados autorizados do Fundamental I. Não inclui questões, alunos, pontos ou metas dos protótipos. O ranking geral permanece “Em breve”; nomes exibem primeiro nome e inicial, e e-mail recebido como nome é substituído por “Estudante”. Conquistas vêm de `/me/achievements`, com metas e progresso do servidor. A elegibilidade dessas conquistas segue o catálogo de atividades da API; o app não cria regras próprias para simulados.
+
+As novas tentativas solicitam `{immediateFeedback: true}`. Depois de cada confirmação, o cliente mostra a correção e o gabarito autorizado da API, com a Dica de Ouro nos erros/brancos e Você sabia? nos acertos. A retomada prioriza o feedback do servidor, inclusive em outro aparelho. Tentativas legadas continuam com correção ao concluir. Campos opcionais preservam a leitura dos recibos e resultados legados na API atual. A migration e a nova API devem ser instaladas antes deste app; uma API anterior pode rejeitar o início com `immediateFeedback: true`. O cliente não repete automaticamente esse início sem a opção. Nenhuma resposta correta é inferida no cliente. O resultado consome as barras de `topics` do servidor e identifica as questões sem tema cadastrado, sem classificar conteúdo editorial por conta própria. Respostas em branco respeitam o contrato `{}` da API, mantendo o sentinela local separado. As mensagens de resultado usam os cortes autorizados de 80% e 50%.
+
+## Design system e acessibilidade
+
+```bash
+node scripts/generate-giz-mobile.mjs
+```
+
+O gerador lê `giz-handoff/tokens/tokens.json` e os SVGs aprovados. Os arquivos em `src/generated/` são derivados; edite a fonte do handoff e gere novamente. O ícone local vem do SVG Kids aprovado. Fredoka e Nunito estão empacotadas com suas licenças OFL, obtidas do repositório oficial [google/fonts](https://github.com/google/fonts).
+
+O shell de estudante usa quatro itens na navegação inferior e uma barra lateral de 72 px no tablet/240 px em telas maiores. Respeita áreas seguras, inclui alvos de toque Kids, rótulos de leitor de tela e foco no título. Contas de acompanhamento mantêm navegação para alunos e perfil. A tela de questão mantém o Tuca fora do conteúdo da questão. O carregamento usa skeleton estático; o app não depende de animações para explicar estados.
+
+Os tokens escuros estão preparados. A opção de tema escuro nativo aparece como “Em breve” até a avaliação visual em aparelho; o app começa com tema claro. TalkBack/VoiceOver, fontes em 200%, orientação, teclado físico, áreas seguras e contraste precisam de aceite físico adicional.
+
+## Sessão, links e progresso
+
+A infraestrutura de sessão e mídia da versão atual de `main` foi preservada. O provider mantém a limpeza de mídia na troca de geração, background e desmontagem; falhas de limpeza oferecem repetição explícita. Os quizzes mantêm ilustrações SVG verificadas e narração opcional, sem reprodução automática. O repositório de referência não foi alterado. Access fica em memória; somente o refresh é persistido em SecureStore. A renovação é única por sessão e usa geração/cancelamento para impedir que respostas atrasadas reabram uma conta anterior. O transporte `expo/fetch` omite cookies e rejeita redirecionamentos. JSON tem limite de 2 MiB e prazo para leitura.
+
+O cadastro usa o mesmo ciclo seguro de credenciais do login. Após redefinir a senha, o fluxo encerra explicitamente a sessão local; falha de limpeza exige nova tentativa e nunca afirma que a sessão foi removida. O logout limpa a sessão local mesmo quando a revogação remota não pode ser confirmada. Testes com adaptadores controlados não comprovam Keychain/Keystore ou reinstalação física.
+
+Links com segredo aceitam somente a origem web configurada e ficam em memória, sem Router params, armazenamento ou logs. Convites aceitam o parâmetro web `t` e o formato legado `token`; recuperação exige `/redefinir-senha#token=...`. Links de recuperação podem ser colados em `/recovery`. Convites e recuperação também podem ser colados em `/profile`. App Links/Universal Links ainda dependem de associação de domínio autorizada. Os esquemas existentes `simuladosbernardoproof`/`simuladosbernardointernal` aceitam apenas navegação comum sem query, fragmento ou credenciais.
+
+O progresso usa a pasta privada do app, separado por usuário e tentativa. O journal grava em dois slots, conservando o último checkpoint íntegro se a próxima gravação falhar. Respostas pendentes são sincronizadas antes de concluir. Se a gravação local falhar, a interface informa a limitação. Dados de outro usuário não são restaurados pela sessão atual. Isso requer testes adicionais de encerramento forçado, quota e perda de rede no sistema operacional real.
+
+## Verificação
+
+```bash
 npm run typecheck --prefix mobile
 npm test --prefix mobile
 npm run test:ui --prefix mobile
 npm run export:android --prefix mobile
 npm run export:ios --prefix mobile
-npm run prebuild --prefix mobile
 ```
 
-A integração real requer checkout da API com dependências, Prisma gerado e build:
+Após integrar a infraestrutura atual de `main`, foram verificados 79 testes de unidade e 36 testes de UI, além da checagem de tipos. Os testes de unidade cobrem sessão, transporte, SecureStore, links, configuração, privacidade, modelos de resposta e durabilidade do journal. Os testes de UI usam componentes nativos com dependências controladas; verificam quatro abas, remoção da navegação em fluxo, rodapé, SafeArea escura, skeleton, grade nas três faixas de tela, busca combinada com filtros, limpeza e retomada restrita aos simulados Kids disponíveis. Eles não representam execução em Android/iOS real. As evidências finais e limitações gerais ficam em [IMPLEMENTACAO.md](../docs/giz/IMPLEMENTACAO.md).
 
-```bash
-E2E_API_DIR=/caminho/para/simulados-bernardo-api npm run test:integration --prefix mobile
-```
+`package-lock.json` acompanha o pacote nativo. Além da verificação inicial em pasta temporária, a instalação própria foi concluída com `npm ci --offline --ignore-scripts --no-audit --no-fund`: 850 pacotes instalados neste app, sem alterar o repositório de referência. A instalação local e os exports Android/iOS anteriores ao merge foram validados com essas dependências. Após o merge, TypeScript e as suítes de 79 testes de unidade e 36 de UI foram repetidos; novas exportações devem usar a configuração EAS preservada. O lock herdado emite aviso de peer opcional entre `expo-modules-core` e `react-native-worklets`; o app não introduz uso de animações/worklets. A execução física continua necessária antes de distribuição.
 
-O runner cria PostgreSQL/schema descartáveis, aplica migrations e usa contas, conteúdo e transporte de e-mail sintéticos. Não usa a base da aplicação ou seed editorial. Docker e `postgres:16-alpine` precisam estar disponíveis; qualquer configuração ausente falha explicitamente.
+## Distribuição preservada
 
-Para desenvolvimento nativo, copie `.env.example` para `.env` **dentro de mobile/**, ajuste as origens do ambiente autorizado e inicie:
+A integração mantém o projeto EAS existente: owner `guilhermesborbas-team`, slug `simulados-bernardo` e project ID `d03c6091-0858-4150-9de5-ae051ed5f83a`. Os identificadores continuam `com.simuladosbernardo.proof` em desenvolvimento e `com.simuladosbernardo.proof.internal` no perfil interno. O nome visível passa a Giz Kids. Não execute `eas init` para criar outro projeto.
 
-```bash
-npm run start --prefix mobile
-# Em ambiente com SDK/JDK/ADB compatíveis:
-npm run android --prefix mobile
-# Somente em macOS com Xcode:
-npm run ios --prefix mobile
-```
+O perfil `internal` de `eas.json` continua gerando APK release sem Metro, com distribuição interna, versionCode remoto e as origens de produção Railway/Vercel já autorizadas. A geração remota e o envio a lojas são ações distintas; esta integração não iniciou novos builds remotos nem publicou em lojas. Consulte [o procedimento EAS existente](docs/android-internal-eas.md) antes de gerar um novo APK.
 
-`EXPO_PUBLIC_API_URL` e `EXPO_PUBLIC_WEB_ORIGIN` são origens públicas, sem path/query/fragmento/credencial. Nunca colocar segredos em `EXPO_PUBLIC_*`. O telefone precisa alcançar a API e o Metro: localhost é o próprio aparelho. HTTP é permitido somente em desenvolvimento; a versão distribuída exige HTTPS. WSL, rede, assinatura e aparelhos estão descritos no [guia da prova](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/guia-prova-mobile.md). Não há tunnel ou build cloud iniciado automaticamente.
-
-## Telas do protótipo
-
-| Rota | Comportamento |
-|---|---|
-| `/` | Login/restauração; Aprender hoje com XP, missões e retomada para STUDENT |
-| `/quizzes`, `/quiz/[id]` | Catálogo por faixa, seleção/confirmar, feedback, mídia, resultado e NORMAL/REVIEW |
-| `/history`, `/progress` | Histórico de prática, evidências e revisões separadas de avaliação |
-| `/simulations` | Catálogo e abertura da realização na web, sem transferir o Bearer |
-| `/profile` | Preferências, itens da coleção, entrada manual de link e logout |
-| `/oversight` | Roster e leitura autorizada para responsável/professor/ADMIN |
-| `/recovery`, `/entry` | Pedido de recuperação e confirmação por segredo em memória |
-
-Os filtros abrangem as 15 faixas. A API determina acesso, feedback, resultados, XP, itens e sugestões; catálogos vazios não recebem conteúdo inventado. O protótipo não implementa cadastro, runner nativo dos quatro tipos de simulado ou fila offline. O [plano de beta](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/superpowers/plans/2026-10-13-mobile-proof-and-beta-plan.md) registra essas entregas.
-
-## Sessão, mídia e links
-
-Uma única instância de `MobileSessionClient` atende as telas. Access fica em memória; somente refresh vai para SecureStore. O marcador em cache exige login se estiver ausente, inclusive quando o Keychain conservou um registro antigo; limpeza de cache também exige login. Testes com adaptadores controlados não comprovam Keychain/Keystore ou reinstalação real.
-
-Renovação é única por sessão, com geração/cancelamento e escrita ordenada. 401 tardio reutiliza access atualizado; rede/5xx/429 não apagam o refresh. A API não recupera o sucessor quando a resposta da rotação é perdida após commit: novo login pode ser necessário. JSON tem limite de 2 MiB e deadline/cancelamento durante o corpo. Logout local não presume revogação remota se a rede falhar.
-
-O transporte usa `expo/fetch`, recusa redirects antes de segui-los e omite cookies. Mídia aceita somente rotas de snapshot, MIME e tamanho esperados: SVG até 128 KiB em memória e WAV PCM até 4 MiB em cache privado. Texto/descrição/transcrição permanecem utilizáveis. Áudio depende de ação e é interrompido ao sair/trocar de conta/background; falha de limpeza aparece e pode ser repetida. Não há gravação ou reprodução de áudio em background.
-
-Links secretos aceitam apenas a origem web configurada e ficam em memória; não entram em Router params, armazenamento ou logs. O esquema `simuladosbernardoproof` só navega para telas sem segredo. App Links/Universal Links ainda exigem domínio, assinatura, associação e teste de abertura fria/quente; até lá, a recuperação mantém o fallback web e o protótipo permite entrada manual do link.
-
-## Evidências e fechamento
-
-A prova tem 57 testes de sessão/adaptadores/links, 7 testes de telas com dependências nativas controladas e 12 integrações reais com a API. Os testes de UI verificam confirmação, feedback, retry/XP, troca de quiz/conta e substituição de link sem declararem execução física. Há também testes de sessão/JSON, adaptadores de storage/transporte/mídia, parser de links e integração real cliente/API, além dos bundles e prebuild. Totais e execução atual ficam em [PROGRESS.md](../PROGRESS.md); decisões no [ADR 015](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/decisions/015-prova-mobile-e-contratos-compartilhados.md).
-
-Para encerrar o lote 11, preencher a matriz em **Android real, prioridade confirmada pelo usuário**: instalação/reabertura/reinstalação, sessão e armazenamento, suspensão/rede, SVG/áudio, leitor de tela, links e troca de conta. A disponibilidade do aparelho ainda aguarda confirmação. iOS fica preparado e requer sua matriz própria antes de um beta iOS. Emulador, testes com doubles, bundle e prebuild não substituem esse registro.
-
-A revisão dos 45 quizzes/213 perguntas, 45 habilidades/213 classificações e 30 rascunhos de missão segue PENDING; envio real Resend, deploy e distribuição continuam separados desta prova.
-
-## Preparação Android: ambientes separados
-
-A configuração aceita `MOBILE_APP_ENV=development` (padrão) ou `internal`.
-Os aplicativos usam nomes, esquemas e identificadores diferentes, permitindo
-instalação lado a lado e isolamento dos dados de sessão. Os identificadores
-`com.simuladosbernardo.proof` e `com.simuladosbernardo.proof.internal` continuam
-provisórios; o identificador definitivo da loja depende da titularidade.
-
-O ambiente interno exige `EXPO_PUBLIC_API_URL` e `EXPO_PUBLIC_WEB_ORIGIN`
-explícitos com HTTPS, sem credenciais, caminho, query ou fragmento. A configuração
-falha antes de export/prebuild quando faltam origens ou são usados placeholders
-`.invalid`. Isso valida a configuração, não a disponibilidade dos servidores.
-`MOBILE_APP_ENV` é configuração de build; mudar o identificador exige novo
-prebuild/build e reinstalação da variante correspondente.
-
-Para conferir o ambiente interno, configure as duas origens autorizadas no
-ambiente do processo e execute dentro de `mobile/`:
-
-```bash
-MOBILE_APP_ENV=internal npx expo config --type public
-MOBILE_APP_ENV=internal npm run export:android
-```
-
-Para gerar uma build de desenvolvimento local, com JDK 17, Android SDK 36,
-build-tools 36.0.0, NDK 27.1 e licenças previamente aceitas pelo responsável:
-
-```bash
-cd mobile
-npm ci
-npm run android
-```
-
-O comando gera/instala uma build debug e precisa de emulador ou aparelho
-conectado, além de Metro para executar o código. Não equivale a um APK interno
-independente do Metro. Não há assinatura de release, configuração de loja,
-servidor interno provisionado ou distribuição habilitada nesta preparação.
-A primeira build nativa concluída nesta etapa foi instalada no emulador Android
-17 em 14/10/2026; procedimento e evidências no [guia do emulador](docs/android-emulator.md). O teste físico continua pendente. O aceite Android da task 11 segue
-pendente enquanto esta parte independente de P1 avança.
+No ambiente WSL revisado há Node 22, mas não há JDK/SDK/ADB Linux configurados nem EAS CLI instalado. O host Windows contém JDK 21, ADB e ferramentas Android 36, mas faltam plataforma Android 36 e NDK exigidos pelo template RN atual; a presença desses executáveis não comprova build local reproduzível no WSL. A alternativa já configurada é EAS com acesso à organização. Nenhuma toolchain foi instalada nesta revisão.
 
 ## API descartável para o emulador
 
@@ -139,18 +127,3 @@ Inicie Metro com `EXPO_PUBLIC_API_URL=http://127.0.0.1:3334` e
 iniciada pelo runner. Encerrar a fixture remove o schema, o container criado e
 os arquivos temporários. O modo padrão `test:integration` continua executando os
 testes e encerrando seus recursos automaticamente.
-
-## Explorar os simulados oficiais localmente
-
-O menu do aluno inclui **Simulados**, com o catálogo da API configurada e
-encaminhamento da realização para a web. O catálogo sintético é exclusivo do
-harness de regressão. Para uma cópia dos arquivos oficiais do repositório, use o
-[runner da API](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/preview-mobile-catalogo-e-voz.md)
-com banco próprio descartável. Configure Metro com API na porta 3336 e web na
-porta 3000; o navegador mantém login próprio. Quizzes pendentes continuam DRAFT.
-
-## APK interno via Expo/EAS
-
-O [guia de distribuição](docs/android-internal-eas.md) registra projeto, ambientes,
-assinatura e instalação. Execute comandos EAS a partir de `mobile/`, onde estão
-`app.config.ts`, `eas.json` e o lockfile do app.

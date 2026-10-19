@@ -1,130 +1,63 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { bloquearTrocaDeTrilha, salvarTrilha } from '@/lib/trilha';
+import { isOffline, passwordError, safeReturnTo } from '@/lib/gizAccountApi';
+import { AuthField, AuthLayout, FormError } from '@/components/giz/AuthLayout';
+import { Button } from '@/components/giz/ui';
 
-interface RegisterFormProps {
-  /** Convite de turma, quando o cadastro veio por um link de convite. */
-  inviteToken?: string;
-}
+interface RegisterFormProps { inviteToken?: string; }
 
 export default function RegisterForm({ inviteToken }: RegisterFormProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { register } = useAuth();
-  const token = inviteToken ?? searchParams.get('convite') ?? undefined;
+  const returnTo = safeReturnTo(searchParams.get('returnTo'));
+  const returnInvite = returnTo?.startsWith('/convite?') ? new URL(returnTo, 'https://giz.invalid').searchParams.get('t') : null;
+  const token = inviteToken ?? searchParams.get('convite') ?? returnInvite ?? undefined;
+  const loginHref = token ? `/login?returnTo=${encodeURIComponent(`/convite?t=${encodeURIComponent(token)}`)}` : returnTo ? `/login?returnTo=${encodeURIComponent(returnTo)}` : '/login';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fields, setFields] = useState<{ name?: string; email?: string; password?: string }>({});
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (event: FormEvent) => {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    if (isSubmitting) return;
     setError(null);
+    const errors = {
+      name: name.trim().length >= 2 ? undefined : 'Conte como podemos chamar você (pelo menos 2 letras).',
+      email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ? undefined : 'Digite um e-mail válido.',
+      password: passwordError(password),
+    };
+    setFields(errors);
+    const firstInvalid = errors.name ? 'register-name' : errors.email ? 'register-email' : errors.password ? 'register-password' : null;
+    if (firstInvalid) { document.getElementById(firstInvalid)?.focus(); return; }
+    if (isOffline()) { setError('Você está sem conexão. Conecte-se para criar a conta.'); return; }
     setIsSubmitting(true);
-
     try {
-      await register(name, email, password, token);
-      // Quem se cadastra por convite de turma vai direto para o ensino
-      // fundamental, sem ver a opção de curso técnico.
-      if (token) {
-        salvarTrilha('basica');
-        bloquearTrocaDeTrilha();
-      }
-      router.push('/');
+      await register(name.trim(), email.trim(), password, token);
+      if (token) { salvarTrilha('basica'); bloquearTrocaDeTrilha(); }
+      router.push(token ? '/' : (returnTo || '/trilha'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível criar a conta');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+      setError(isOffline() || err instanceof TypeError ? 'Não foi possível conectar. Verifique sua conexão e tente de novo.' : err instanceof Error ? err.message : 'Não foi possível criar a conta. Tente de novo.');
+    } finally { setIsSubmitting(false); }
+  }
 
   return (
-    <div className="page-shell flex items-center justify-center">
-      <div className="max-w-md w-full">
-        <div className="card card--hero">
-          <h1 className="text-3xl mb-2 text-center">✨ Criar conta</h1>
-
-          {token ? (
-            <p
-              className="text-sm text-center mb-6 rounded-2xl px-4 py-3"
-              style={{ background: '#FFF8D6', color: '#6B4A00' }}
-            >
-              Você está entrando por um convite de turma. Ao criar a conta, os
-              simulados da turma aparecem para você.
-            </p>
-          ) : (
-            <div className="mb-6" />
-          )}
-
-          <form onSubmit={handleSubmit}>
-            <label className="block text-left text-sm font-bold mb-2">Nome</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Seu nome"
-              className="input-field mb-4"
-              required
-              minLength={2}
-            />
-
-            <label className="block text-left text-sm font-bold mb-2">E-mail</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              className="input-field mb-4"
-              required
-            />
-
-            <label className="block text-left text-sm font-bold mb-2">Senha</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 8 caracteres"
-              className="input-field mb-4"
-              required
-              minLength={8}
-            />
-
-            {error && (
-              <p className="text-sm mb-4" style={{ color: 'var(--bubble-deep)' }}>{error}</p>
-            )}
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn btn--lg w-full btn--grass"
-            >
-              {isSubmitting ? 'Criando conta...' : '✨ Criar conta'}
-            </button>
-          </form>
-
-          <p className="text-sm text-center mt-6" style={{ color: 'var(--muted)' }}>
-            Já tem conta?{' '}
-            <Link
-              // Com convite, o login precisa voltar para cá — senão o aluno
-              // entra na conta e o convite se perde no caminho.
-              href={
-                token
-                  ? `/login?returnTo=${encodeURIComponent(`/convite?t=${token}`)}`
-                  : '/login'
-              }
-              className="font-bold"
-              style={{ color: 'var(--ink)' }}
-            >
-              Entrar
-            </Link>
-          </p>
-        </div>
-      </div>
-    </div>
+    <AuthLayout title="Crie sua conta" subtitle="Vamos aprender um pouco a cada tentativa." mode="register" loginHref={loginHref}>
+      {token && <p className="account-note">Você está entrando por um convite de turma. Ao criar a conta, os simulados da turma aparecem para você.</p>}
+      <form className="account-form" noValidate onSubmit={handleSubmit} aria-busy={isSubmitting}>
+        <AuthField id="register-name" label="Seu nome" type="text" autoComplete="name" value={name} onChange={e => setName(e.target.value)} placeholder="Como podemos chamar você?" error={fields.name} required minLength={2} maxLength={120} />
+        <AuthField id="register-email" label="E-mail" type="email" autoComplete="email" inputMode="email" maxLength={254} value={email} onChange={e => setEmail(e.target.value)} placeholder="nome@email.com" error={fields.email} required />
+        <AuthField id="register-password" label="Senha" type="password" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Pelo menos 8 caracteres" error={fields.password} required minLength={8} maxLength={72} />
+        {error && <FormError>{error}</FormError>}
+        <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Criando conta…' : 'Criar conta'}</Button>
+      </form>
+    </AuthLayout>
   );
 }

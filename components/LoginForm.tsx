@@ -1,9 +1,13 @@
 'use client';
 
-import { useEffect, useState, FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { lerTrilhaSalva } from '@/lib/trilha';
+import { isOffline, safeReturnTo } from '@/lib/gizAccountApi';
+import { AuthField, AuthLayout, FormError } from '@/components/giz/AuthLayout';
+import { Button } from '@/components/giz/ui';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -12,85 +16,52 @@ export default function LoginForm() {
   const [completed, setCompleted] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fields, setFields] = useState<{ email?: string; password?: string }>({});
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const returnTo = safeReturnTo(searchParams.get('returnTo'));
+  const registerHref = returnTo ? `/registro?returnTo=${encodeURIComponent(returnTo)}` : '/registro';
 
   useEffect(() => {
     if (!completed || !user) return;
-    const destination = searchParams.get('returnTo');
-    const fallback = ['GUARDIAN', 'TEACHER', 'ADMIN'].includes(user.role) ? '/acompanhamento' : '/';
-    router.push(destination?.startsWith('/') && !destination.startsWith('//') && !destination.includes('\\') ? destination : fallback);
-  }, [completed, user, searchParams, router]);
+    const destination = returnTo || (['GUARDIAN', 'TEACHER', 'ADMIN'].includes(user.role) ? '/acompanhamento' : lerTrilhaSalva() ? '/' : '/trilha');
+    router.push(destination);
+  }, [completed, user, returnTo, router]);
 
-  const handleSubmit = async (event: FormEvent) => {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    if (isSubmitting) return;
     setError(null);
+    const errors = {
+      email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ? undefined : 'Digite um e-mail válido.',
+      password: password ? undefined : 'Digite sua senha.',
+    };
+    setFields(errors);
+    if (errors.email || errors.password) {
+      document.getElementById(errors.email ? 'login-email' : 'login-password')?.focus();
+      return;
+    }
+    if (isOffline()) { setError('Você está sem conexão. Conecte-se para entrar.'); return; }
     setIsSubmitting(true);
-
     try {
-      await login(email, password);
+      await login(email.trim(), password);
       setCompleted(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível entrar');
+      setError(isOffline() || err instanceof TypeError ? 'Não foi possível conectar. Verifique sua conexão e tente de novo.' : err instanceof Error && /credentials|credenciais|senha|unauthorized/i.test(err.message) ? 'E-mail ou senha não conferem. Tente de novo.' : 'Não foi possível entrar agora. Tente de novo.');
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
 
   return (
-    <div className="page-shell flex items-center justify-center">
-      <div className="max-w-md w-full">
-        <div className="card card--hero">
-          <h1 className="text-3xl mb-6 text-center">📚 Entrar</h1>
-
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="login-email" className="block text-left text-sm font-bold mb-2">E-mail</label>
-            <input
-              id="login-email"
-              type="email"
-              autoComplete="username"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              className="input-field mb-4"
-              required
-            />
-
-            <label htmlFor="login-password" className="block text-left text-sm font-bold mb-2">Senha</label>
-            <input
-              id="login-password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Sua senha"
-              className="input-field mb-4"
-              required
-            />
-
-            {error && (
-              <p className="text-sm mb-4" style={{ color: 'var(--bubble-deep)' }}>{error}</p>
-            )}
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn btn--lg w-full btn--grass"
-            >
-              {isSubmitting ? 'Entrando...' : '✨ Entrar'}
-            </button>
-          </form>
-
-          <p className="text-sm text-center mt-6"><Link href="/esqueci-senha" className="font-bold" style={{ color: 'var(--ink)' }}>Esqueci minha senha</Link></p>
-
-          <p className="text-sm text-center mt-6" style={{ color: 'var(--muted)' }}>
-            Não tem conta?{' '}
-            <Link href="/registro" className="font-bold" style={{ color: 'var(--ink)' }}>
-              Cadastre-se
-            </Link>
-          </p>
-        </div>
-      </div>
-    </div>
+    <AuthLayout title="Bem-vindo de volta" subtitle="Entre para continuar de onde parou." mode="login" registerHref={registerHref}>
+      <form className="account-form" noValidate onSubmit={handleSubmit} aria-busy={isSubmitting}>
+        <AuthField id="login-email" label="E-mail" type="email" autoComplete="email" inputMode="email" maxLength={254} value={email} onChange={e => setEmail(e.target.value)} placeholder="nome@email.com" error={fields.email} required />
+        <AuthField id="login-password" label="Senha" type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Sua senha" error={fields.password} required />
+        <div className="account-forgot"><Link href="/recuperar-senha" className="account-link">Esqueci a senha</Link></div>
+        {error && <FormError>{error}</FormError>}
+        <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Entrando…' : 'Entrar'}</Button>
+      </form>
+    </AuthLayout>
   );
 }

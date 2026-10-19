@@ -16,6 +16,7 @@ export default function Entry() {
   const [message, setMessage] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [cleanupPending, setCleanupPending] = useState(false);
   const pending = useRef<AbortController | null>(null);
   useEffect(() => subscribeEntryLink(() => setIncoming(peekEntryLink())), []);
   useEffect(() => {
@@ -35,6 +36,17 @@ export default function Entry() {
     },
     [],
   );
+  async function cleanResetSession() {
+    setBusy(true);
+    try {
+      await client.logout();
+      setCleanupPending(false);
+      setDone('Sua senha foi alterada. Entre com a nova senha para continuar.');
+    } catch {
+      setCleanupPending(true);
+      setDone('Sua senha foi alterada. Ainda não foi possível limpar a sessão deste aparelho. Tente a limpeza novamente.');
+    } finally { setBusy(false); }
+  }
   async function submit() {
     const entry = incoming.entry;
     const signal = pending.current?.signal;
@@ -71,11 +83,8 @@ export default function Entry() {
       forgetEntryLink();
       setPassword("");
       setConfirmation("");
-      setDone(
-        entry.kind === "invite"
-          ? "Você entrou na turma. Volte ao início para ver as atividades."
-          : "Sua senha foi atualizada. Entre com ela quando quiser continuar.",
-      );
+      if (entry.kind === 'password-reset') await cleanResetSession();
+      else setDone('Você entrou na turma. Volte ao início para ver as atividades.');
     } catch (error) {
       if (!signal.aborted && revision === peekEntryLink().revision)
         setMessage(failure(error));
@@ -99,10 +108,7 @@ export default function Entry() {
             {done ??
               "Abra novamente o link recebido para continuar. Links não ficam salvos no aparelho."}
           </Copy>
-          <Button
-            title="Voltar ao início"
-            onPress={() => router.replace("/")}
-          />
+          {cleanupPending ? <Button title="Tentar limpar sessão" disabled={busy} onPress={() => { void cleanResetSession(); }} /> : <Button title="Voltar para entrar" onPress={() => router.replace('/')} />}
         </Card>
       ) : incoming.entry.kind === "invite" ? (
         <Card>
@@ -125,7 +131,6 @@ export default function Entry() {
               <Button
                 title="Ir para o acesso"
                 onPress={() => {
-                  forgetEntryLink();
                   router.replace("/");
                 }}
               />

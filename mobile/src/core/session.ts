@@ -419,10 +419,15 @@ export class MobileSessionClient {
     }
   }
 
-  async login(input: {
-    email: string;
-    password: string;
-  }): Promise<SessionSnapshot> {
+  login(input: { email: string; password: string }): Promise<SessionSnapshot> {
+    return this.authenticate('/auth/login', input);
+  }
+
+  register(input: { name: string; email: string; password: string; inviteToken?: string }): Promise<SessionSnapshot> {
+    return this.authenticate('/auth/register', input);
+  }
+
+  private async authenticate(path: '/auth/login' | '/auth/register', input: Record<string, string | undefined>): Promise<SessionSnapshot> {
     const old = this.refresh;
     const generation = this.begin("signing-in");
     const sessionSignal = this.sessionAbort.signal;
@@ -436,7 +441,7 @@ export class MobileSessionClient {
       }
       this.current(generation);
       const response = await this.send(
-        "/auth/login",
+        path,
         { method: "POST", body: JSON.stringify(input) },
         undefined,
         sessionSignal,
