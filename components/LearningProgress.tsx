@@ -7,15 +7,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLearningPreferences } from '@/contexts/LearningPreferencesContext';
 import { ApiError, getLearningProgress, startReviewAttempt, type ApiLearningProgress } from '@/lib/apiClient';
 import { QUIZ_SEGMENTS, quizSegmentForYear, quizTierForPreferences, quizYearLabel, quizYearPatch } from '@/lib/quiz-segments';
-import MascoteGuia from './MascoteGuia';
-import QuizNavigation from './QuizNavigation';
+import { Tuca } from './giz/ui';
 import SkillProgressCard from './SkillProgressCard';
 import styles from './LearningProgress.module.css';
 
 export default function LearningProgress() {
   const { user, isLoading, getSessionGeneration } = useAuth();
   if (isLoading) return <div className={styles.shell}><p role="status">Carregando sua conta…</p></div>;
-  if (!user || user.role !== 'STUDENT') return <div className={styles.shell}><QuizNavigation current="progress" /><main className={styles.main}><h1>Habilidades e revisão</h1><p>Os registros de prática estão disponíveis para contas de aluno.</p><Link className={styles.link} href={user ? '/' : '/login?returnTo=/progresso'}>{user ? 'Voltar para o início' : 'Entrar na minha conta'} →</Link></main></div>;
+  if (!user || user.role !== 'STUDENT') return <div className={styles.shell}><div className={styles.main}><h2>Habilidades e revisão</h2><p>Os registros de prática estão disponíveis para contas de aluno.</p><Link className={styles.link} href={user ? '/' : '/login?returnTo=/progresso'}>{user ? 'Voltar para o início' : 'Entrar na minha conta'} →</Link></div></div>;
   return <StudentProgress key={`${user.id}:${getSessionGeneration()}`} />;
 }
 
@@ -80,14 +79,13 @@ function StudentProgress() {
   }
 
   return <div className={styles.shell} data-tier={tier} data-reduced-motion={!preferences.motionEnabled || undefined}>
-    <QuizNavigation current="progress" />
-    <main className={styles.main}>
+    <div className={styles.main}>
       <header className={styles.hero}>
         <div className={styles.heroBody}><p className={styles.eyebrow}>{infant ? 'Descobrir, experimentar e tentar de novo' : 'Respostas que ajudam a escolher a próxima prática'}</p>
-          <h1>{infant ? 'Minhas descobertas' : 'Habilidades e revisão'}</h1>
+          <h2>{infant ? 'Minhas descobertas' : 'Habilidades e revisão'}</h2>
           <p>{infant ? 'O Bolinha acompanha suas descobertas. Veja o que você já experimentou e escolha uma brincadeira para revisitar.' : 'Acompanhe registros por habilidade e reveja dificuldades recentes. Primeiras respostas, repetições e revisões aparecem separadas.'}</p>
         </div>
-        {playful && <div className={styles.heroMark} aria-hidden="true"><MascoteGuia variant={infant ? 'bolinha' : 'capelo'} size={126} /></div>}
+        {playful && <div className={styles.heroMark} aria-hidden="true"><Tuca pose="lendo" size={120} /></div>}
       </header>
       <div className={styles.controls}>
         <label className={styles.yearField}>Ano ou idade para o progresso
@@ -126,8 +124,8 @@ function StudentProgress() {
               </article>)}
             {reviewError && <div className={styles.error} role="alert"><p>{reviewError}</p><button className={styles.secondary} type="button" disabled={Boolean(starting)} onClick={() => setRetry(value => value + 1)}>Recarregar sugestões</button></div>}
           </section>
-          <footer className={styles.footer}><Link className={styles.link} href="/quizzes/historico">Ver histórico de prática →</Link><Link className={styles.link} href="/historico">Ver histórico de simulados →</Link><Link className={styles.link} href="/aprender">Aprender hoje →</Link></footer>
+          <footer className={styles.footer}><Link className={styles.link} href="/quizzes/historico">Ver histórico de prática →</Link><Link className={styles.link} href="/historico">Ver histórico de simulados →</Link><Link className={styles.link} href="/pratica">Prática →</Link></footer>
         </>}
-    </main>
+    </div>
   </div>;
 }

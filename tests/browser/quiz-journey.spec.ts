@@ -187,7 +187,8 @@ test('catálogo cobre as 15 faixas, filtros persistem e uma segunda conta conser
   await page.getByLabel('E-mail', { exact: true }).fill(email);
   await page.getByLabel('Senha', { exact: true }).fill(password);
   await page.getByRole('button', { name: /Entrar$/, exact: false }).click();
-  await expect(page).toHaveURL(/\/$/);
+  // Without a Giz track the home sends the student on to /trilha.
+  await expect(page).toHaveURL(/\/(trilha)?$/);
   await page.goto('/quizzes');
   await expect(page.getByLabel('Ano ou idade')).toHaveValue('0');
 });
@@ -258,7 +259,7 @@ test('consulta inicial atrasada não sobrescreve uma nova sessão', async ({ pag
   expect((await (await page.request.get('/api/auth/me')).json()).name).toBe('Conta atual de teste');
   await page.locator('a[href="/eu"]').filter({ visible: true }).first().click();
   await expect(page.getByRole('heading', { name: 'Conta atual de teste', exact: true })).toBeVisible();
-  await page.goto('/aprender');
+  await page.goto('/pratica');
   await page.locator('a[href="/quizzes"]').first().click();
   await expect(page.getByLabel('Ano ou idade')).toHaveValue('0');
 });
@@ -292,7 +293,7 @@ test('desativar áudio e trocar de pergunta pausa o elemento anterior', async ({
 for (const [label, year, tier] of [['Fundamental II', 6, 'jovem'], ['Ensino Médio', 10, 'exame'], ['Técnico', 0, 'exame']] as const) {
   test(`${label}: resposta incorreta, retomada e conclusão mantêm conteúdo e apresentação`, async ({ page }) => {
     await register(page); await openQuiz(page, fixture.quizSegments[String(year)]);
-    await expect(page.locator('main[data-tier]')).toHaveAttribute('data-tier', tier);
+    await expect(page.locator('main [data-tier]').first()).toHaveAttribute('data-tier', tier);
     await expect(page.getByText('Vamos descobrir juntos!', { exact: false })).toHaveCount(0);
     await page.getByRole('radio', { name: 'O balão azul', exact: true }).check();
     await page.getByRole('button', { name: 'Confirmar resposta', exact: true }).click();

@@ -419,18 +419,13 @@ test('falhas de rede permitem tentar novamente sem fabricar envio nem conclusão
     return route.continue();
   });
   await page.goto('/esqueci-senha');
-  await page
-    .getByLabel('E-mail da sua conta', { exact: true })
-    .fill(account.email);
-  await page
-    .getByRole('button', { name: 'Enviar link de recuperação', exact: true })
-    .click();
+  await expect(page).toHaveURL(/\/recuperar-senha$/);
+  await page.getByLabel('E-mail', { exact: true }).fill(account.email);
+  await page.getByRole('button', { name: 'Enviar link', exact: true }).click();
   await expect(page.locator('main').getByRole('alert')).toContainText(
-    'Não foi possível solicitar',
+    'Não foi possível',
   );
-  await page
-    .getByRole('button', { name: 'Enviar link de recuperação', exact: true })
-    .click();
+  await page.getByRole('button', { name: 'Enviar link', exact: true }).click();
   await expect(page.getByRole('status')).toBeVisible();
   const token = await mailToken(page.request, account.email);
   let failReset = true;

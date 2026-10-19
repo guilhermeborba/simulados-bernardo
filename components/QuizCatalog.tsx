@@ -6,9 +6,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLearningPreferences } from '@/contexts/LearningPreferencesContext';
 import { getAvailableQuizzes, type ApiQuiz } from '@/lib/apiClient';
 import { QUIZ_SEGMENTS, quizAudiencePatch, quizSegmentForYear, quizTierForPreferences, quizYearLabel, quizYearPatch, type QuizSegment } from '@/lib/quiz-segments';
-import MascoteGuia from './MascoteGuia';
+import { Tuca } from './giz/ui';
 import QuizPreferencesControls from './QuizPreferencesControls';
-import QuizNavigation from './QuizNavigation';
 import styles from './QuizCatalog.module.css';
 
 interface CatalogState { ownerId: string | null; schoolYear: number | null; quizzes: ApiQuiz[]; loading: boolean; error: boolean }
@@ -48,20 +47,19 @@ export default function QuizCatalog() {
   const saveAudience = (value: QuizSegment | null) => { void updatePreferences(quizAudiencePatch(value)).catch(() => undefined); };
 
   if (authLoading) return <div className={styles.shell} role="status">Carregando sua conta…</div>;
-  if (!user) return <div className={styles.shell}><h1>Quizzes para aprender no seu ritmo</h1><p>Entre na sua conta para explorar os quizzes disponíveis.</p><Link href="/login?returnTo=/quizzes" className={styles.primaryButton}>Entrar</Link></div>;
+  if (!user) return <div className={styles.shell}><h2>Quizzes para aprender no seu ritmo</h2><p>Entre na sua conta para explorar os quizzes disponíveis.</p><Link href="/login?returnTo=/quizzes" className={styles.primaryButton}>Entrar</Link></div>;
 
   return (
     <div className={styles.shell} data-tier={tier} data-reduced-motion={!preferences.motionEnabled || undefined}>
-      <QuizNavigation current="catalog" />
-      <main className={styles.main}>
+      <div className={styles.main}>
         <header className={styles.hero}>
           <div>
             <p className={styles.eyebrow}>PEQUENAS RODADAS, NOVAS DESCOBERTAS</p>
-            <h1>{preferences.segment === 'INFANTIL' ? 'Vamos descobrir juntos?' : tier === 'exame' ? 'Uma pausa para aprender.' : 'O que vamos descobrir hoje?'}</h1>
+            <h2>{preferences.segment === 'INFANTIL' ? 'Vamos descobrir juntos?' : tier === 'exame' ? 'Uma pausa para aprender.' : 'O que vamos descobrir hoje?'}</h2>
             <p>{preferences.segment === 'INFANTIL' ? 'O Bolinha acompanha você em quizzes com imagens e leitura em voz alta.' : 'Escolha um tema, responda algumas questões e entenda cada resposta. Sem pressa.'}</p>
             <div className={styles.heroBadges}><span>Poucas questões</span><span>Explicação a cada resposta</span><span>No seu ritmo</span></div>
           </div>
-          {tier === 'ludico' ? <div className={styles.mascot} aria-hidden="true"><MascoteGuia variant={preferences.segment === 'INFANTIL' ? 'bolinha' : 'capelo'} size={132} /></div> : <div className={styles.heroDrawing} aria-hidden="true"><QuizCardIllustration /></div>}
+          {tier === 'ludico' ? <div className={styles.mascot} aria-hidden="true"><Tuca pose="feliz" size={120} /></div> : <div className={styles.heroDrawing} aria-hidden="true"><QuizCardIllustration /></div>}
         </header>
 
         <section className={styles.audienceSection} aria-labelledby="quiz-audience-heading">
@@ -104,7 +102,7 @@ export default function QuizCatalog() {
           </div>
           {visibleCount < filtered.length && <div className={styles.more}><button type="button" className={styles.secondaryButton} onClick={() => setVisibleCount((value) => value + 9)}>Mostrar mais quizzes</button></div>}
         </>}
-      </main>
+      </div>
     </div>
   );
 }

@@ -34,10 +34,11 @@ Este registro distingue o que foi implementado do que ainda depende de contrato 
 | Perfil | `/eu` | Conquistas reais, preferências, histórico, saída e entrada para painel dos pais. |
 | Painel dos pais | `/pais` | Somente entrada “Em breve”; o painel e a barreira de adulto não estão liberados. |
 | Montar simulado | `/simulados/novo` | Somente entrada “Em breve”; não fabrica simulados. |
+| Prática | `/pratica`, `/quizzes`, `/quiz/[quizId]`, `/quizzes/historico`, `/progresso`, `/colecao` | Quizzes, XP, missões, habilidades e coleção dentro do layout Giz, com submenu próprio (E05, decisão de 19/10/2026). `/aprender` redireciona para `/pratica`; `/esqueci-senha`, para `/recuperar-senha`. Membros de turma não recebem entrada para a Prática. |
 | Divulgação | `/sobre` | Página independente com FAQ e CTA para o catálogo. |
 | Convite existente | `/convite` | Fluxo preservado e integrado à identidade visual. |
 
-O app web usa quatro itens de navegação: Início, Simulados, Ranking e Eu. Telas de fluxo ocultam a navegação inferior. Histórico destaca Eu na navegação.
+O app web usa quatro itens de navegação: Início, Simulados, Ranking e Eu. A Prática fica sob Início (cartão no Início e link em Eu), sem quinto item. Telas de fluxo ocultam a navegação inferior. Histórico destaca Eu na navegação.
 
 ## Fundação e arquivos principais
 

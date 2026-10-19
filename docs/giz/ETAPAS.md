@@ -11,19 +11,25 @@ O que já foi implementado está em [IMPLEMENTACAO.md](IMPLEMENTACAO.md).
 
 ## Etapas
 
-| Etapa | Issue | Repositório | Depende de | Onda |
-|---|---|---|---|---|
-| E01 · Trilhas por público no catálogo | [#53](https://github.com/guilhermeborba/simulados-bernardo/issues/53) | web + Expo | decisão | 1 — **bloqueia deploy** |
-| E02 · Convite de turma direto aos simulados | [#54](https://github.com/guilhermeborba/simulados-bernardo/issues/54) | web + Expo | E01 | 1 |
-| E03 · API: importar `theme` pelo seed | [#55](https://github.com/guilhermeborba/simulados-bernardo/issues/55) | API | api#222 | 1 |
-| E04 · Temas editoriais nas questões | [#56](https://github.com/guilhermeborba/simulados-bernardo/issues/56) | API (conteúdo) | E03 | 2 — divisível em lotes |
-| E05 · Superfícies legadas | [#57](https://github.com/guilhermeborba/simulados-bernardo/issues/57) | web + Expo | decisão | 2 |
-| E06 · Validar app Giz no Android | [#58](https://github.com/guilhermeborba/simulados-bernardo/issues/58) | Expo | — | 2 |
-| E07 · Aceite web e acessibilidade | [#59](https://github.com/guilhermeborba/simulados-bernardo/issues/59) | web | — | 2 |
-| E08 · Ranking geral e pontos | [#60](https://github.com/guilhermeborba/simulados-bernardo/issues/60) | API + web | decisão | backlog |
-| E09 · Tempo de resposta no servidor | [#61](https://github.com/guilhermeborba/simulados-bernardo/issues/61) | API + web | — | backlog |
-| E10 · Publicação | [#62](https://github.com/guilhermeborba/simulados-bernardo/issues/62) | ambos | api#222, #52, E01 | 3 |
-| E11 · Painel dos pais / monte seu simulado | [#63](https://github.com/guilhermeborba/simulados-bernardo/issues/63) | ambos | decisão | backlog |
+Situação registrada em 19/10/2026. A situação ao vivo está sempre nas issues.
+
+| Etapa | Issue | Repositório | Depende de | Onda | Situação |
+|---|---|---|---|---|---|
+| E01 · Trilhas por público no catálogo | [#53](https://github.com/guilhermeborba/simulados-bernardo/issues/53) | web + Expo | decisão | 1 | ✅ mergeada e publicada (#64) |
+| E02 · Convite de turma direto aos simulados | [#54](https://github.com/guilhermeborba/simulados-bernardo/issues/54) | web + Expo | E01 | 1 | 🔵 PR #65 aguardando merge |
+| E03 · API: importar `theme` pelo seed | [#55](https://github.com/guilhermeborba/simulados-bernardo/issues/55) | API | api#222 | 1 | 🔵 PR api#224 aguardando merge |
+| E04 · Temas editoriais nas questões | [#56](https://github.com/guilhermeborba/simulados-bernardo/issues/56) | API (conteúdo) | E03 | 2 — divisível em lotes | ⏳ livre após api#224 |
+| E05 · Prática dentro do Giz | [#57](https://github.com/guilhermeborba/simulados-bernardo/issues/57) | web + Expo | decisão (b), E02 | 2 | 🔵 PR aguardando merge |
+| E06 · Validar app Giz no Android | [#58](https://github.com/guilhermeborba/simulados-bernardo/issues/58) | Expo | — | 2 | ⏳ livre (ideal após E05) |
+| E07 · Aceite web e acessibilidade | [#59](https://github.com/guilhermeborba/simulados-bernardo/issues/59) | web | — | 2 | ⏳ livre (ideal após E05) |
+| E08 · Ranking geral e pontos | [#60](https://github.com/guilhermeborba/simulados-bernardo/issues/60) | API + web | decisão | backlog | ❓ aguarda decisão |
+| E09 · Tempo de resposta no servidor | [#61](https://github.com/guilhermeborba/simulados-bernardo/issues/61) | API + web | — | backlog | ⏳ livre |
+| E10 · Publicação | [#62](https://github.com/guilhermeborba/simulados-bernardo/issues/62) | ambos | api#222, #52, E01 | 3 | 🟡 API e web publicadas; faltam APK interno, CTA e itens do responsável |
+| E11 · Painel dos pais / monte seu simulado | [#63](https://github.com/guilhermeborba/simulados-bernardo/issues/63) | ambos | decisão | backlog | ❓ aguarda decisão |
+| E12 · Coleção e avatar com o Tuca | [#66](https://github.com/guilhermeborba/simulados-bernardo/issues/66) | web + Expo | E05, decisão | 2 | ❓ aguarda decisão |
+| E13 · Acabamento visual da Prática | [#67](https://github.com/guilhermeborba/simulados-bernardo/issues/67) | web | E05 | 2 | ⏳ livre após E05 |
+
+**CI da `main`:** falha desde #52 porque o workflow fixava uma API antiga e dois testes contradiziam o contrato. A correção está pronta na branch local `fix/ci-api-ref`, mas o push de `.github/workflows/` exige o escopo `workflow` no token do GitHub. Enquanto não for mergeada, os PRs mostram o job mobile vermelho por esse motivo.
 
 Todas as issues vivem no repositório `simulados-bernardo`, inclusive as etapas de API.
 

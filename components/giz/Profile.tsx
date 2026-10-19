@@ -97,7 +97,7 @@ export default function Profile() {
           <div className="account-setting"><label htmlFor="profile-timer">Cronômetro por padrão</label><input id="profile-timer" type="checkbox" role="switch" className="account-toggle" checked={timer} onChange={event => changeTimer(event.target.checked)} /></div>
           {canChangeTrack && !inTurma && <div className="account-setting"><Link href="/trilha"><Icon name="spark" />Trocar trilha</Link><Icon name="back" /></div>}
           <div className="account-setting"><Link href="/historico"><Icon name="clock" />Histórico</Link><Icon name="back" /></div>
-          {!inTurma && <div className="account-setting"><Link href="/aprender"><Icon name="book" />Aprender hoje</Link><Icon name="back" /></div>}
+          {!inTurma && <div className="account-setting"><Link href="/pratica"><Icon name="book" />Prática</Link><Icon name="back" /></div>}
           <div className="account-setting"><Link href="/progresso"><Icon name="spark" />Meu progresso</Link><Icon name="back" /></div>
           <div className="account-setting"><Link href="/colecao"><Icon name="cup" />Minha coleção</Link><Icon name="back" /></div>
           {['GUARDIAN', 'TEACHER', 'ADMIN'].includes(user.role) && <div className="account-setting"><Link href="/acompanhamento">Acompanhamento</Link><Icon name="back" /></div>}
