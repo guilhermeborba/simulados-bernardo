@@ -27,14 +27,14 @@ export function AppShell({ title, subtitle, children, backHref, flow = false, ac
   const track = useGizTrack();
   const brand = TRACK_INFO[track ?? 'kids'].name;
   useEffect(() => { if (track !== undefined) applyTrack(track); }, [track]);
-  const Heading = pathname.startsWith('/simulado/') ? 'h2' : 'h1';
+  const Heading = pathname.startsWith('/simulado/') || pathname.startsWith('/quiz/') ? 'h2' : 'h1';
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { heading.current?.focus({ preventScroll: true }); }, [pathname]);
   return <div className={`giz-app ${flow ? 'giz-app--flow' : ''}`}>
     <a className="skip-link" href="#conteudo">Ir para o conteúdo</a>
     <aside className="giz-sidebar">
       <Link href="/" className="giz-brand" aria-label={`${brand}, início`}><Image unoptimized className="giz-logo-light" src="/giz/brand/giz-logo-lousa.svg" width="84" height="60" alt="Giz" /><Image unoptimized className="giz-logo-dark" src="/giz/brand/giz-logo-papel.svg" width="84" height="60" alt="Giz" /><span>{brand.replace('Giz ', '')}</span></Link>
-      <nav aria-label="Principal" className="giz-nav">{navItems.map(([href, icon, label]) => <Link key={href} href={href} aria-current={(href === '/' ? pathname === '/' : pathname.startsWith(href) || (href === '/eu' && pathname === '/historico') || (href === '/simulados' && pathname.startsWith('/simulado/'))) ? 'page' : undefined}><span className="giz-nav-icon"><Icon name={icon} /></span><span className="giz-nav-label">{label}</span></Link>)}</nav>
+      <nav aria-label="Principal" className="giz-nav">{navItems.map(([href, icon, label]) => <Link key={href} href={href} aria-current={(href === '/' ? pathname === '/' || ['/pratica', '/quizzes', '/quiz/', '/progresso', '/colecao'].some(route => pathname.startsWith(route)) : pathname.startsWith(href) || (href === '/eu' && pathname === '/historico') || (href === '/simulados' && pathname.startsWith('/simulado/'))) ? 'page' : undefined}><span className="giz-nav-icon"><Icon name={icon} /></span><span className="giz-nav-label">{label}</span></Link>)}</nav>
       <Link href="/sobre" className="giz-sidebar-about">Conheça o Giz</Link>
     </aside>
     <div className="giz-workspace">

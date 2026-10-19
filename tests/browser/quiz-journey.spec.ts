@@ -187,7 +187,8 @@ test('catálogo cobre as 15 faixas, filtros persistem e uma segunda conta conser
   await page.getByLabel('E-mail', { exact: true }).fill(email);
   await page.getByLabel('Senha', { exact: true }).fill(password);
   await page.getByRole('button', { name: /Entrar$/, exact: false }).click();
-  await expect(page).toHaveURL(/\/$/);
+  // Without a Giz track the home sends the student on to /trilha.
+  await expect(page).toHaveURL(/\/(trilha)?$/);
   await page.goto('/quizzes');
   await expect(page.getByLabel('Ano ou idade')).toHaveValue('0');
 });
@@ -258,7 +259,7 @@ test('consulta inicial atrasada não sobrescreve uma nova sessão', async ({ pag
   expect((await (await page.request.get('/api/auth/me')).json()).name).toBe('Conta atual de teste');
   await page.locator('a[href="/eu"]').filter({ visible: true }).first().click();
   await expect(page.getByRole('heading', { name: 'Conta atual de teste', exact: true })).toBeVisible();
-  await page.goto('/aprender');
+  await page.goto('/pratica');
   await page.locator('a[href="/quizzes"]').first().click();
   await expect(page.getByLabel('Ano ou idade')).toHaveValue('0');
 });

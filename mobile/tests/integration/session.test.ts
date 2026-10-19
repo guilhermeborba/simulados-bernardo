@@ -195,7 +195,8 @@ describe(
       assert.equal(result.questions[0].classificationMode,'TEXT');
       assert.equal(result.questions[0].options?.length,2);
       assert.deepEqual(result.questions[0].correctAnswer,receipt.feedback.correctAnswer);
-      await assert.rejects(session.request(path,jsonPost({answer:raw})),status(409));
+      assert.deepEqual(await session.request(path,jsonPost({answer:raw})),receipt);
+      await assert.rejects(session.request(path,jsonPost({answer:{one:'Segundo',two:'Primeiro'}})),status(409));
       const legacy=await session.request<ApiAttempt>(`/simulations/${simulationId}/attempts`,jsonPost());
       assert.equal(legacy.immediateFeedback===true,false);
       const legacyQuestions=await session.request<ApiQuestion[]>(`/attempts/${legacy.id}/questions`);

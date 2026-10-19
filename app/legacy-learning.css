@@ -14,10 +14,7 @@
   --coral-deep: #E87340;
   --cream: #FFF8EE;
   --paper: #FFFFFF;
-  --ink: #2B2240;
   --ink-soft: #4B4263;
-  --muted: #8A819F;
-  --line: #EFE6D6;
 
   --radius-sm: 14px;
   --radius-md: 22px;
@@ -46,11 +43,7 @@
 .legacy-learning {
     min-height: 100vh;
     font-family: var(--font-nunito), system-ui, sans-serif;
-    background:
-      radial-gradient(1200px 700px at 12% -10%, #FFE9C8 0%, transparent 60%),
-      radial-gradient(900px 600px at 100% 100%, #CFE7FF 0%, transparent 55%),
-      radial-gradient(700px 500px at 50% 110%, #FFDDEE 0%, transparent 60%),
-      var(--cream);
+    background: var(--bg);
     color: var(--ink);
     overflow-x: hidden;
   }
@@ -774,4 +767,33 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .legacy-learning, .legacy-learning html *, .legacy-learning html *::before, .legacy-learning html *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+}
+
+/* ==========================================================================
+   Giz: um único design system para todas as idades (handoff, decisão 6).
+   As faixas mantêm diferenças de layout, mas cores, fontes, raios e sombras
+   vêm dos tokens do Giz.
+   ========================================================================== */
+.legacy-learning {
+  --sky: var(--info); --sky-deep: var(--info);
+  --sun: var(--hl); --sun-deep: var(--hl);
+  --grass: var(--ok); --grass-deep: var(--ok);
+  --bubble: var(--primary); --bubble-deep: var(--err);
+  --lilac: var(--info); --lilac-deep: var(--info);
+  --coral: var(--primary); --coral-deep: var(--primary);
+  --cream: var(--bg); --paper: var(--surface); --ink-soft: var(--muted);
+  --radius-sm: var(--r-sm); --radius-md: var(--r-md); --radius-lg: var(--r-lg); --radius-xl: var(--r-xl); --radius-pill: var(--r-full);
+  --shadow-1: var(--e1); --shadow-2: var(--e2); --shadow-3: var(--e3);
+}
+.legacy-learning [data-tier], .legacy-learning [data-tier='ludico'], .legacy-learning [data-tier='jovem'], .legacy-learning [data-tier='exame'] {
+  --t-ground: transparent; --t-surface: var(--surface);
+  --t-ink: var(--ink); --t-ink-soft: var(--muted); --t-muted: var(--muted); --t-line: var(--line);
+  --t-accent: var(--info); --t-accent-ink: #FFFFFF; --t-accent-soft: var(--soft); --t-accent-line: var(--info); --t-answered: var(--hl);
+  --t-correct: var(--ok); --t-correct-soft: var(--ok-bg); --t-wrong: var(--err); --t-wrong-soft: var(--err-bg);
+  --t-font-ui: var(--font-d); --t-font-q: var(--font-b);
+  --t-q-size: var(--text-enunciado); --t-q-weight: 700; --t-q-lh: var(--text-enunciado-line);
+  --t-opt-size: var(--text-body); --t-opt-weight: 600;
+  --t-radius-card: var(--r-lg); --t-radius-opt: var(--r-md); --t-radius-btn: var(--r-full);
+  --t-shadow-card: var(--e2); --t-shadow-opt: var(--e1); --t-opt-border: var(--border);
+  --t-bul-bg: var(--soft); --t-bul-ink: var(--ink);
 }

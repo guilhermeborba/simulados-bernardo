@@ -7,13 +7,12 @@ import { useLearningPreferences } from '@/contexts/LearningPreferencesContext';
 import { ApiError, getLearningHome, getMyAchievements, getMyAvatar, updateMyAvatar, type ApiAvatarSelection, type ApiMyAchievements, type ApiMyAvatar, type AvatarStyle } from '@/lib/apiClient';
 import { quizSegmentForYear, quizTierForPreferences, type QuizSegment } from '@/lib/quiz-segments';
 import AvatarPreview, { CollectionMark } from './AvatarPreview';
-import QuizNavigation from './QuizNavigation';
 import styles from './LearningCollection.module.css';
 
 export default function LearningCollection() {
   const { user, isLoading, getSessionGeneration } = useAuth();
   if (isLoading) return <div className={styles.shell}><p role="status">Carregando sua conta…</p></div>;
-  if (!user || user.role !== 'STUDENT') return <div className={styles.shell}><QuizNavigation current="collection" /><main className={styles.main}><h1>Minha coleção</h1><p>Itens e conquistas estão disponíveis para contas de aluno.</p><Link className={styles.link} href={user ? '/' : '/login?returnTo=/colecao'}>{user ? 'Voltar para o início' : 'Entrar na minha conta'} →</Link></main></div>;
+  if (!user || user.role !== 'STUDENT') return <div className={styles.shell}><div className={styles.main}><h2>Minha coleção</h2><p>Itens e conquistas estão disponíveis para contas de aluno.</p><Link className={styles.link} href={user ? '/' : '/login?returnTo=/colecao'}>{user ? 'Voltar para o início' : 'Entrar na minha conta'} →</Link></div></div>;
   // A session change discards saved values, drafts, pending writes and messages together.
   return <StudentCollection key={`${user.id}:${getSessionGeneration()}`} />;
 }
@@ -84,11 +83,10 @@ function StudentCollection() {
   }
 
   return <div className={styles.shell} data-tier={tier} data-reduced-motion={!preferences.motionEnabled || undefined}>
-    <QuizNavigation current="collection" />
-    <main className={styles.main}>
+    <div className={styles.main}>
       <header className={styles.hero}>
         <p className={styles.eyebrow}>{infant ? 'Pequenas descobertas, lembranças para guardar' : 'Sua prática, do seu jeito'}</p>
-        <h1>{playful ? 'Minha coleção' : 'Coleções e progresso'}</h1>
+        <h2>{playful ? 'Minha coleção' : 'Coleções e progresso'}</h2>
         <p>{infant ? 'O Bolinha guarda com você as descobertas de cada quiz. Escolha um item para acompanhar suas brincadeiras.' : 'Veja os marcos da sua prática e escolha como apresentar sua coleção.'}</p>
         <p className={styles.pace}>Os itens ficam na sua conta. Você pode fazer uma pausa e voltar quando quiser.</p>
       </header>
@@ -113,7 +111,7 @@ function StudentCollection() {
                     </select>
                   </label>
                   <p className={styles.hint}>A apresentação automática usa Bolinha na Educação Infantil, Capelo no Fundamental I e selos nas outras faixas. Você pode escolher qualquer estilo.</p>
-                  <p className={styles.hint}>Sua faixa acompanha a escolha em Aprender hoje ou o ano do seu cadastro. <Link href="/aprender">Alterar minha faixa →</Link></p>
+                  <p className={styles.hint}>Sua faixa acompanha a escolha na Prática ou o ano do seu cadastro. <Link href="/pratica">Alterar minha faixa →</Link></p>
                 </div>
               </div>
               <fieldset className={styles.itemFieldset} disabled={saving}>
@@ -147,8 +145,8 @@ function StudentCollection() {
               </article>;
             })}</div>
           </section>
-          <footer className={styles.footer}><p>Seu progresso e seus itens ficam guardados. A personalização não altera notas nem o XP.</p><Link className={styles.link} href="/aprender">Voltar para Aprender hoje →</Link></footer>
+          <footer className={styles.footer}><p>Seu progresso e seus itens ficam guardados. A personalização não altera notas nem o XP.</p><Link className={styles.link} href="/pratica">Voltar para a Prática →</Link></footer>
         </>}
-    </main>
+    </div>
   </div>;
 }

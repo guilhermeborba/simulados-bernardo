@@ -1,5 +1,6 @@
 import LearningProgress from '@/components/LearningProgress';
+import PracticeShell from '@/components/giz/PracticeShell';
 
-export const metadata = { title: 'Habilidades e revisão — Simulados Bernardo', description: 'Registros de prática por habilidade e revisões orientadas pelas respostas.' };
+export const metadata = { title: 'Habilidades e revisão — Giz', description: 'Registros de prática por habilidade e revisões orientadas pelas respostas.' };
 
-export default function LearningProgressPage() { return <LearningProgress />; }
+export default function LearningProgressPage() { return <PracticeShell title="Habilidades e revisão"><LearningProgress /></PracticeShell>; }

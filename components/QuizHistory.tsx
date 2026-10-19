@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLearningPreferences } from '@/contexts/LearningPreferencesContext';
 import { getMyQuizAttempts, type ApiQuizAttempt } from '@/lib/apiClient';
 import { quizTierForPreferences, quizYearLabel } from '@/lib/quiz-segments';
-import QuizNavigation from './QuizNavigation';
 import styles from './QuizCatalog.module.css';
 
 const PAGE_SIZE = 8;
@@ -38,7 +37,7 @@ export default function QuizHistory() {
   useEffect(() => { setFilter('ALL'); setPracticeFilter('ALL'); setPage(1); }, [userId, generation]);
 
   if (authLoading) return <div className={styles.shell} role="status">Carregando sua conta…</div>;
-  if (!user) return <div className={styles.shell}><h1>Seu histórico de quizzes</h1><p>Entre para continuar uma rodada ou rever suas descobertas.</p><Link href="/login?returnTo=/quizzes/historico" className={styles.primaryButton}>Entrar</Link></div>;
+  if (!user) return <div className={styles.shell}><h2>Seu histórico de quizzes</h2><p>Entre para continuar uma rodada ou rever suas descobertas.</p><Link href="/login?returnTo=/quizzes/historico" className={styles.primaryButton}>Entrar</Link></div>;
 
   const currentHistory = history.ownerId === userId && history.generation === generation;
   const attempts = currentHistory ? history.attempts : [];
@@ -53,9 +52,8 @@ export default function QuizHistory() {
 
   return (
     <div className={styles.shell} data-tier={quizTierForPreferences(preferences)} data-reduced-motion={!preferences.motionEnabled || undefined}>
-      <QuizNavigation current="history" />
-      <main className={styles.main}>
-        <header className={styles.historyHero}><p className={styles.eyebrow}>CADA RODADA CONTA UMA HISTÓRIA</p><h1>Seu histórico de quizzes</h1><p>Continue de onde parou ou reveja as explicações de uma rodada concluída. Quizzes e revisões são práticas; os simulados têm um histórico separado.</p><Link href="/historico" className={styles.textButton}>Ver histórico de simulados →</Link></header>
+      <div className={styles.main}>
+        <header className={styles.historyHero}><p className={styles.eyebrow}>CADA RODADA CONTA UMA HISTÓRIA</p><h2>Seu histórico de quizzes</h2><p>Continue de onde parou ou reveja as explicações de uma rodada concluída. Quizzes e revisões são práticas; os simulados têm um histórico separado.</p><Link href="/historico" className={styles.textButton}>Ver histórico de simulados →</Link></header>
         {user.role !== 'STUDENT' ? <div className={styles.empty}><h2>Histórico disponível para alunos</h2><p>A sua conta pode explorar os quizzes publicados no catálogo.</p><Link href="/quizzes" className={styles.primaryButton}>Explorar quizzes</Link></div> : <>
           {!loading && !history.error && <div className={styles.historyStats}><span><strong>{finishedCount}</strong> {finishedCount === 1 ? 'rodada concluída' : 'rodadas concluídas'}</span><span><strong>{reviewCount}</strong> {reviewCount === 1 ? 'revisão concluída' : 'revisões concluídas'}</span><span><strong>{ongoingCount}</strong> em andamento</span></div>}
           <div className={styles.historyFilters} role="group" aria-label="Tipo de prática">
@@ -85,7 +83,7 @@ export default function QuizHistory() {
             {totalPages > 1 && <nav className={styles.pagination} aria-label="Páginas do histórico"><button type="button" className={styles.secondaryButton} disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>Anterior</button><span role="status">Página {currentPage} de {totalPages}</span><button type="button" className={styles.secondaryButton} disabled={currentPage === totalPages} onClick={() => setPage(currentPage + 1)}>Próxima</button></nav>}
           </>}
         </>}
-      </main>
+      </div>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLearningPreferences } from '@/contexts/LearningPreferencesContext';
 import { ApiError, getLearningHome, type ApiLearningHome, type ApiLearningMission } from '@/lib/apiClient';
 import { QUIZ_SEGMENTS, quizSegmentForYear, quizTierForPreferences, quizYearLabel, quizYearPatch } from '@/lib/quiz-segments';
-import MascoteGuia from './MascoteGuia';
+import { Tuca } from './giz/ui';
 import LearningCollectionSummary from './LearningCollectionSummary';
 import styles from './LearningEntry.module.css';
 
@@ -66,11 +66,11 @@ function LearningHome() {
 
   return <section className={styles.entry} data-tier={tier} data-motion={preferences.motionEnabled ? 'on' : 'off'} aria-labelledby="learning-home-title">
     <header className={styles.hero}>
-      <div><p className={styles.eyebrow}>{infant ? 'Pequenas descobertas com o Bolinha' : tier === 'exame' ? 'Prática e progresso' : 'Uma descoberta de cada vez'}</p>
+      <div><p className={styles.eyebrow}>{infant ? 'Pequenas descobertas' : tier === 'exame' ? 'Prática e progresso' : 'Uma descoberta de cada vez'}</p>
         <h2 id="learning-home-title">Aprender hoje</h2>
-        <p>{infant ? 'O Bolinha acompanha você em novas descobertas. Escolha uma atividade e brinque de aprender.' : tier === 'exame' ? 'Continue de onde parou ou explore uma sequência de atividades para revisar conhecimentos.' : 'Continue sua prática ou descubra os temas escolhidos para esta semana.'}</p>
+        <p>{infant ? 'Escolha uma atividade e brinque de aprender.' : tier === 'exame' ? 'Continue de onde parou ou explore uma sequência de atividades para revisar conhecimentos.' : 'Continue sua prática ou descubra os temas escolhidos para esta semana.'}</p>
         <p className={styles.pace}>Você escolhe quando começar e quando fazer uma pausa.</p></div>
-      {tier === 'ludico' ? <div className={styles.illustration} aria-hidden="true"><MascoteGuia variant={infant ? 'bolinha' : 'capelo'} size={118} /></div> : <div className={styles.illustration} aria-hidden="true"><LearningIllustration /></div>}
+      <div className={styles.illustration} aria-hidden="true"><Tuca pose="lendo" size={120} /></div>
     </header>
 
     <div className={styles.audience}>
@@ -93,7 +93,7 @@ function LearningHome() {
 
     {loading ? <p className={styles.loading} role="status">Carregando missões e progresso…</p> : currentError ? <div className={styles.error} role="alert"><p>{currentError}</p>
       <button type="button" className={styles.secondary} onClick={() => setRetry(value => value + 1)}>Tentar novamente</button>
-      <Link href="/login?returnTo=/aprender">Entrar novamente</Link></div> : data && <>
+      <Link href="/login?returnTo=/pratica">Entrar novamente</Link></div> : data && <>
       <section className={styles.xp} aria-labelledby="learning-xp-heading">
         <div><h3 id="learning-xp-heading">Seu XP</h3><p>XP registra a prática em quizzes. Suas notas são calculadas pelas respostas.</p></div>
         <dl className={styles.xpStats}><div><dt>XP acumulado</dt><dd>{data.xp.total.toLocaleString('pt-BR')}</dd></div>
@@ -152,8 +152,8 @@ function ExploreActivities() {
   return <div className={styles.cards}>
     <Link href="/quizzes" className={styles.quiz}><span className={styles.label}>Quiz rápido</span>
       <strong>Uma pergunta de cada vez</strong><span>Confirme sua escolha e aprenda com a explicação.</span><span className={styles.action}>Explorar quizzes →</span></Link>
-    <a href="#simulados" className={styles.simulation}><span className={styles.label}>Simulados</span>
-      <strong>Pratique para a avaliação</strong><span>Escolha ano, disciplina e avaliação. Confira o resultado ao concluir.</span><span className={styles.action}>Escolher simulado ↓</span></a>
+    <Link href="/simulados" className={styles.simulation}><span className={styles.label}>Simulados</span>
+      <strong>Pratique para a avaliação</strong><span>Escolha ano, disciplina e avaliação. Confira o resultado ao concluir.</span><span className={styles.action}>Escolher simulado →</span></Link>
   </div>;
 }
 
@@ -163,6 +163,3 @@ function missionDates(startsAt: string, endsAt: string) {
   return `${format.format(new Date(startsAt))} a ${format.format(new Date(new Date(endsAt).getTime() - 1))} · Brasília`;
 }
 
-function LearningIllustration() {
-  return <svg viewBox="0 0 170 160" width="136" height="128"><rect x="22" y="25" width="120" height="116" rx="18" fill="#e4def0" transform="rotate(-9 82 84)" /><rect x="33" y="15" width="116" height="124" rx="17" fill="#fff" stroke="#c6bbd7" strokeWidth="2" /><path d="M55 41h62M55 51h41" stroke="#c7b8db" strokeWidth="5" strokeLinecap="round" /><path d="M61 84h59M61 111h43" stroke="#d7dfec" strokeWidth="6" strokeLinecap="round" /><circle cx="54" cy="83" r="10" fill="#428169" /><path d="m49 83 3 3 6-6" stroke="#fff" strokeWidth="2.5" fill="none" /><circle cx="54" cy="111" r="10" fill="#ece4f5" /><circle cx="140" cy="129" r="23" fill="#e3b968" /><path d="m140 116 4 9 10 1-8 7 2 10-8-5-9 5 2-10-7-7 10-1Z" fill="#fff" /></svg>;
-}

@@ -12,7 +12,7 @@ import {
 } from '@/lib/apiClient';
 import { quizMediaUrl } from '@/lib/quizMedia';
 import { tierForSchoolYear } from '@/lib/tier';
-import MascoteGuia from './MascoteGuia';
+import { Tuca } from './giz/ui';
 import QuizPreferencesControls from './QuizPreferencesControls';
 import styles from './QuizRunner.module.css';
 
@@ -30,11 +30,11 @@ export default function QuizRunner({ quizId }: { quizId: string }) {
   }, [isLoading, user, router, returnTo]);
 
   if (isLoading || !user) return <p className="page-shell" role="status">Carregando sua sessão...</p>;
-  if (user.role !== 'STUDENT') return <main className={styles.shell}>
+  if (user.role !== 'STUDENT') return <div className={styles.shell}>
     <h1>Prática no perfil de aluno</h1>
     <p>Entre com uma conta de aluno para realizar quizzes.</p>
     <Link href="/quizzes">Voltar ao catálogo</Link>
-  </main>;
+  </div>;
 
   return <ActiveQuizRunner key={`${user.id}:${getSessionGeneration()}:${quizId}`} quizId={quizId} requestedAttempt={requestedAttempt} />;
 }
@@ -157,7 +157,7 @@ function ActiveQuizRunner({ quizId, requestedAttempt }: { quizId: string; reques
   const infant = typeof year === 'number' && year < 0;
   const confirmed = questions.filter(q => q.confirmedAt).length;
   const review = attempt?.practiceMode === 'REVIEW';
-  return <main className={styles.shell} data-tier={tier} data-motion={preferences.motionEnabled ? 'on' : 'off'}>
+  return <div className={styles.shell} data-tier={tier} data-motion={preferences.motionEnabled ? 'on' : 'off'}>
     <nav className={styles.navigation} aria-label="Navegação do quiz">
       <Link href="/quizzes">← Catálogo de quizzes</Link>
       <Link href="/progresso">Habilidades e revisão</Link>
@@ -180,7 +180,7 @@ function ActiveQuizRunner({ quizId, requestedAttempt }: { quizId: string; reques
       <div className={styles.progress}><span>{confirmed} de {questions.length} respostas confirmadas</span>
         <progress value={confirmed} max={questions.length} aria-label="Respostas confirmadas" /></div>
       <section className={styles.card} aria-labelledby="quiz-question-title">
-        {infant && <div className={styles.guide}><MascoteGuia variant="bolinha" size={76} />
+        {infant && <div className={styles.guide}>
           <p>Vamos descobrir juntos! Escolha uma opção e toque em confirmar.</p></div>}
         <p className={styles.eyebrow}>Pergunta {index + 1} de {questions.length}</p>
         {review && <p className={styles.practiceLabel}>{question.practicedBefore ? 'Pergunta já praticada · repetir ajuda a revisar e não conta como uma primeira resposta.' : 'Pergunta diferente nesta revisão · registrada como prática de revisão.'}</p>}
@@ -220,7 +220,7 @@ function ActiveQuizRunner({ quizId, requestedAttempt }: { quizId: string; reques
       </nav>
       <p className={styles.footer}>Você pode sair e continuar depois. As respostas confirmadas ficam salvas.</p>
     </>}
-  </main>;
+  </div>;
 }
 
 function QuizMedia({ media, audioEnabled }: { media: ApiQuizQuestion['media']; audioEnabled: boolean }) {
@@ -265,7 +265,7 @@ function QuizResult({ result, infant, onRetry }: { result: ApiQuizResult; infant
   useEffect(() => { title.current?.focus(); }, []);
   const review = result.attempt.practiceMode === 'REVIEW';
   return <section className={styles.card}>
-    {infant && <MascoteGuia variant="bolinha" size={92} celebrando />}
+    <Tuca pose="trofeu" size={96} />
     <p className={styles.eyebrow}>Prática concluída</p>
     <h2 ref={title} tabIndex={-1}>{review ? 'Revisão concluída' : 'Quiz concluído'}</h2>
     <p className={styles.resultIntro}>{review ? 'Você concluiu esta prática de revisão. Veja as explicações; estes acertos ficam separados das primeiras respostas e não comprovam domínio.' : 'Você respondeu todas as perguntas. Veja as explicações e escolha como continuar.'}</p>
@@ -280,7 +280,7 @@ function QuizResult({ result, infant, onRetry }: { result: ApiQuizResult; infant
         : result.reward.reason === 'ALREADY_REWARDED' ? 'Este quiz já registrou XP no dia desta conclusão. Praticar novamente ajuda a revisar o que você aprendeu.'
         : result.reward.reason === 'DAILY_LIMIT' ? 'O limite diário de XP já tinha sido registrado no dia desta conclusão. Suas respostas e este resultado continuam salvos.'
         : 'Este resultado foi concluído antes do registro de XP. Você pode consultar sua prática no histórico.'}</p>
-      <Link href="/aprender">Ver missões e progresso em Aprender hoje →</Link>
+      <Link href="/pratica">Ver missões e progresso na Prática →</Link>
       <Link href="/colecao">Ver minha coleção e conquistas →</Link>
       <Link href="/progresso">Consultar habilidades e sugestões de revisão →</Link>
     </section>
