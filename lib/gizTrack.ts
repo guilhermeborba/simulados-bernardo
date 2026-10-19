@@ -23,6 +23,12 @@ export function trackOfSchoolYear(schoolYear: number): GizTrack {
   return schoolYear >= 6 ? 'escola' : 'kids';
 }
 
+/** Turma members follow their class's school year; a turma without one gives no hint. */
+export function trackOfTurmas(turmas: ReadonlyArray<{ schoolYear?: number | null }>): GizTrack | null {
+  const year = turmas.find(turma => typeof turma.schoolYear === 'number')?.schoolYear;
+  return typeof year === 'number' ? trackOfSchoolYear(year) : null;
+}
+
 export function schoolYearLabel(schoolYear: number): string {
   if (schoolYear === 0) return 'Curso técnico';
   if (schoolYear < 0) return `${3 - schoolYear} anos`;

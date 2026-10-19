@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { joinTurma, ApiTurma } from '@/lib/apiClient';
 import { bloquearTrocaDeTrilha } from '@/lib/trilha';
-import { saveTrack } from '@/lib/gizTrack';
+import { saveTrack, trackOfTurmas } from '@/lib/gizTrack';
 import RegisterForm from './RegisterForm';
 
 type State = 'checking' | 'joining' | 'joined' | 'error';
@@ -35,9 +35,8 @@ export default function ConviteView() {
 
     joinTurma(token)
       .then((result) => {
-        // Quem já tinha conta e entra pela turma também vai direto para o
-        // ensino fundamental, sem ver a opção de curso técnico.
-        saveTrack('kids');
+        // Quem já tinha conta segue a série da turma, sem escolher trilha.
+        saveTrack(trackOfTurmas([result.turma]) ?? 'kids');
         bloquearTrocaDeTrilha();
         setTurma(result.turma);
         setState('joined');
@@ -76,7 +75,7 @@ export default function ConviteView() {
       <Aviso titulo={`Bem-vindo à ${turma.name}!`}>
         Os simulados da turma já aparecem para você.
         <div className="mt-6">
-          <Link href="/" className="btn btn--grass btn--lg">
+          <Link href="/simulados" className="btn btn--grass btn--lg">
             Ver os simulados
           </Link>
         </div>

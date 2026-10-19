@@ -14,8 +14,8 @@ export function DataGate({ catalog }: { catalog: ReturnType<typeof useCatalog> }
   return null;
 }
 export function OfflineNotice() { return <p className="giz-offline" role="status"><Icon name="alert" /> Sem conexão. Mostrando os últimos dados salvos.</p>; }
-export function SimulationCard({ simulation, attempt }: { simulation: ApiSimulation; attempt?: ApiMyAttempt }) {
-  return <Link className="card simulation-card" href={`/simulados/${encodeURIComponent(simulation.id)}`}><span className="simulation-icon"><Icon name="book" size={28} /></span><span className="simulation-eyebrow">{simulation.assessment}</span><h3>{simulation.title}</h3><p>{simulationSubtitle(simulation)}</p><div className="simulation-card-footer"><Badge tone={attempt ? isFinished(attempt) ? 'ok' : 'soft' : 'new'}>{attempt ? isFinished(attempt) ? 'Concluído' : 'Em andamento' : 'Novo'}</Badge><span aria-hidden="true">→</span></div></Link>;
+export function SimulationCard({ simulation, attempt, fromTurma = false }: { simulation: ApiSimulation; attempt?: ApiMyAttempt; fromTurma?: boolean }) {
+  return <Link className="card simulation-card" href={`/simulados/${encodeURIComponent(simulation.id)}`}><span className="simulation-icon"><Icon name="book" size={28} /></span><span className="simulation-eyebrow">{fromTurma ? `Da sua turma · ${simulation.assessment}` : simulation.assessment}</span><h3>{simulation.title}</h3><p>{simulationSubtitle(simulation)}</p><div className="simulation-card-footer"><Badge tone={attempt ? isFinished(attempt) ? 'ok' : 'soft' : 'new'}>{attempt ? isFinished(attempt) ? 'Concluído' : 'Em andamento' : 'Novo'}</Badge><span aria-hidden="true">→</span></div></Link>;
 }
 export function ResumeCard({ attempt, simulation }: { attempt: ApiMyAttempt; simulation?: ApiSimulation }) {
   const [answered, setAnswered] = useState<number | null>(null);
