@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { router } from "expo-router";
 import { useSession } from "../src/session-context";
-import { failure } from "../src/data";
+import { failure, type ApiTurma } from "../src/data";
+import { useTheme } from "../src/theme";
+import { trackOfTurmas } from "../src/core/track";
 import {
   forgetEntryLink,
   peekEntryLink,
@@ -10,6 +12,8 @@ import {
 import { Button, Card, Copy, Field, Notice, Screen } from "../src/ui";
 export default function Entry() {
   const { client, session } = useSession();
+  const { selectTrack } = useTheme();
+  const [joined, setJoined] = useState(false);
   const [incoming, setIncoming] = useState(peekEntryLink);
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -56,11 +60,13 @@ export default function Entry() {
     setMessage(null);
     try {
       if (entry.kind === "invite") {
-        await client.request("/me/turmas/join", {
+        const result = await client.request<{ turma: ApiTurma }>("/me/turmas/join", {
           method: "POST",
           body: JSON.stringify({ token: entry.token }),
           signal,
         });
+        selectTrack(trackOfTurmas([result.turma]) ?? "kids");
+        setJoined(true);
       } else {
         if (
           password !== confirmation ||
@@ -84,7 +90,7 @@ export default function Entry() {
       setPassword("");
       setConfirmation("");
       if (entry.kind === 'password-reset') await cleanResetSession();
-      else setDone('Você entrou na turma. Volte ao início para ver as atividades.');
+      else setDone('Você entrou na turma. Os simulados da turma já aparecem para você.');
     } catch (error) {
       if (!signal.aborted && revision === peekEntryLink().revision)
         setMessage(failure(error));
@@ -108,7 +114,7 @@ export default function Entry() {
             {done ??
               "Abra novamente o link recebido para continuar. Links não ficam salvos no aparelho."}
           </Copy>
-          {cleanupPending ? <Button title="Tentar limpar sessão" disabled={busy} onPress={() => { void cleanResetSession(); }} /> : <Button title="Voltar para entrar" onPress={() => router.replace('/')} />}
+          {cleanupPending ? <Button title="Tentar limpar sessão" disabled={busy} onPress={() => { void cleanResetSession(); }} /> : joined ? <Button title="Ver os simulados" onPress={() => router.replace('/simulations')} /> : <Button title="Voltar para entrar" onPress={() => router.replace('/')} />}
         </Card>
       ) : incoming.entry.kind === "invite" ? (
         <Card>

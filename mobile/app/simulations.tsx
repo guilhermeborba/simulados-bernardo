@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { router } from 'expo-router';
-import { useRemote, type ApiSimulation } from '../src/data';
+import { useRemote, type ApiSimulation, type ApiTurma } from '../src/data';
 import { useTheme, tokens } from '../src/theme';
 import { compareSchoolYears, periodLabel, schoolYearLabel, trackOfSchoolYear } from '../src/core/track';
 import { Button, Card, Copy, Empty, Field, Heading, Loading, Screen, styles } from '../src/ui';
@@ -37,6 +37,7 @@ export function Chips({ label, values, value, onChange }: {
 
 export default function Simulations() {
   const sims = useRemote<ApiSimulation[]>('/simulations/available');
+  const turmas = useRemote<ApiTurma[]>('/me/turmas');
   const { colors, track } = useTheme();
   const { width } = useWindowDimensions();
   const [query, setQuery] = useState('');
@@ -45,7 +46,16 @@ export default function Simulations() {
   const [assessment, setAssessment] = useState('Todos');
   const [year, setYear] = useState('Todos');
   const columns = width >= tokens.breakpoint['desktop-min'] ? 3 : width >= tokens.breakpoint['tablet-min'] ? 2 : 1;
-  const inTrack = sims.data?.filter(sim => trackOfSchoolYear(sim.schoolYear) === track) || [];
+  const turmaIds = new Set((turmas.data || []).map(turma => turma.id));
+  const fromTurma = (sim: ApiSimulation) => Boolean(sim.turmaId && turmaIds.has(sim.turmaId));
+  const inTrack = (sims.data?.filter(sim => trackOfSchoolYear(sim.schoolYear) === track) || []).sort((a, b) => Number(fromTurma(b)) - Number(fromTurma(a)));
+  const turmaYear = (turmas.data || []).find(turma => typeof turma.schoolYear === 'number')?.schoolYear ?? null;
+  const yearPreset = useRef(false);
+  useEffect(() => {
+    if (yearPreset.current || sims.loading || turmas.loading || turmaYear === null) return;
+    yearPreset.current = true;
+    if (inTrack.some(sim => sim.schoolYear === turmaYear)) setYear(schoolYearLabel(turmaYear));
+  }, [sims.loading, turmas.loading, turmaYear, inTrack]);
   const years = Array.from(new Set(inTrack.map(sim => sim.schoolYear))).sort(compareSchoolYears).map(schoolYearLabel);
   const search = query.trim().toLocaleLowerCase('pt-BR');
   const list = inTrack.filter(sim =>
@@ -64,7 +74,7 @@ export default function Simulations() {
     setAssessment('Todos');
   }
 
-  return <Screen title="Simulados" subtitle="Encontre sua próxima descoberta." student><Button title="Outras faixas e avaliações na web" secondary onPress={()=>router.push('/official-simulations')}/>
+  return <Screen title="Simulados" subtitle="Encontre sua próxima descoberta." student>{turmaIds.size === 0 && <Button title="Outras faixas e avaliações na web" secondary onPress={()=>router.push('/official-simulations')}/>}
     {sims.loading ? <Loading /> : sims.error ? <Empty title="Vamos tentar de novo?" message={sims.error} onRetry={sims.reload} /> : <>
       <Field label="Buscar simulados" placeholder="Buscar por título ou disciplina" value={query} onChangeText={setQuery} returnKeyType="search" autoCorrect={false} clearButtonMode="while-editing" />
       {years.length > 1 && <Chips label="Ano" values={years} value={year} onChange={setYear} />}
@@ -78,7 +88,7 @@ export default function Simulations() {
         {list.map(sim => <View key={sim.id} testID="simulation-grid-cell" style={{ width: `${100 / columns}%`, minWidth: 0, padding: tokens.space[2] }}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`${[sim.title, schoolYearLabel(sim.schoolYear), periodLabel(sim.bimester, sim.assessment), `${sim.totalQuestions} questões`].filter(Boolean).join(', ')}. Ver simulado.`}
+            accessibilityLabel={`${[fromTurma(sim) ? 'Da sua turma' : null, sim.title, schoolYearLabel(sim.schoolYear), periodLabel(sim.bimester, sim.assessment), `${sim.totalQuestions} questões`].filter(Boolean).join(', ')}. Ver simulado.`}
             onPress={() => router.push({ pathname: '/detail/[id]', params: { id: sim.id } })}
             style={({ pressed }) => [styles.card, {
               minWidth: 0,
@@ -89,7 +99,7 @@ export default function Simulations() {
               borderColor: pressed ? colors.primary : colors.line,
             }]}
           >
-            <Copy muted>{sim.discipline.name}</Copy>
+            <Copy muted>{fromTurma(sim) ? `Da sua turma · ${sim.discipline.name}` : sim.discipline.name}</Copy>
             <Heading level={3}>{sim.title}</Heading>
             <Copy muted>{[schoolYearLabel(sim.schoolYear),periodLabel(sim.bimester,sim.assessment)].filter(Boolean).join(' · ')}</Copy>
             <Copy>{sim.totalQuestions} questões</Copy>
