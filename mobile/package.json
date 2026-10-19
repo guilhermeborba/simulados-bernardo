@@ -14,7 +14,8 @@
     "prebuild": "expo prebuild --no-install",
     "generate:tokens": "node ../scripts/generate-giz-mobile.mjs",
     "test:ui": "jest --config jest.config.cjs --runInBand",
-    "test:integration": "node scripts/run-integration.mjs"
+    "test:integration": "node scripts/run-integration.mjs",
+    "device:fixture": "node scripts/run-integration.mjs --device"
   },
   "dependencies": {
     "expo": "57.0.28",
