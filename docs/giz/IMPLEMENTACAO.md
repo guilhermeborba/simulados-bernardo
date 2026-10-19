@@ -6,6 +6,8 @@ Este registro distingue o que foi implementado do que ainda depende de contrato 
 
 ## Decisões e divergências registradas
 
+- **Aceite web E07 (19/10/2026):** tema claro fixado desde o HTML e seletor de tema oculto até conferir o escuro tela a tela. Correções de foco do convite, alvos de toque, texto ampliado e tamanho do Tuca no perfil. Evidências, comandos e roteiro manual de leitor de tela em [aceite web](validacao/aceite-web-2026-10-19.md).
+
 - **Trilhas (decisão do responsável em 19/10/2026, etapa E01):** as três trilhas estão liberadas. **Giz Kids** reúne a Educação Infantil (`schoolYear` -1 e -2) e o Fundamental I (1–5), com o Tuca; **Giz Escola** reúne o 6º ano à 3ª série do Médio (6–12); **Giz Técnico**, os cursos técnicos (0). A trilha só muda a cor de destaque (`--track-accent`, de `color.trilha` nos tokens) e a presença do Tuca. A classificação fica em `lib/gizTrack.ts` (web) e `mobile/src/core/track.ts` (Expo); um teste garante que as duas concordam.
 - **Mensagens de resultado:** os cortes foram confirmados pelo responsável em **80% e 50%** de acertos: “Mandou bem!” a partir de 80%, “Bom caminho!” a partir de 50%, “Vale tentar de novo!” abaixo disso. O total vem das questões da tentativa, sem assumir as cinco questões fictícias do protótipo. A nota percentual e a regra de pontuação do servidor são preservadas.
 - **Ranking:** os pontos fictícios do protótipo foram substituídos pela **média percentual real** retornada pela API. Continuam valendo a melhor tentativa por simulado, a quantidade mínima e a turma definidos pelo backend. Não foi criada regra de “pts”.

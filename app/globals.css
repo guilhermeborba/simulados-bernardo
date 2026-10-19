@@ -137,3 +137,5 @@ h1[tabindex="-1"]:focus{outline:none}
 .giz-nav a{min-width:0}
 .giz-nav-label{max-width:100%;overflow-wrap:anywhere}
 .giz-content .card.stack>a:not(.btn),.discovery-section-title>a{display:inline-flex;align-items:center;min-width:var(--size-touch);min-height:var(--size-touch)}
+
+@media(min-width:600px) and (max-width:1023px){.giz-sidebar,.giz-app--flow .giz-sidebar{padding-inline:calc((var(--size-sidebar-tablet) - var(--size-touch) - var(--border-thin)) / 2)}}
