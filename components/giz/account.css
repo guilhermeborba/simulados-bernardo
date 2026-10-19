@@ -86,3 +86,5 @@
 
 .account-achievement .giz-progress-row { width: 100%; }
 .account-setting > .giz-icon { transform: rotate(180deg); }
+
+.account-stat dt{overflow-wrap:anywhere}
