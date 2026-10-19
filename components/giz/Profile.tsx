@@ -6,7 +6,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getMinhaPontuacao, type ApiMinhaPontuacao } from '@/lib/apiClient';
 import { AccountApiError, getAchievements, isOffline, type Achievement } from '@/lib/gizAccountApi';
 import { getTheme, getTimerDefault, setTheme, setTimerDefault, type ThemePreference } from '@/lib/gizPreferences';
-import { lerTrilhaSalva } from '@/lib/trilha';
+import { isTrocaDeTrilhaBloqueada } from '@/lib/trilha';
+import { TRACK_INFO, useGizTrack } from '@/lib/gizTrack';
 import { AppShell, Badge, Button, Icon, Progress, ScreenState, Tuca } from './ui';
 import './account.css';
 
@@ -15,7 +16,9 @@ export default function Profile() {
   const userId = user?.id;
   const [theme, updateTheme] = useState<ThemePreference>('auto');
   const [timer, updateTimer] = useState(true);
-  const [track, setTrack] = useState('Giz Kids');
+  const gizTrack = useGizTrack();
+  const track = gizTrack ? TRACK_INFO[gizTrack].name : 'Escolha sua trilha';
+  const [canChangeTrack, setCanChangeTrack] = useState(false);
   const [notice, setNotice] = useState<string>();
   const [points, setPoints] = useState<ApiMinhaPontuacao | null>(null);
   const [pointsFailed, setPointsFailed] = useState(false);
@@ -27,9 +30,7 @@ export default function Profile() {
   useEffect(() => {
     updateTheme(getTheme());
     updateTimer(getTimerDefault());
-    const savedTrack = lerTrilhaSalva();
-    if (savedTrack === 'tecnico') setTrack('Cursos Técnicos');
-    else if (savedTrack === 'infantil') setTrack('Educação Infantil');
+    setCanChangeTrack(!isTrocaDeTrilhaBloqueada());
   }, []);
 
   useEffect(() => {
@@ -79,13 +80,14 @@ export default function Profile() {
     {isLoading ? <ScreenState kind="loading" /> : !user ? <ScreenState kind="empty" title="Seu espaço no Giz" message="Entre para ver seu perfil, suas conquistas e suas preferências." action={<Link href="/login?returnTo=%2Feu" className="btn">Entrar</Link>} /> : <div className="account-profile-grid">
       <div className="stack">
         <section className="card" aria-label="Seu perfil">
-          <div className="account-identity"><div className="account-avatar" aria-hidden="true">{Array.from(user.name.trim())[0]?.toLocaleUpperCase('pt-BR') || '?'}</div><div><h2>{user.name}</h2><p>{track}</p></div>{track === 'Giz Kids' && <Tuca pose="trofeu" size={96} priority />}</div>
+          <div className="account-identity"><div className="account-avatar" aria-hidden="true">{Array.from(user.name.trim())[0]?.toLocaleUpperCase('pt-BR') || '?'}</div><div><h2>{user.name}</h2><p>{track}</p></div><Tuca pose="trofeu" size={96} priority /></div>
           {points ? <dl className="account-stats"><div className="account-stat"><dt>Simulados</dt><dd><strong>{points.simulados}</strong></dd></div><div className="account-stat"><dt>Média</dt><dd><strong>{Math.round(points.media)}%</strong></dd></div><div className="account-stat"><dt>Sequência</dt><dd><strong>{points.diasSeguidos} {points.diasSeguidos === 1 ? 'dia' : 'dias'}</strong></dd></div></dl> : pointsFailed ? <p className="muted">Não foi possível carregar seu resumo. <button type="button" className="account-link" onClick={() => setReload(n => n + 1)}>Tentar de novo</button></p> : <p role="status" className="muted">Carregando seu resumo…</p>}
         </section>
         <section className="card account-settings" aria-labelledby="settings-heading">
           <h2 id="settings-heading">Do seu jeito</h2>
           <div className="account-setting"><label htmlFor="profile-theme">Tema</label><select id="profile-theme" value={theme} onChange={event => changeTheme(event.target.value as ThemePreference)}><option value="light">Claro</option><option value="dark">Escuro</option><option value="auto">Automático</option></select></div>
           <div className="account-setting"><label htmlFor="profile-timer">Cronômetro por padrão</label><input id="profile-timer" type="checkbox" role="switch" className="account-toggle" checked={timer} onChange={event => changeTimer(event.target.checked)} /></div>
+          {canChangeTrack && <div className="account-setting"><Link href="/trilha"><Icon name="spark" />Trocar trilha</Link><Icon name="back" /></div>}
           <div className="account-setting"><Link href="/historico"><Icon name="clock" />Histórico</Link><Icon name="back" /></div>
           <div className="account-setting"><Link href="/aprender"><Icon name="book" />Aprender hoje</Link><Icon name="back" /></div>
           <div className="account-setting"><Link href="/progresso"><Icon name="spark" />Meu progresso</Link><Icon name="back" /></div>

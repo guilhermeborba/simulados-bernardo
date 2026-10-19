@@ -7,7 +7,7 @@ import { isFinished, simulationSubtitle, useCatalog } from './useCatalog';
 import { DataGate } from './DiscoveryCards';
 import './discovery.css';
 export default function SimulationDetail({ id }: { id: string }) {
-  const catalog = useCatalog(); const simulation = catalog.simulations.find(s => s.id === id); const [timer, setTimer] = useState(true);
+  const catalog = useCatalog(); const simulation = catalog.allSimulations.find(s => s.id === id); const [timer, setTimer] = useState(true);
   useEffect(() => { setTimer(getTimerDefault()); }, []);
   const attempts = catalog.attempts.filter(a => a.simulationId === id); const active = attempts.find(a => !isFinished(a));
   const seconds = (simulation?.totalQuestions ?? 30) * (timer ? 45 : 50); const duration = `${Math.floor(seconds / 60)} min${seconds % 60 ? ` ${seconds % 60} s` : ''}`;

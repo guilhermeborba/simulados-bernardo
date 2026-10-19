@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { joinTurma, ApiTurma } from '@/lib/apiClient';
-import { bloquearTrocaDeTrilha, salvarTrilha } from '@/lib/trilha';
+import { bloquearTrocaDeTrilha } from '@/lib/trilha';
+import { saveTrack } from '@/lib/gizTrack';
 import RegisterForm from './RegisterForm';
 
 type State = 'checking' | 'joining' | 'joined' | 'error';
@@ -36,7 +37,7 @@ export default function ConviteView() {
       .then((result) => {
         // Quem já tinha conta e entra pela turma também vai direto para o
         // ensino fundamental, sem ver a opção de curso técnico.
-        salvarTrilha('basica');
+        saveTrack('kids');
         bloquearTrocaDeTrilha();
         setTurma(result.turma);
         setState('joined');

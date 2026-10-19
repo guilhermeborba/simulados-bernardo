@@ -4,11 +4,15 @@ import { ButtonHTMLAttributes, ReactNode, useEffect, useId, useRef } from 'react
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { TRACK_INFO, useGizTrack } from '@/lib/gizTrack';
 
 export function Icon({ name, size = 24 }: { name: string; size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="giz-icon"><use href={`/giz/icones/_sprite.svg#i-${name}`} /></svg>;
 }
+/** The Tuca belongs to Giz Kids only; it also greets people who have not chosen a track yet. */
 export function Tuca({ pose = 'feliz', size = 96, priority = false }: { pose?: string; size?: 72 | 96 | 120 | 140 | 160; priority?: boolean }) {
+  const track = useGizTrack();
+  if (track === 'escola' || track === 'tecnico') return null;
   return <Image unoptimized priority={priority} className="tuca" src={`/giz/tuca/tuca-${pose}.svg`} width={524} height={500} style={{ height: size, width: 'auto' }} alt="" aria-hidden="true" />;
 }
 export function Button({ variant = 'primary', className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'text' }) {
@@ -20,19 +24,20 @@ export function Badge({ children, tone = 'soft' }: { children: ReactNode; tone?:
 const navItems = [ ['/', 'home', 'Início'], ['/simulados', 'book', 'Simulados'], ['/ranking', 'cup', 'Ranking'], ['/eu', 'user', 'Eu'] ];
 export function AppShell({ title, subtitle, children, backHref, flow = false, actions }: { title: string; subtitle?: string; children: ReactNode; backHref?: string; flow?: boolean; actions?: ReactNode }) {
   const pathname = usePathname();
+  const brand = TRACK_INFO[useGizTrack() ?? 'kids'].name;
   const Heading = pathname.startsWith('/simulado/') ? 'h2' : 'h1';
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { heading.current?.focus({ preventScroll: true }); }, [pathname]);
   return <div className={`giz-app ${flow ? 'giz-app--flow' : ''}`}>
     <a className="skip-link" href="#conteudo">Ir para o conteúdo</a>
     <aside className="giz-sidebar">
-      <Link href="/" className="giz-brand" aria-label="Giz Kids, início"><Image unoptimized className="giz-logo-light" src="/giz/brand/giz-logo-lousa.svg" width="84" height="60" alt="Giz" /><Image unoptimized className="giz-logo-dark" src="/giz/brand/giz-logo-papel.svg" width="84" height="60" alt="Giz" /><span>Kids</span></Link>
+      <Link href="/" className="giz-brand" aria-label={`${brand}, início`}><Image unoptimized className="giz-logo-light" src="/giz/brand/giz-logo-lousa.svg" width="84" height="60" alt="Giz" /><Image unoptimized className="giz-logo-dark" src="/giz/brand/giz-logo-papel.svg" width="84" height="60" alt="Giz" /><span>{brand.replace('Giz ', '')}</span></Link>
       <nav aria-label="Principal" className="giz-nav">{navItems.map(([href, icon, label]) => <Link key={href} href={href} aria-current={(href === '/' ? pathname === '/' : pathname.startsWith(href) || (href === '/eu' && pathname === '/historico') || (href === '/simulados' && pathname.startsWith('/simulado/'))) ? 'page' : undefined}><span className="giz-nav-icon"><Icon name={icon} /></span><span className="giz-nav-label">{label}</span></Link>)}</nav>
       <Link href="/sobre" className="giz-sidebar-about">Conheça o Giz</Link>
     </aside>
     <div className="giz-workspace">
       <header className="giz-page-head">
-        <nav className="giz-breadcrumb" aria-label="Você está em"><Link href="/">Giz Kids</Link><span aria-hidden="true"> / </span><span>{title}</span></nav>
+        <nav className="giz-breadcrumb" aria-label="Você está em"><Link href="/">{brand}</Link><span aria-hidden="true"> / </span><span>{title}</span></nav>
         <div className="giz-page-heading">{backHref && <Link className="icon-button" href={backHref} aria-label="Voltar"><Icon name="back" /></Link>}<div><Heading ref={heading} tabIndex={-1}>{title}</Heading>{subtitle && <p>{subtitle}</p>}</div>{actions && <div className="giz-head-actions">{actions}</div>}</div>
       </header>
       <main id="conteudo" className="giz-content">{children}</main>

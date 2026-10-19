@@ -1,5 +1,6 @@
 'use client';
 
+import { trackOfSchoolYear } from '@/lib/gizTrack';
 import { useEffect, useRef, useState } from 'react';
 import { mapApiQuestion, parseStoredAnswer } from '@/lib/questionMapper';
 import { isBlankAnswer, questionsFromResult, type RunnerSnapshot } from '@/lib/gizRunner';
@@ -34,7 +35,7 @@ export default function RunnerResult({ snapshot, review, onReview, onResult, onR
   const recordedTimes = questions.map((question) => snapshot.spentMs[question.id]);
   const averageSeconds = recordedTimes.length && recordedTimes.every((time) => typeof time === 'number') ? Math.round(recordedTimes.reduce((sum, time) => sum + time, 0) / total / 1000) : null;
   const schoolYear = snapshot.attempt.simulation?.schoolYear;
-  const isKids = schoolYear !== undefined && schoolYear > 0 && schoolYear <= 5;
+  const isKids = schoolYear !== undefined && trackOfSchoolYear(schoolYear) === 'kids';
   const simulationTitle = snapshot.attempt.simulation?.title ?? 'Simulado';
   const visible = questions.filter((question) => filter === 'blank' ? isBlankAnswer(question.answer) : filter === 'wrong' ? !question.isCorrect && !isBlankAnswer(question.answer) : true);
 

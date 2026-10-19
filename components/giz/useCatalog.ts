@@ -1,11 +1,13 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { ApiMyAttempt, ApiMinhaPontuacao, ApiSimulation, getAvailableSimulations, getMinhaPontuacao, getMyAttempts } from '@/lib/apiClient';
+import { schoolYearLabel, trackOfSchoolYear, useGizTrack } from '@/lib/gizTrack';
 type CatalogState = { simulations: ApiSimulation[]; attempts: ApiMyAttempt[]; score: ApiMinhaPontuacao | null };
 const emptyData: CatalogState = { simulations: [], attempts: [], score: null };
 export function isFinished(attempt: ApiMyAttempt) { return attempt.finishedAt !== null || ['COMPLETED', 'FINISHED'].includes(attempt.status); }
-export function simulationSubtitle(simulation: ApiSimulation) { return `${simulation.schoolYear}º ano · ${simulation.bimester}º bimestre · ${simulation.assessment} · ${simulation.totalQuestions} questões`; }
+export function simulationSubtitle(simulation: ApiSimulation) { return `${schoolYearLabel(simulation.schoolYear)} · ${simulation.bimester}º bimestre · ${simulation.assessment} · ${simulation.totalQuestions} questões`; }
 export function useCatalog() {
   const { user, isLoading: sessionLoading } = useAuth();
   const [data, setData] = useState<CatalogState>(emptyData);
@@ -22,7 +24,7 @@ export function useCatalog() {
     const cacheKey = `giz:catalog:${user.id}`;
     Promise.all([getAvailableSimulations({}), getMyAttempts(), getMinhaPontuacao().catch(() => null)]).then(([simulations, attempts, score]) => {
       if (!active) return;
-      const next = { simulations: simulations.filter(sim => sim.schoolYear >= 1 && sim.schoolYear <= 5), attempts, score };
+      const next = { simulations, attempts, score };
       setData(next);
       try { localStorage.setItem(cacheKey, JSON.stringify(next)); } catch { /* Storage can be unavailable. */ }
     }).catch(() => {
@@ -35,5 +37,12 @@ export function useCatalog() {
     window.addEventListener('online', reload);
     return () => { active = false; window.removeEventListener('online', reload); };
   }, [user, sessionLoading, retry, reload]);
-  return { ...data, user, loading: loading || sessionLoading, error, offline, reload };
+  const track = useGizTrack();
+  const inTrack = track ? data.simulations.filter(sim => trackOfSchoolYear(sim.schoolYear) === track) : [];
+  return { ...data, allSimulations: data.simulations, simulations: inTrack, track, user, loading: loading || sessionLoading || track === undefined, error, offline, reload };
+}
+/** Home and catalog only make sense inside a track; a direct link to a simulation does not need one. */
+export function useRequireTrack(catalog: ReturnType<typeof useCatalog>) {
+  const router = useRouter();
+  useEffect(() => { if (catalog.user && catalog.track === null) router.replace('/trilha'); }, [catalog.user, catalog.track, router]);
 }
