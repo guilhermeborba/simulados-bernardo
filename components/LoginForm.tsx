@@ -4,7 +4,6 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { readTrack } from '@/lib/gizTrack';
 import { isOffline, safeReturnTo } from '@/lib/gizAccountApi';
 import { AuthField, AuthLayout, FormError } from '@/components/giz/AuthLayout';
 import { Button } from '@/components/giz/ui';
@@ -24,7 +23,7 @@ export default function LoginForm() {
 
   useEffect(() => {
     if (!completed || !user) return;
-    const destination = returnTo || (['GUARDIAN', 'TEACHER', 'ADMIN'].includes(user.role) ? '/acompanhamento' : readTrack() ? '/' : '/trilha');
+    const destination = returnTo || (['GUARDIAN', 'TEACHER', 'ADMIN'].includes(user.role) ? '/acompanhamento' : '/');
     router.push(destination);
   }, [completed, user, returnTo, router]);
 

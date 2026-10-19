@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { getMinhaPontuacao, type ApiMinhaPontuacao } from '@/lib/apiClient';
+import { getMinhaPontuacao, getMyTurmas, type ApiMinhaPontuacao } from '@/lib/apiClient';
 import { AccountApiError, getAchievements, isOffline, type Achievement } from '@/lib/gizAccountApi';
 import { getTheme, getTimerDefault, setTheme, setTimerDefault, type ThemePreference } from '@/lib/gizPreferences';
 import { isTrocaDeTrilhaBloqueada } from '@/lib/trilha';
@@ -19,6 +19,7 @@ export default function Profile() {
   const gizTrack = useGizTrack();
   const track = gizTrack ? TRACK_INFO[gizTrack].name : 'Escolha sua trilha';
   const [canChangeTrack, setCanChangeTrack] = useState(false);
+  const [inTurma, setInTurma] = useState(false);
   const [notice, setNotice] = useState<string>();
   const [points, setPoints] = useState<ApiMinhaPontuacao | null>(null);
   const [pointsFailed, setPointsFailed] = useState(false);
@@ -32,6 +33,13 @@ export default function Profile() {
     updateTimer(getTimerDefault());
     setCanChangeTrack(!isTrocaDeTrilhaBloqueada());
   }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+    let active = true;
+    getMyTurmas().then(turmas => { if (active) setInTurma(turmas.length > 0); }).catch(() => {});
+    return () => { active = false; };
+  }, [userId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -87,9 +95,9 @@ export default function Profile() {
           <h2 id="settings-heading">Do seu jeito</h2>
           <div className="account-setting"><label htmlFor="profile-theme">Tema</label><select id="profile-theme" value={theme} onChange={event => changeTheme(event.target.value as ThemePreference)}><option value="light">Claro</option><option value="dark">Escuro</option><option value="auto">Automático</option></select></div>
           <div className="account-setting"><label htmlFor="profile-timer">Cronômetro por padrão</label><input id="profile-timer" type="checkbox" role="switch" className="account-toggle" checked={timer} onChange={event => changeTimer(event.target.checked)} /></div>
-          {canChangeTrack && <div className="account-setting"><Link href="/trilha"><Icon name="spark" />Trocar trilha</Link><Icon name="back" /></div>}
+          {canChangeTrack && !inTurma && <div className="account-setting"><Link href="/trilha"><Icon name="spark" />Trocar trilha</Link><Icon name="back" /></div>}
           <div className="account-setting"><Link href="/historico"><Icon name="clock" />Histórico</Link><Icon name="back" /></div>
-          <div className="account-setting"><Link href="/aprender"><Icon name="book" />Aprender hoje</Link><Icon name="back" /></div>
+          {!inTurma && <div className="account-setting"><Link href="/aprender"><Icon name="book" />Aprender hoje</Link><Icon name="back" /></div>}
           <div className="account-setting"><Link href="/progresso"><Icon name="spark" />Meu progresso</Link><Icon name="back" /></div>
           <div className="account-setting"><Link href="/colecao"><Icon name="cup" />Minha coleção</Link><Icon name="back" /></div>
           {['GUARDIAN', 'TEACHER', 'ADMIN'].includes(user.role) && <div className="account-setting"><Link href="/acompanhamento">Acompanhamento</Link><Icon name="back" /></div>}

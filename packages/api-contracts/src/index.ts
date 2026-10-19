@@ -11,6 +11,7 @@ export interface ApiTurma {
   id: string;
   name: string;
   slug: string;
+  schoolYear?: number | null;
 }
 
 export interface ApiDiscipline {
@@ -34,6 +35,8 @@ export interface ApiSimulation {
   totalQuestions: number;
   maxScore: string;
   estimatedDurationMinutes: number | null;
+  /** Preenchido nos simulados exclusivos de uma turma. */
+  turmaId?: string | null;
   discipline: ApiDiscipline;
 }
 

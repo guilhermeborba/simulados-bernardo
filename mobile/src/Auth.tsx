@@ -1,4 +1,6 @@
 import { useRef, useState } from 'react';
+import { trackOfTurmas } from './core/track';
+import type { ApiTurma } from './data';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { ApiError } from './core/session';
@@ -11,7 +13,7 @@ export default function Auth(){
  async function submit(){
   if(busy)return;const invalid:Record<string,string|undefined>={name:mode==='register'&&name.trim().length<2?'Conte seu nome (pelo menos 2 letras).':undefined,email:/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())?undefined:'Digite um e-mail válido.',password:!password?'Digite sua senha.':mode==='register'&&(password.length<8||new TextEncoder().encode(password).length>72)?'Use pelo menos 8 caracteres e até 72 bytes.':undefined};setFields(invalid);if(invalid.name){nameRef.current?.focus();return;}if(invalid.email){emailRef.current?.focus();return;}if(invalid.password){passwordRef.current?.focus();return;}
   setBusy(true);setError(undefined);const incoming=peekEntryLink().entry;
-  try{if(mode==='register'){await client.register({name:name.trim(),email:email.trim(),password,...(incoming?.kind==='invite'?{inviteToken:incoming.token}:{})});if(incoming?.kind==='invite'){selectTrack('kids');forgetEntryLink();}}
+  try{if(mode==='register'){await client.register({name:name.trim(),email:email.trim(),password,...(incoming?.kind==='invite'?{inviteToken:incoming.token}:{})});if(incoming?.kind==='invite'){const turmas=await client.request<ApiTurma[]>('/me/turmas').catch(()=>[]);selectTrack(trackOfTurmas(turmas)??'kids');forgetEntryLink();router.replace('/simulations');}}
    else await client.login({email:email.trim(),password});
    setPassword('');if(mode==='login'&&incoming?.kind==='invite')router.replace('/entry');
   }catch(reason){setError(reason instanceof ApiError&&reason.status===401?'E-mail ou senha não conferem.':reason instanceof ApiError&&reason.status===409?'Não foi possível criar a conta com esses dados. Confira e tente de novo.':'Não foi possível conectar. Confira a conexão e tente de novo.');}finally{setBusy(false);}

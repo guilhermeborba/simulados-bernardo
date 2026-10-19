@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { compareSchoolYears, periodLabel, resolveStoredTrack, schoolYearLabel, trackOfSchoolYear, TRACK_INFO } from '../lib/gizTrack';
+import { compareSchoolYears, periodLabel, resolveStoredTrack, trackOfTurmas, schoolYearLabel, trackOfSchoolYear, TRACK_INFO } from '../lib/gizTrack';
 import * as mobile from '../mobile/src/core/track';
 
 test('web and Expo classify and label every school year the same way', () => {
@@ -47,4 +47,12 @@ test('a Giz choice wins and only unambiguous legacy choices migrate', () => {
 test('technical courses omit the period they do not have', () => {
   assert.equal(periodLabel(2, 'AV1'), '2º bimestre · AV1');
   assert.equal(periodLabel(0, 'UNICO'), '');
+});
+
+test('a turma decides the track of its members', () => {
+  assert.equal(trackOfTurmas([{ schoolYear: 3 }]), 'kids');
+  assert.equal(trackOfTurmas([{ schoolYear: null }, { schoolYear: 9 }]), 'escola');
+  assert.equal(trackOfTurmas([{ schoolYear: null }]), null);
+  assert.equal(trackOfTurmas([]), null);
+  for (const turmas of [[{ schoolYear: 3 }], [{ schoolYear: 11 }], [{}]]) assert.equal(mobile.trackOfTurmas(turmas), trackOfTurmas(turmas));
 });
