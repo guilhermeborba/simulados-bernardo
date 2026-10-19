@@ -8,6 +8,7 @@ import { joinTurma, ApiTurma } from '@/lib/apiClient';
 import { bloquearTrocaDeTrilha } from '@/lib/trilha';
 import { saveTrack, trackOfTurmas } from '@/lib/gizTrack';
 import RegisterForm from './RegisterForm';
+import { AppShell } from './giz/ui';
 
 type State = 'checking' | 'joining' | 'joined' | 'error';
 
@@ -87,14 +88,7 @@ export default function ConviteView() {
 }
 
 function Aviso({ titulo, children }: { titulo: string; children: React.ReactNode }) {
-  return (
-    <div className="page-shell flex items-center justify-center">
-      <div className="max-w-md w-full">
-        <div className="card card--hero text-center">
-          <h1 className="text-3xl mb-4">{titulo}</h1>
-          <div style={{ color: 'var(--muted)' }}>{children}</div>
-        </div>
-      </div>
-    </div>
-  );
+  return <AppShell key={titulo} title={titulo} flow>
+    <section className="card stack" role="status">{children}</section>
+  </AppShell>;
 }

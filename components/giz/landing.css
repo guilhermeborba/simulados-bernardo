@@ -1,7 +1,7 @@
 .giz-landing{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:var(--text-body);line-height:var(--text-body-line)}
 .landing-wrap{max-width:calc(var(--size-content) - var(--s-18) * 2);margin-inline:auto;padding-inline:max(var(--s-4),env(safe-area-inset-left)) max(var(--s-4),env(safe-area-inset-right))}
-.landing-nav{display:flex;justify-content:space-between;align-items:center;gap:var(--s-4);padding-block:var(--s-4)}
-.landing-logo{display:flex;align-items:center;min-height:var(--touch-kids)}
+.landing-nav{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:var(--s-4);padding-block:var(--s-4)}
+.landing-logo{display:flex;min-width:var(--size-touch);flex-shrink:0;align-items:center;min-height:var(--touch-kids)}
 .landing-logo img{width:calc(var(--s-18) + var(--s-3));height:auto}
 .giz-landing h1,.giz-landing h2,.giz-landing h3{font-family:var(--font-d);font-weight:600;text-wrap:balance;margin:0}
 .giz-landing h1{font-size:var(--text-display);line-height:var(--text-display-line)}

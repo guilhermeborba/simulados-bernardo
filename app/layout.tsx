@@ -37,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR" className={`${fredoka.variable} ${nunito.variable}`}>
+    <html lang="pt-BR" data-theme="light" className={`${fredoka.variable} ${nunito.variable}`}>
       <body>
         <AuthProvider><LearningPreferencesProvider><GizPreferencesProvider><LegacySurface>{children}</LegacySurface></GizPreferencesProvider></LearningPreferencesProvider></AuthProvider>
       </body>

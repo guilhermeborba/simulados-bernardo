@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { getMinhaPontuacao, getMyTurmas, type ApiMinhaPontuacao } from '@/lib/apiClient';
 import { AccountApiError, getAchievements, isOffline, type Achievement } from '@/lib/gizAccountApi';
-import { getTheme, getTimerDefault, setTheme, setTimerDefault, type ThemePreference } from '@/lib/gizPreferences';
+import { getTimerDefault, setTimerDefault } from '@/lib/gizPreferences';
 import { isTrocaDeTrilhaBloqueada } from '@/lib/trilha';
 import { TRACK_INFO, useGizTrack } from '@/lib/gizTrack';
 import { AppShell, Badge, Button, Icon, Progress, ScreenState, Tuca } from './ui';
@@ -14,7 +14,6 @@ import './account.css';
 export default function Profile() {
   const { user, isLoading, logout } = useAuth();
   const userId = user?.id;
-  const [theme, updateTheme] = useState<ThemePreference>('auto');
   const [timer, updateTimer] = useState(true);
   const gizTrack = useGizTrack();
   const track = gizTrack ? TRACK_INFO[gizTrack].name : 'Escolha sua trilha';
@@ -29,7 +28,6 @@ export default function Profile() {
   const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
-    updateTheme(getTheme());
     updateTimer(getTimerDefault());
     setCanChangeTrack(!isTrocaDeTrilhaBloqueada());
   }, []);
@@ -73,11 +71,6 @@ export default function Profile() {
     }
   }
 
-  function changeTheme(value: ThemePreference) {
-    updateTheme(value);
-    const saved = setTheme(value);
-    setNotice(saved ? 'Tema salvo neste aparelho.' : 'Tema aplicado nesta visita. Este navegador não permite salvar preferências.');
-  }
   function changeTimer(value: boolean) {
     const saved = setTimerDefault(value);
     updateTimer(value);
@@ -93,7 +86,7 @@ export default function Profile() {
         </section>
         <section className="card account-settings" aria-labelledby="settings-heading">
           <h2 id="settings-heading">Do seu jeito</h2>
-          <div className="account-setting"><label htmlFor="profile-theme">Tema</label><select id="profile-theme" value={theme} onChange={event => changeTheme(event.target.value as ThemePreference)}><option value="light">Claro</option><option value="dark">Escuro</option><option value="auto">Automático</option></select></div>
+          <div className="account-setting"><span>Tema</span><strong>Claro</strong></div>
           <div className="account-setting"><label htmlFor="profile-timer">Cronômetro por padrão</label><input id="profile-timer" type="checkbox" role="switch" className="account-toggle" checked={timer} onChange={event => changeTimer(event.target.checked)} /></div>
           {canChangeTrack && !inTurma && <div className="account-setting"><Link href="/trilha"><Icon name="spark" />Trocar trilha</Link><Icon name="back" /></div>}
           <div className="account-setting"><Link href="/historico"><Icon name="clock" />Histórico</Link><Icon name="back" /></div>

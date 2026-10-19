@@ -50,7 +50,7 @@
 .account-setting a { color: var(--ink); font-weight: 800; min-height: var(--size-touch); display: flex; align-items: center; gap: var(--s-3); }
 .account-setting select { max-width: 55%; min-height: var(--touch-kids); border: var(--border) solid var(--line); border-radius: var(--r-md); background: var(--surface); color: var(--ink); padding: var(--s-2); font: inherit; }
 .account-setting label { font-weight: 800; }
-.account-toggle { appearance: none; width: var(--s-14); min-width: var(--s-14); height: var(--touch-min); border-radius: var(--r-full); background: var(--soft); border: var(--border) solid var(--muted); cursor: pointer; position: relative; }
+.account-toggle { appearance: none; width: var(--s-14); min-width: var(--s-14); height: var(--size-touch); border-radius: var(--r-full); background: var(--soft); border: var(--border) solid var(--muted); cursor: pointer; position: relative; }
 .account-toggle::after { content: ''; position: absolute; width: var(--s-8); height: var(--s-8); border-radius: var(--r-full); top: 50%; transform: translateY(-50%); left: var(--s-1); background: var(--muted); }
 .account-toggle:checked { background: var(--primary); border-color: var(--on-primary); }
 .account-toggle:checked::after { left: auto; right: var(--s-1); background: var(--on-primary); }
@@ -82,7 +82,8 @@
 .account-achievement-placeholder { margin-top: var(--s-5); }
 .account-stat dd { margin: 0; }
 .account-identity > .tuca { margin-left: auto; flex-shrink: 0; }
-@media (max-width: 599px) { .account-identity > .tuca { width: var(--s-18); height: auto !important; } }
 
 .account-achievement .giz-progress-row { width: 100%; }
 .account-setting > .giz-icon { transform: rotate(180deg); }
+
+.account-stat dt{overflow-wrap:anywhere}

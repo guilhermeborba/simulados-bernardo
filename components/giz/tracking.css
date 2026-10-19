@@ -104,3 +104,6 @@
 .tracking-ranking-score>.muted{font-size:var(--text-caption);line-height:var(--text-caption-line)}
 .tracking-ranking-invitation{padding:var(--s-4)}
 }
+
+.tracking-stat>span{overflow-wrap:anywhere}
+.tracking-tabs>button{min-width:0;overflow-wrap:anywhere}
