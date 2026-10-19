@@ -14,8 +14,8 @@
 .statement { font: var(--t-q-weight) clamp(1.15rem, 3vw, 1.4rem)/1.5 var(--t-font-q); margin: 12px 0 22px; }
 .guide { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; color: var(--t-ink-soft); }
 .media { margin: 10px 0 24px; }
-.image { display: block; width: 100%; max-width: 640px; height: auto; max-height: 340px; object-fit: contain; border-radius: 20px; margin: 0 auto 14px; background: var(--soft); }
-.mediaFallback { background: var(--soft); border: 1px solid #ddd4c5; border-radius: 16px; padding: 18px; }
+.image { display: block; width: 100%; max-width: 640px; height: auto; max-height: 340px; object-fit: contain; border-radius: 20px; margin: 0 auto 14px; background: var(--bg); }
+.mediaFallback { background: var(--bg); border: 1px solid #ddd4c5; border-radius: 16px; padding: 18px; }
 .audio { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .audio audio { width: 100%; max-width: 390px; }
 .audio p { font-size: .92rem; color: var(--t-ink-soft); }
@@ -26,7 +26,7 @@
 .options { border: none; display: grid; gap: 12px; margin: 20px 0; }
 .option { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 16px; border: 2px solid var(--t-line); border-radius: max(var(--t-radius-opt), 10px); color: var(--t-ink); background: white; cursor: pointer; }
 .option input { width: 20px; height: 20px; flex-shrink: 0; accent-color: #365eb7; }
-.option[data-selected='true'] { border-color: #416ac5; background: var(--soft); }
+.option[data-selected='true'] { border-color: #416ac5; background: var(--bg); }
 .option:focus-within { outline: 3px solid #365eb7; outline-offset: 3px; }
 .options:disabled .option { cursor: default; }
 .optionKey { display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0; font-weight: 800; background: #eef1f6; border-radius: 10px; }
@@ -49,7 +49,7 @@
 .footer { margin-top: 20px; text-align: center; font-size: .9rem; color: var(--t-ink-soft); }
 .resultIntro { margin-top: 14px; line-height: 1.6; }
 .resultStats { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 24px 0; }
-.resultStats div { background: var(--soft); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 6px; }
+.resultStats div { background: var(--bg); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 6px; }
 .resultStats strong { font-size: 1.7rem; color: #2c4d81; }
 .resultStats span { color: var(--ink); }
 .resultQuestions details { padding: 16px 0; border-bottom: 1px solid var(--t-line); }
@@ -62,11 +62,11 @@
 @media (prefers-reduced-motion: reduce) { .shell *, .shell *::before, .shell *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 @media (max-width: 620px) { .shell { padding: 18px 14px 36px; } .header { flex-direction: column; } .navigation { margin-bottom: 18px; } .resultStats { gap: 10px; } .resultStats div { padding: 16px; } .actions .primary { flex: 1; } .guide { align-items: flex-start; } }
 
-.reward { margin: 24px 0; padding: 20px; border: 1px solid #c4d5ed; border-radius: 16px; background: var(--soft); }
-.reward h3 { color: #2c4d81; margin-bottom: 8px; }
+.reward { margin: 24px 0; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.reward h3 { color: var(--ink); margin-bottom: 8px; }
 .reward p { color: var(--ink); line-height: 1.6; font-size: .92rem; }
 .reward a { display: inline-flex; align-items: center; min-height: 44px; margin-top: 10px; font-size: .92rem; font-weight: 800; }
 
-.reviewNotice { padding: 16px 18px; margin-bottom: 22px; border: 1px solid #c4d5ed; border-radius: 13px; background: var(--soft); color: var(--ink); font-size: .9rem; line-height: 1.65; }
+.reviewNotice { padding: 16px 18px; margin-bottom: 22px; border: 1px solid #c4d5ed; border-radius: 13px; background: var(--bg); color: var(--ink); font-size: .9rem; line-height: 1.65; }
 .practiceLabel { display: inline-block; padding: 8px 11px; margin-top: 12px; border-radius: 9px; background: #eef3fb; color: #40587b; font-size: .82rem; line-height: 1.6; }
 .reward { display: flex; flex-direction: column; align-items: flex-start; }

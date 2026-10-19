@@ -293,7 +293,7 @@ test('desativar áudio e trocar de pergunta pausa o elemento anterior', async ({
 for (const [label, year, tier] of [['Fundamental II', 6, 'jovem'], ['Ensino Médio', 10, 'exame'], ['Técnico', 0, 'exame']] as const) {
   test(`${label}: resposta incorreta, retomada e conclusão mantêm conteúdo e apresentação`, async ({ page }) => {
     await register(page); await openQuiz(page, fixture.quizSegments[String(year)]);
-    await expect(page.locator('main[data-tier]')).toHaveAttribute('data-tier', tier);
+    await expect(page.locator('main [data-tier]').first()).toHaveAttribute('data-tier', tier);
     await expect(page.getByText('Vamos descobrir juntos!', { exact: false })).toHaveCount(0);
     await page.getByRole('radio', { name: 'O balão azul', exact: true }).check();
     await page.getByRole('button', { name: 'Confirmar resposta', exact: true }).click();

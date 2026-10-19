@@ -57,14 +57,14 @@
 .missionActivities a { display: inline-flex; align-items: center; gap: 8px; min-height: 34px; padding: 4px 0; color: #2e527e; font-size: .95rem; font-weight: 800; text-underline-offset: 3px; overflow-wrap: anywhere; }
 .missionActivities a span { flex-shrink: 0; }
 .missionNote { margin-top: 18px; font-size: .78rem !important; }
-.empty { padding: 22px; border-radius: 16px; border: 1px dashed #c5d0dd; background: var(--soft); }
+.empty { padding: 22px; border-radius: 16px; border: 1px dashed #c5d0dd; background: var(--bg); }
 .empty strong { color: var(--ink); }
 .empty p { font-size: .9rem; margin-top: 8px; }
 .empty a { display: inline-flex; align-items: center; min-height: 44px; margin-top: 10px; color: var(--info); font-weight: 800; text-underline-offset: 3px; }
-.suggestion { background: var(--soft); border-color: #e4d5b6; }
+.suggestion { background: var(--bg); border-color: #e4d5b6; }
 .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 26px; }
 .cards a { display: flex; flex-direction: column; gap: 10px; border: 1px solid #d7e0ef; padding: 22px; border-radius: 18px; text-decoration: none; color: var(--ink); }
-.quiz { background: var(--soft); }
+.quiz { background: var(--bg); }
 .simulation { background: #f6fbf7; }
 .label { color: #385b83; font-size: .84rem; font-weight: 800; }
 .cards strong { font-size: 1.2rem; font-family: var(--t-font-ui, var(--font-fredoka)); }

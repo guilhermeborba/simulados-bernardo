@@ -19,7 +19,7 @@
 .hero h1, .historyHero h1 { font-size: clamp(30px, 4.3vw, 45px); line-height: 1.13; font-weight: 600; margin-bottom: 14px; max-width: 620px; }
 .hero p:not(.eyebrow), .historyHero > p:not(.eyebrow) { font-size: 16px; color: #655a73; line-height: 1.65; max-width: 640px; }
 .heroBadges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
-.heroBadges span { background: var(--soft); border: 1px solid #e9dfd1; border-radius: 999px; font-size: 12px; color: #665642; padding: 6px 10px; font-weight: 700; }
+.heroBadges span { background: var(--bg); border: 1px solid #e9dfd1; border-radius: 999px; font-size: 12px; color: #665642; padding: 6px 10px; font-weight: 700; }
 .mascot, .heroDrawing { flex: 0 0 auto; }
 .audienceSection { margin-bottom: 34px; }
 .sectionHeading { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin-bottom: 16px; }
@@ -87,8 +87,8 @@
 .historyScore { font-size: 13px; color: #685675; line-height: 1.6; margin-top: 10px; }
 .pagination { display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 26px; color: #6d587b; font-size: 13px; }
 .shell[data-tier='exame'] .hero, .shell[data-tier='exame'] .quizCard, .shell[data-tier='exame'] .historyCard { border-radius: 15px; }
-.shell[data-tier='jovem'] .hero { background: var(--soft); }
-.shell[data-tier='exame'] .hero { background: var(--soft); }
+.shell[data-tier='jovem'] .hero { background: var(--bg); }
+.shell[data-tier='exame'] .hero { background: var(--bg); }
 .shell[data-reduced-motion] .quizCard { transition: none; }
 .shell[data-reduced-motion] .quizCard:hover { transform: none; }
 @media (prefers-reduced-motion: reduce) { .quizCard { transition: none; } .quizCard:hover { transform: none; } }

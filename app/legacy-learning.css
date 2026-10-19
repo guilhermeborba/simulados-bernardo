@@ -788,7 +788,7 @@
 .legacy-learning [data-tier], .legacy-learning [data-tier='ludico'], .legacy-learning [data-tier='jovem'], .legacy-learning [data-tier='exame'] {
   --t-ground: transparent; --t-surface: var(--surface);
   --t-ink: var(--ink); --t-ink-soft: var(--muted); --t-muted: var(--muted); --t-line: var(--line);
-  --t-accent: var(--info); --t-accent-ink: #FFFFFF; --t-accent-soft: var(--soft); --t-accent-line: var(--info); --t-answered: var(--hl);
+  --t-accent: var(--info); --t-accent-ink: #FFFFFF; --t-accent-soft: var(--bg); --t-accent-line: var(--info); --t-answered: var(--hl);
   --t-correct: var(--ok); --t-correct-soft: var(--ok-bg); --t-wrong: var(--err); --t-wrong-soft: var(--err-bg);
   --t-font-ui: var(--font-d); --t-font-q: var(--font-b);
   --t-q-size: var(--text-enunciado); --t-q-weight: 700; --t-q-lh: var(--text-enunciado-line);

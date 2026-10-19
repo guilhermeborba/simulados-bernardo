@@ -3,3 +3,7 @@
 .practice-nav .chip[aria-current=page]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .legacy-learning.practice-surface{min-height:0;background:none;overflow-x:visible}
 .practice-surface > *{padding-left:0;padding-right:0}
+.giz-page-head .giz-head-actions .btn--text{color:inherit}
+/* On phones the Giz content overlaps the dark header; flow screens without a leading card need to clear it. */
+.giz-app--flow .practice-surface{padding-top:var(--s-10)}
+@media(min-width:600px){.giz-app--flow .practice-surface{padding-top:0}}
