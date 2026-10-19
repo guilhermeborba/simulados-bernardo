@@ -1,6 +1,17 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { compareSchoolYears, resolveStoredTrack, schoolYearLabel, trackOfSchoolYear } from '../lib/gizTrack';
+import { compareSchoolYears, resolveStoredTrack, schoolYearLabel, trackOfSchoolYear, TRACK_INFO } from '../lib/gizTrack';
+import * as mobile from '../mobile/src/core/track';
+
+test('web and Expo classify and label every school year the same way', () => {
+  const years = [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  for (const year of years) {
+    assert.equal(mobile.trackOfSchoolYear(year), trackOfSchoolYear(year), `track of ${year}`);
+    assert.equal(mobile.schoolYearLabel(year), schoolYearLabel(year), `label of ${year}`);
+  }
+  assert.deepEqual([...years].sort(mobile.compareSchoolYears), [...years].sort(compareSchoolYears));
+  assert.deepEqual(mobile.TRACK_INFO, TRACK_INFO);
+});
 
 test('every stored school year belongs to exactly one track', () => {
   assert.equal(trackOfSchoolYear(-2), 'kids');
