@@ -199,6 +199,7 @@ Não há framework de teste. A verificação funcional é manual no browser.
 
 ## Documentação adicional
 
+- `docs/giz/ETAPAS.md` — **trabalho do design system Giz**: etapas em issues do GitHub e protocolo de continuidade entre agentes. Ler antes de qualquer task do Giz.
 - `PROGRESS.md` — **estado atual**: features concluídas, em andamento e próximas
 - `docs/decisions/` — **ADRs**: decisões arquiteturais não óbvias
 - `docs/superpowers/specs/` — specs de redesign e novas features
