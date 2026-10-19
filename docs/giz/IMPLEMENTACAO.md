@@ -6,7 +6,7 @@ Este registro distingue o que foi implementado do que ainda depende de contrato 
 
 ## Decisões e divergências registradas
 
-- **Público da v1:** o README do handoff define Giz Kids como Fundamental I, com o Tuca, e deixa Escola/Técnico para depois. O protótipo de entrada associa Kids à Educação Infantil e coloca o 3º ano em Escola. Essa divergência fica avisada ao responsável aqui: foi seguido o público explícito do README e da v1, portanto o catálogo Giz Kids usa os anos 1 a 5. As entradas Escola e Técnico estão como “Em breve”. Os dados das demais trilhas existentes não são alterados.
+- **Trilhas (decisão do responsável em 19/10/2026, etapa E01):** as três trilhas estão liberadas. **Giz Kids** reúne a Educação Infantil (`schoolYear` -1 e -2) e o Fundamental I (1–5), com o Tuca; **Giz Escola** reúne o 6º ano à 3ª série do Médio (6–12); **Giz Técnico**, os cursos técnicos (0). A trilha só muda a cor de destaque (`--track-accent`, de `color.trilha` nos tokens) e a presença do Tuca. A classificação fica em `lib/gizTrack.ts` (web) e `mobile/src/core/track.ts` (Expo); um teste garante que as duas concordam.
 - **Mensagens de resultado:** os cortes foram confirmados pelo responsável em **80% e 50%** de acertos: “Mandou bem!” a partir de 80%, “Bom caminho!” a partir de 50%, “Vale tentar de novo!” abaixo disso. O total vem das questões da tentativa, sem assumir as cinco questões fictícias do protótipo. A nota percentual e a regra de pontuação do servidor são preservadas.
 - **Ranking:** os pontos fictícios do protótipo foram substituídos pela **média percentual real** retornada pela API. Continuam valendo a melhor tentativa por simulado, a quantidade mínima e a turma definidos pelo backend. Não foi criada regra de “pts”.
 - **Feedback durante a questão:** novas tentativas solicitam `immediateFeedback: true`. A API confirma, corrige e libera a resposta correta daquela questão, Dica de Ouro para erro/branco ou curiosidade para acerto. A web e o Expo aguardam essa resposta antes de apresentar a correção. Tentativas anteriores mantêm o modo legado e a correção ao concluir. A solução nunca é inferida pelo cliente.
@@ -22,7 +22,7 @@ Este registro distingue o que foi implementado do que ainda depende de contrato 
 | Criar conta | `/registro` | Preserva convite/retorno; primeiro acesso passa pela trilha quando aplicável. |
 | Recuperar senha | `/recuperar-senha` | Mensagem genérica; usa o serviço existente de recuperação da API. |
 | Redefinir senha | `/redefinir-senha` | Consome o token de recuperação e envia a nova senha pelo BFF. |
-| Trilha | `/trilha` | Kids ativa; Escola/Técnico “Em breve”. |
+| Trilha | `/trilha` | Kids, Escola e Técnico; sem trilha escolhida, início e catálogo levam para cá. Troca pelo perfil (exceto quem entrou por convite de turma). |
 | Início | `/` | Catálogo real, tentativa em andamento, números e último resultado. |
 | Catálogo | `/simulados` | Filtros de disciplina, ano, bimestre e avaliação combinados com E; busca e limpeza. |
 | Detalhe | `/simulados/[id]` | Quantidade real de questões, estimativa de tempo, cronômetro e tentativas. |
@@ -59,7 +59,7 @@ A web passa pelo BFF em `/api/auth/*` e `/api/backend/*`. Credenciais de autenti
 
 | Necessidade | Contrato atual | Tratamento na interface |
 |---|---|---|
-| Catálogo | `GET /simulations/available` | Lista real; filtro de público Kids no cliente. |
+| Catálogo | `GET /simulations/available` | Lista real; filtro pela trilha escolhida no cliente. |
 | Iniciar/retomar | `POST /simulations/:id/attempts` com `{immediateFeedback:true}`, `GET /attempts/:id`, `GET /attempts/:id/questions` | Preserva IDs e política; recupera respostas/feedback confirmados do servidor. |
 | Responder | `POST /attempts/:id/questions/:questionId/answer` com `{ answer }` | Quatro tipos; confirmação imutável e idempotente no modo novo. Em branco/timeout é `{}` no servidor e `-1` local. Um `409` recupera a confirmação que prevaleceu no servidor. |
 | Concluir/rever | `POST /attempts/:id/finish`, `GET /attempts/:id/result` | Modo novo inclui opções e gabarito do snapshot, tema por questão, `topics` e `unclassifiedQuestions`; legado mantém degradação compatível. |
@@ -78,7 +78,7 @@ Limites que continuam abertos:
 
 1. **Tempo:** o tempo médio aparece somente quando há registro local completo da tentativa. Tentativas antigas sem esses dados mostram indisponibilidade.
 2. **Ranking geral/períodos:** não há endpoint correspondente para os números do protótipo. Geral está como “Em breve”; não se simulam pontos ou períodos Semana/Mês.
-3. **Trilhas futuras:** Escola/Técnico, painel dos pais e montagem de simulado dependem de trabalho posterior e das decisões do responsável.
+3. **Pós-MVP:** painel dos pais e montagem de simulado dependem de trabalho posterior e das decisões do responsável (E11).
 
 Respostas de crianças no ranking aparecem com primeiro nome e inicial do último nome, sem foto; a própria linha informa “(você)”. Os snapshots de execução são separados por usuário e tentativa, com fila de envio quando a conexão retorna. Se o armazenamento falhar, a interface não afirma que o progresso está salvo para uso offline.
 
