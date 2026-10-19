@@ -78,7 +78,7 @@ export default function Simulations() {
     {sims.loading ? <Loading /> : sims.error ? <Empty title="Vamos tentar de novo?" message={sims.error} onRetry={sims.reload} /> : <>
       <Field label="Buscar simulados" placeholder="Buscar por título ou disciplina" value={query} onChangeText={setQuery} returnKeyType="search" autoCorrect={false} clearButtonMode="while-editing" />
       {years.length > 1 && <Chips label="Ano" values={years} value={year} onChange={setYear} />}
-      <Chips label="Disciplina" values={[...new Set(inTrack.map(sim => sim.discipline.name))]} value={discipline} onChange={setDiscipline} />
+      <Chips label="Disciplina" values={[...new Set(inTrack.filter(sim => year === 'Todos' || schoolYearLabel(sim.schoolYear) === year).map(sim => sim.discipline.name))]} value={discipline} onChange={setDiscipline} />
       <Chips label="Bimestre" values={[...new Set(inTrack.map(sim => String(sim.bimester)))].sort()} value={bimester} onChange={setBimester} />
       <Chips label="Avaliação" values={[...new Set(inTrack.map(sim => sim.assessment))].sort()} value={assessment} onChange={setAssessment} />
       {hasFilters && <Button title="Limpar filtros" secondary onPress={reset} />}

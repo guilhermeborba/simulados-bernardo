@@ -18,7 +18,7 @@ export default function CatalogScreen() {
     if (catalog.simulations.some(s => s.schoolYear === turmaYear)) setYear(turmaYear);
   }, [catalog.loading, catalog.simulations, turmaYear]);
   const clear = () => { setDiscipline(''); setBimester(0); setYear(null); setAssessment(''); setSearch(''); };
-  const disciplines = Array.from(new Set(catalog.simulations.map(s => s.discipline.name))).sort();
+  const disciplines = Array.from(new Set(catalog.simulations.filter(s => year === null || s.schoolYear === year).map(s => s.discipline.name))).sort();
   const years = Array.from(new Set(catalog.simulations.map(s => s.schoolYear))).sort(compareSchoolYears);
   const filtered = useMemo(() => catalog.simulations.filter(s => (!discipline || s.discipline.name === discipline) && (!bimester || s.bimester === bimester) && (year === null || s.schoolYear === year) && (!assessment || s.assessment === assessment) && (!search || `${s.title} ${s.discipline.name}`.toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')))), [catalog.simulations, discipline, bimester, year, assessment, search]);
   return <AppShell title="Simulados" subtitle="Encontre sua próxima descoberta">{(catalog.loading || !catalog.user || catalog.error) ? <DataGate catalog={catalog} /> : <div className="stack">{catalog.offline && <OfflineNotice />}<section className="card stack catalog-filters" aria-label="Filtros de simulados"><div className="catalog-search"><Icon name="search" /><label className="sr-only" htmlFor="catalog-search">Buscar simulado</label><input className="field" type="search" id="catalog-search" placeholder="Buscar simulado" value={search} onChange={e => setSearch(e.target.value)} /></div>
