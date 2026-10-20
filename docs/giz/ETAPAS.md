@@ -11,14 +11,14 @@ O que já foi implementado está em [IMPLEMENTACAO.md](IMPLEMENTACAO.md).
 
 ## Etapas
 
-Situação registrada em 19/10/2026. A situação ao vivo está sempre nas issues.
+Situação registrada em 20/10/2026. A situação ao vivo está sempre nas issues.
 
 | Etapa | Issue | Repositório | Depende de | Onda | Situação |
 |---|---|---|---|---|---|
 | E01 · Trilhas por público no catálogo | [#53](https://github.com/guilhermeborba/simulados-bernardo/issues/53) | web + Expo | decisão | 1 | ✅ mergeada e publicada (#64) |
 | E02 · Convite de turma direto aos simulados | [#54](https://github.com/guilhermeborba/simulados-bernardo/issues/54) | web + Expo | E01 | 1 | ✅ mergeada (#65) |
 | E03 · API: importar `theme` pelo seed | [#55](https://github.com/guilhermeborba/simulados-bernardo/issues/55) | API | api#222 | 1 | ✅ mergeada (api#224) |
-| E04 · Temas editoriais nas questões | [#56](https://github.com/guilhermeborba/simulados-bernardo/issues/56) | API (conteúdo) | E03 | 2 — divisível em lotes | 🟡 3º ano integrado (api#225–229); 4º ano completo nos arquivos (1.200 questões/40 simulados), Geografia em revisão ([api#234](https://github.com/guilhermeborba/simulados-bernardo-api/pull/234)); próximo lote sugerido: Português/5º ano |
+| E04 · Temas editoriais nas questões | [#56](https://github.com/guilhermeborba/simulados-bernardo/issues/56) | API (conteúdo) | E03 | 2 — divisível em lotes | 🟡 3º e 4º anos integrados (api#225–234); Português/5º ano em revisão ([api#235](https://github.com/guilhermeborba/simulados-bernardo-api/pull/235)); próximo lote: Matemática/5º ano |
 | E05 · Prática dentro do Giz | [#57](https://github.com/guilhermeborba/simulados-bernardo/issues/57) | web + Expo | decisão (b), E02 | 2 | ✅ mergeada (#68) |
 | E06 · Validar app Giz no Android | [#58](https://github.com/guilhermeborba/simulados-bernardo/issues/58) | Expo | — | 2 | ⏳ livre (ideal após E05) |
 | E07 · Aceite web e acessibilidade | [#59](https://github.com/guilhermeborba/simulados-bernardo/issues/59) | web | — | 2 | 🟡 PR #69 mergeado; verificações automatizadas aprovadas e roteiro assistivo humano pendente |
@@ -33,6 +33,7 @@ Situação registrada em 19/10/2026. A situação ao vivo está sempre nas issue
 | Correção editorial · Coesão em Português 4º ano B4/AV2 | [#74](https://github.com/guilhermeborba/simulados-bernardo/issues/74) | API (conteúdo) | — | backlog | ⏳ revisão de gabarito pendente; descoberta na E04, conteúdo preservado no lote de temas |
 | Correção editorial · Origem do nome Brasil em História 4º ano B2/AV1 | [#76](https://github.com/guilhermeborba/simulados-bernardo/issues/76) | API (conteúdo) | — | backlog | ⏳ revisão do enunciado pendente; fontes documentadas na issue, conteúdo preservado na E04 |
 | Correção editorial · Distrito Federal e litoral em Geografia 4º ano | [#78](https://github.com/guilhermeborba/simulados-bernardo/issues/78) | API (conteúdo) | — | backlog | ⏳ revisão de alternativa e coerência regional pendente; conteúdo preservado na E04 |
+| Correção editorial · Texto-base de Português 5º ano B4/AV2 | [#80](https://github.com/guilhermeborba/simulados-bernardo/issues/80) | API (conteúdo) | — | backlog | ⏳ revisão das perguntas 1–10 sem texto de apoio; conteúdo preservado na E04 |
 
 **CI da `main`:** falha desde #52 porque o workflow fixava uma API antiga e dois testes contradiziam o contrato. A correção está pronta na branch local `fix/ci-api-ref`, mas o push de `.github/workflows/` exige o escopo `workflow` no token do GitHub. Enquanto não for mergeada, os PRs mostram o job mobile vermelho por esse motivo.
 
