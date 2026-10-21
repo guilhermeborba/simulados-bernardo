@@ -29,6 +29,24 @@ npm run seed:quizzes:dry-run
 
 O resultado esperado para este catálogo é 45 quizzes, 213 perguntas, 15 públicos, 45 aprovados e zero pendentes; o ano 3 deve indicar três quizzes e 15 perguntas.
 
+Antes de publicar, o responsável pode conferir somente as contagens/status de quizzes do 3º ano no ambiente atendido por esse console, sem ler perguntas ou dados de alunos:
+
+```bash
+node <<'NODE'
+const { PrismaClient } = require('@prisma/client');
+const db = new PrismaClient();
+db.simulation.groupBy({
+  by: ['status'],
+  where: { activityKind: 'QUIZ', schoolYear: 3, deletedAt: null },
+  _count: { _all: true },
+}).then(rows => console.table(rows.map(row => ({ status: row.status, total: row._count._all }))))
+  .catch(() => { console.error('Falha ao consultar os status.'); process.exitCode = 1; })
+  .finally(() => db.$disconnect());
+NODE
+```
+
+Nenhuma linha indica ausência de quizzes ativos desse ano; linhas `DRAFT` indicam rascunhos. Se já houver quizzes `PUBLISHED` e a tela continuar vazia, conferir a resposta do endpoint, disciplinas ativas e autorização de turma, sem repetir a publicação como correção presumida.
+
 Para importar/publicar o catálogo aprovado, usar o e-mail de um **ADMIN ativo que já exista nesse ambiente**:
 
 ```bash
