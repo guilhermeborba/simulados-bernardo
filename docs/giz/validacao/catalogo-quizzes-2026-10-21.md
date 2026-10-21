@@ -45,7 +45,7 @@ db.simulation.groupBy({
 NODE
 ```
 
-Nenhuma linha indica ausência de quizzes ativos desse ano; linhas `DRAFT` indicam rascunhos. Se já houver quizzes `PUBLISHED` e a tela continuar vazia, conferir a resposta do endpoint, disciplinas ativas e autorização de turma, sem repetir a publicação como correção presumida.
+Um resultado sem linhas indica que não há registros de quizzes do 3º ano nesse filtro; linhas `DRAFT` indicam rascunhos. Se já houver quizzes `PUBLISHED` e a tela continuar vazia, conferir a resposta do endpoint, disciplinas ativas e autorização de turma, sem repetir a publicação como correção presumida.
 
 Para importar/publicar o catálogo aprovado, usar o e-mail de um **ADMIN ativo que já exista nesse ambiente**:
 
