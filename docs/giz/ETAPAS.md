@@ -11,20 +11,20 @@ O que já foi implementado está em [IMPLEMENTACAO.md](IMPLEMENTACAO.md).
 
 ## Etapas
 
-Situação registrada em 20/10/2026. A situação ao vivo está sempre nas issues.
+Situação registrada em 21/10/2026. A situação ao vivo está sempre nas issues.
 
 | Etapa | Issue | Repositório | Depende de | Onda | Situação |
 |---|---|---|---|---|---|
 | E01 · Trilhas por público no catálogo | [#53](https://github.com/guilhermeborba/simulados-bernardo/issues/53) | web + Expo | decisão | 1 | ✅ mergeada e publicada (#64) |
 | E02 · Convite de turma direto aos simulados | [#54](https://github.com/guilhermeborba/simulados-bernardo/issues/54) | web + Expo | E01 | 1 | ✅ mergeada (#65) |
 | E03 · API: importar `theme` pelo seed | [#55](https://github.com/guilhermeborba/simulados-bernardo/issues/55) | API | api#222 | 1 | ✅ mergeada (api#224) |
-| E04 · Temas editoriais nas questões | [#56](https://github.com/guilhermeborba/simulados-bernardo/issues/56) | API (conteúdo) | E03 | 2 — divisível em lotes | 🟡 3º e 4º anos integrados (api#225–234); Português, Matemática, Ciências e História/5º ano integrados (api#235–238); Geografia/5º ano em revisão ([api#239](https://github.com/guilhermeborba/simulados-bernardo-api/pull/239)), completando o ano nos arquivos; próximo lote: Português/6º ano |
+| E04 · Temas editoriais nas questões | [#56](https://github.com/guilhermeborba/simulados-bernardo/issues/56) | API (conteúdo) | E03 | 2 — divisível em lotes | 🟡 3º, 4º e 5º anos integrados (api#225–239); próximo lote: Português/6º ano, após o diagnóstico do catálogo vazio (#90) |
 | E05 · Prática dentro do Giz | [#57](https://github.com/guilhermeborba/simulados-bernardo/issues/57) | web + Expo | decisão (b), E02 | 2 | ✅ mergeada (#68) |
 | E06 · Validar app Giz no Android | [#58](https://github.com/guilhermeborba/simulados-bernardo/issues/58) | Expo | — | 2 | ⏳ livre (ideal após E05) |
 | E07 · Aceite web e acessibilidade | [#59](https://github.com/guilhermeborba/simulados-bernardo/issues/59) | web | — | 2 | 🟡 PR #69 mergeado; verificações automatizadas aprovadas e roteiro assistivo humano pendente |
 | E08 · Ranking geral e pontos | [#60](https://github.com/guilhermeborba/simulados-bernardo/issues/60) | API + web | decisão | backlog | ❓ aguarda decisão |
 | E09 · Tempo de resposta no servidor | [#61](https://github.com/guilhermeborba/simulados-bernardo/issues/61) | API + web | — | backlog | ⏳ livre |
-| E10 · Publicação | [#62](https://github.com/guilhermeborba/simulados-bernardo/issues/62) | ambos | api#222, #52, E01 | 3 | 🟡 API e web publicadas; faltam APK interno, CTA e itens do responsável |
+| E10 · Publicação | [#62](https://github.com/guilhermeborba/simulados-bernardo/issues/62) | ambos | api#222, #52, E01 | 3 | 🟡 API e web publicadas; conferir publicação dos quizzes aprovados (#90); faltam APK interno, CTA e itens do responsável |
 | E11 · Painel dos pais / monte seu simulado | [#63](https://github.com/guilhermeborba/simulados-bernardo/issues/63) | ambos | decisão | backlog | ❓ aguarda decisão |
 | E12 · Coleção e avatar com o Tuca | [#66](https://github.com/guilhermeborba/simulados-bernardo/issues/66) | web + Expo | E05, decisão | 2 | ❓ aguarda decisão |
 | E13 · Acabamento visual da Prática | [#67](https://github.com/guilhermeborba/simulados-bernardo/issues/67) | web | E05 | 2 | ⏳ pendente na main; checklist marcada na issue, sem PR de conclusão identificado |
@@ -38,6 +38,7 @@ Situação registrada em 20/10/2026. A situação ao vivo está sempre nas issue
 | Correção editorial · Órbita lunar em Ciências 5º ano B3/AV2 | [#84](https://github.com/guilhermeborba/simulados-bernardo/issues/84) | API (conteúdo) | — | backlog | ⏳ revisão de alternativa e curiosidade pendente; confusão entre órbita e ciclo de fases, conteúdo preservado na E04 |
 | Correção editorial · Trabalho infantil e exílio em História 5º ano | [#86](https://github.com/guilhermeborba/simulados-bernardo/issues/86) | API (conteúdo) | — | backlog | ⏳ revisão do limite de idade de trabalho/aprendizagem e da cronologia do exílio de D. Pedro II; conteúdo preservado na E04 |
 | Correção editorial · Fusos horários e água doce em Geografia 5º ano | [#88](https://github.com/guilhermeborba/simulados-bernardo/issues/88) | API (conteúdo) | — | backlog | ⏳ revisão da quantidade de fusos, diferença Acre/Brasília e precisão do enunciado sobre água doce; conteúdo preservado na E04 |
+| Catálogo vazio · Quizzes do 3º ano | [#90](https://github.com/guilhermeborba/simulados-bernardo/issues/90) | web + API / operação | E05, E10 | prioridade do responsável | 🟡 diagnóstico e reprodução; quizzes aprovados têm importação/publicação própria, ambiente publicado a conferir |
 
 **CI da `main`:** falha desde #52 porque o workflow fixava uma API antiga e dois testes contradiziam o contrato. A correção está pronta na branch local `fix/ci-api-ref`, mas o push de `.github/workflows/` exige o escopo `workflow` no token do GitHub. Enquanto não for mergeada, os PRs mostram o job mobile vermelho por esse motivo.
 
