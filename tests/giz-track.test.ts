@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { compareSchoolYears, periodLabel, resolveStoredTrack, trackOfTurmas, schoolYearLabel, trackOfSchoolYear, TRACK_INFO } from '../lib/gizTrack';
+import { compareSchoolYears, periodLabel, resolveStoredTrack, trackOfTurmas, schoolYearLabel, subjectIcon, subjectOf, trackOfSchoolYear, TRACK_INFO } from '../lib/gizTrack';
 import * as mobile from '../mobile/src/core/track';
 
 test('web and Expo classify and label every school year the same way', () => {
@@ -47,6 +47,17 @@ test('a Giz choice wins and only unambiguous legacy choices migrate', () => {
 test('technical courses omit the period they do not have', () => {
   assert.equal(periodLabel(2, 'AV1'), '2º bimestre · AV1');
   assert.equal(periodLabel(0, 'UNICO'), '');
+});
+
+test('subjects come from the structured discipline, with accents and long names', () => {
+  const cases = [[{ name: 'Geografia', slug: 'geografia' }, 'geo'], [{ name: 'História' }, 'his'], [{ name: 'Matemática' }, 'mat'], [{ name: 'Língua Portuguesa' }, 'por'], [{ name: 'Português', slug: 'portugues' }, 'por'], [{ name: 'Ciências' }, 'cie'], [{ name: 'Educação Física' }, null]] as const;
+  for (const [discipline, subject] of cases) {
+    assert.equal(subjectOf(discipline), subject, discipline.name);
+    assert.equal(mobile.subjectOf(discipline), subject, `Expo: ${discipline.name}`);
+  }
+  assert.equal(subjectIcon('geo'), 'geografia');
+  assert.equal(subjectIcon(null), 'book');
+  assert.equal(mobile.subjectIcon('cie'), subjectIcon('cie'));
 });
 
 test('a turma decides the track of its members', () => {

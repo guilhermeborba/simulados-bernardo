@@ -1,0 +1,60 @@
+/* Início: phone stacks Continuar, two summaries, Novos and the ranking card; tablet puts the summaries in a row; desktop moves them to a 320 px column. */
+.home-meta{display:block;font-size:var(--text-body-sm);line-height:var(--text-body-sm-line);color:var(--muted)}
+/* Summary cards switch to short labels when they are too narrow for "Rever minha tentativa" in one line. */
+.home-summary{container-type:inline-size}
+.home-short{display:none}
+@container (max-width:259px){.home-long{display:none}.home-short{display:inline}}
+.home-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s-4)}
+.home-main{display:flex;flex-direction:column;gap:var(--s-4);min-width:0}
+.home-resume{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s-5);padding:var(--s-6);border:var(--border) solid var(--primary)}
+.home-resume-text{display:flex;flex-direction:column;gap:var(--s-2);min-width:0}
+.home-resume h2{font-size:var(--text-h2);line-height:var(--text-h2-line)}
+.home-resume .giz-progress-row{margin-top:var(--s-2)}
+.home-resume .btn{width:100%}
+.home-summaries{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:var(--s-3)}
+.home-summary{display:flex;flex-direction:column;padding:0;overflow:hidden}
+.home-summary--turma{display:none}
+.home-summary-body{display:flex;flex-direction:column;gap:var(--s-3);flex:1;padding:var(--s-4)}
+.home-summary-head{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-3)}
+.home-summary h2{font-size:var(--text-h3);line-height:var(--text-h3-line)}
+.home-stat{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s-2)}
+.home-stat strong{font-family:var(--font-d);font-size:var(--text-display);font-weight:700;line-height:calc(var(--text-display) + var(--s-1))}
+.home-summary .giz-action-row{min-height:var(--touch-min);padding-inline:var(--s-4)}
+.home-section-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--s-3) var(--s-4);margin-bottom:var(--s-4)}
+.home-section-head h2{font-size:var(--text-h2);line-height:var(--text-h2-line)}
+.home-simulations{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s-3)}
+.home-sim,.home-link-card{display:flex;align-items:center;gap:var(--s-3);border:var(--border-thin) solid var(--line);border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--e1);color:var(--ink);text-decoration:none;transition:border-color var(--motion-fast),box-shadow var(--motion-fast)}
+.home-sim:hover,.home-link-card:hover{border-color:var(--ink);box-shadow:var(--e2)}
+.home-sim{min-height:var(--size-simulation-row);padding:var(--s-3) var(--s-4)}
+.home-sim-top{display:flex;align-items:center;gap:var(--s-3);flex:1;min-width:0}
+.home-sim-text{display:flex;flex-direction:column;flex:1;min-width:0}
+.home-sim-title{font-family:var(--font-d);font-size:var(--text-h3);font-weight:600;line-height:var(--text-h3-line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-sim-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--s-3)}
+.home-sim-count{display:none;font-size:var(--text-body-sm);font-weight:700;line-height:var(--text-body-sm-line);color:var(--muted)}
+.home-link-card{min-height:var(--size-link-card);padding:var(--s-3) var(--s-4)}
+.home-link-text{display:flex;flex-direction:column;flex:1;min-width:0}
+.home-link-title{font-family:var(--font-d);font-size:var(--text-body);font-weight:600;line-height:var(--text-body-line)}
+@media(min-width:600px){
+.home-narrow{display:none}
+.home-layout{gap:var(--s-6)}
+.home-resume{grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--s-6)}
+.home-resume .btn{width:auto}
+.home-summaries{gap:var(--s-4)}
+.home-summary--turma{display:flex}
+.home-summary-body{padding:var(--s-5) var(--s-5) var(--s-4)}
+.home-summary-head{flex-wrap:nowrap}
+.home-summary .giz-action-row{min-height:var(--size-touch);padding-inline:var(--s-5)}
+.home-simulations{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s-4)}
+.home-sim{flex-direction:column;align-items:stretch;gap:var(--s-4);min-height:var(--size-simulation-card);padding:var(--s-5)}
+.home-sim-top{flex:none;align-items:flex-start}
+.home-sim-foot{margin-top:auto}
+.home-sim-count{display:block}
+}
+@media(min-width:1024px){
+.home-layout{grid-template-columns:minmax(0,1fr) var(--size-aside);grid-template-rows:auto 1fr;align-items:start}
+.home-resume-slot{grid-column:1;grid-row:1}
+.home-summaries{grid-column:2;grid-row:1 / span 2;grid-auto-flow:row}
+.home-main{grid-column:1;grid-row:2}
+/* Next to the 320 px column, two cards only fit from about 1300 px; below that they stack. */
+.home-simulations{grid-template-columns:repeat(auto-fill,minmax(var(--size-aside),1fr))}
+}

@@ -1,11 +1,13 @@
-import { Switch, View } from 'react-native';
+import { Pressable, Switch, View } from 'react-native';
+import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import LearningPreferences from '../src/LearningPreferences';
+import { environment } from '../src/config';
 import { useSession } from '../src/session-context';
 import { useRemote, type ApiMyAchievements, type ApiMinhaPontuacao, type ApiTurma } from '../src/data';
 import { useTheme, tokens } from '../src/theme';
 import { TRACK_INFO } from '../src/core/track';
-import { Badge, Button, Card, Copy, Empty, Heading, Loading, Progress, Screen, Tuca } from '../src/ui';
+import { Badge, Button, Card, Copy, Empty, Heading, Icon, Loading, Progress, Screen, Tuca } from '../src/ui';
 
 export default function Profile() {
  const {session}=useSession();
@@ -27,6 +29,7 @@ export default function Profile() {
   <Card title="Do seu jeito">
    <Copy>Tema claro</Copy><Badge>Tema escuro · Em breve</Badge><Copy muted>O tema escuro do app aguarda verificação em aparelho.</Copy>
    {student?<><View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:tokens.space[4]}}><View style={{flex:1}}><Copy>Cronômetro por padrão</Copy></View><Switch accessibilityLabel="Cronômetro por padrão" value={timer} onValueChange={setTimer} trackColor={{false:colors.line,true:colors.primary}} thumbColor={colors['on-primary']}/></View>{!inTurma&&<Button title="Trocar trilha" secondary onPress={()=>router.push('/track')}/>}<Button title="Histórico" secondary onPress={()=>router.push('/history')}/>{!inTurma&&<Button title="Progresso por habilidade" secondary onPress={()=>router.push('/progress')}/>}<Button title="Painel dos pais · Em breve" secondary onPress={()=>router.push('/parents')}/></>:<Button title="Acompanhar alunos" secondary onPress={()=>router.push('/oversight')}/>}
+   <Pressable accessibilityRole="link" accessibilityLabel="Conheça o Giz" accessibilityHint="Abre no navegador" onPress={()=>{void Linking.openURL(`${environment.webOrigin}/sobre`).catch(()=>{});}} style={({pressed})=>({flexDirection:'row',alignItems:'center',gap:tokens.space[3],minHeight:tokens.size['touch-min'],borderTopWidth:tokens.border.thin,borderColor:colors.line,backgroundColor:pressed?colors.soft:'transparent'})}><Icon name="info" color={colors.ink}/><View style={{flex:1}}><Copy>Conheça o Giz</Copy></View><Icon name="external" size={20} color={colors.muted}/></Pressable>
   </Card>
   <LearningPreferences/>
   {student&&<><Heading>Conquistas</Heading>{collection.loading?<Loading/>:collection.error?<Empty mascot={false} title="Suas conquistas estão guardadas" message={collection.error} onRetry={collection.reload}/>:!collection.data?.achievements.length?<Card><Badge>Em breve</Badge><Copy>As conquistas disponíveis para sua conta aparecem aqui.</Copy></Card>:collection.data.achievements.map(item=><Card key={item.id} title={item.title}><Badge>{item.earnedAt?'Conquistada':'A caminho'}</Badge><Copy>{item.description}</Copy>{!item.earnedAt&&<><Copy muted>Faltam {Math.max(0,item.target-item.progress)} para ganhar.</Copy><Progress value={item.progress} max={item.target}/></>}</Card>)}</>}

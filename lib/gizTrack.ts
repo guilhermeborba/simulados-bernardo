@@ -47,6 +47,17 @@ export function compareSchoolYears(a: number, b: number): number {
   return rank(a) - rank(b);
 }
 
+/** Subjects with their own tile colors (--<subject>-bg/-ink) and icon; others use the neutral book tile. */
+export type GizSubject = 'geo' | 'his' | 'mat' | 'por' | 'cie';
+const SUBJECTS: ReadonlyArray<[GizSubject, RegExp, string]> = [['geo', /geografia/, 'geografia'], ['his', /historia/, 'historia'], ['mat', /matematica/, 'matematica'], ['por', /portugu/, 'portugues'], ['cie', /ciencias/, 'ciencias']];
+export function subjectOf(discipline: { name: string; slug?: string | null }): GizSubject | null {
+  const text = `${discipline.slug ?? ''} ${discipline.name}`.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  return SUBJECTS.find(([, pattern]) => pattern.test(text))?.[0] ?? null;
+}
+export function subjectIcon(subject: GizSubject | null): string {
+  return SUBJECTS.find(([key]) => key === subject)?.[2] ?? 'book';
+}
+
 const legacyTrack: Partial<Record<Trilha, GizTrack>> = { infantil: 'kids', tecnico: 'tecnico' };
 
 /** A stored choice wins; legacy choices that map to a single Giz track are migrated. */
