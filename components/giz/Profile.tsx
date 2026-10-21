@@ -95,6 +95,7 @@ export default function Profile() {
           <div className="account-setting"><Link href="/colecao"><Icon name="cup" />Minha coleção</Link><Icon name="back" /></div>
           {['GUARDIAN', 'TEACHER', 'ADMIN'].includes(user.role) && <div className="account-setting"><Link href="/acompanhamento">Acompanhamento</Link><Icon name="back" /></div>}
           <div className="account-setting"><Link href="/pais">Painel dos pais</Link><Badge tone="soon">Em breve</Badge></div>
+          <div className="account-setting account-setting--about"><Link href="/sobre" target="_blank" rel="noopener"><Icon name="info" />Conheça o Giz<span className="sr-only"> (abre em nova aba)</span></Link><Icon name="external" /></div>
           {notice && <p role="status" className="muted">{notice}</p>}
           <Button type="button" variant="secondary" onClick={signOut} disabled={signingOut}>{signingOut ? 'Saindo…' : 'Sair da conta'}</Button>
         </section>

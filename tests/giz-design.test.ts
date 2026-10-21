@@ -12,3 +12,8 @@ test('reading text meets 4.5:1 in every shipped light and dark surface', () => {
     assert.ok(contrast(gizTokens.color[mode][foreground].value,gizTokens.color[mode][background].value)>=4.5,`${mode}: ${foreground} over ${background}`);
   }
 });
+test('discipline icons meet 3:1 over their tile in light and dark', () => {
+  for (const mode of ['light','dark'] as const) for (const subject of ['geo','his','mat','por','cie'] as const) {
+    assert.ok(contrast(gizTokens.color[mode][`${subject}-ink`].value,gizTokens.color[mode][`${subject}-bg`].value)>=3,`${mode}: ${subject}-ink over ${subject}-bg`);
+  }
+});

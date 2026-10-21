@@ -85,5 +85,9 @@
 
 .account-achievement .giz-progress-row { width: 100%; }
 .account-setting > .giz-icon { transform: rotate(180deg); }
+/* On computer and tablet "Conheça o Giz" lives in the side menu; the phone has no side menu, so it is a setting here. */
+.account-setting--about { display: none; }
+.account-setting--about > .giz-icon { transform: none; }
+@media (max-width: 599px) { .account-setting--about { display: flex; } }
 
 .account-stat dt{overflow-wrap:anywhere}

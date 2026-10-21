@@ -4,7 +4,7 @@ import { ButtonHTMLAttributes, ReactNode, useEffect, useId, useRef } from 'react
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { TRACK_INFO, applyTrack, useGizTrack } from '@/lib/gizTrack';
+import { TRACK_INFO, applyTrack, subjectIcon, useGizTrack, type GizSubject } from '@/lib/gizTrack';
 
 export function Icon({ name, size = 24 }: { name: string; size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="giz-icon"><use href={`/giz/icones/_sprite.svg#i-${name}`} /></svg>;
@@ -21,8 +21,21 @@ export function Button({ variant = 'primary', className = '', ...props }: Button
 export function Badge({ children, tone = 'soft' }: { children: ReactNode; tone?: 'new' | 'ok' | 'soft' | 'soon' | 'error' }) {
   return <span className={`giz-badge giz-badge--${tone}`}>{tone === 'ok' && <Icon name="check" size={20} />}{children}</span>;
 }
+/** Secondary level: "see more" between blocks of a screen, outlined with a chevron. */
+export function SecondaryLink({ href, children }: { href: string; children: ReactNode }) {
+  return <Link href={href} className="btn btn--secondary btn--more">{children}<Icon name="chevron-right" size={20} /></Link>;
+}
+/** Action line closing a card: the whole row is one link, ending in the chevron circle. */
+export function ActionRow({ href, children }: { href: string; children: ReactNode }) {
+  return <Link href={href} className="giz-action-row"><span>{children}</span><span className="giz-action-dot" aria-hidden="true"><Icon name="chevron-right" size={20} /></span></Link>;
+}
+/** Decorative tile with a subject's colors (or the neutral book) behind its icon. */
+export function SubjectTile({ subject, icon, small = false }: { subject: GizSubject | null; icon?: string; small?: boolean }) {
+  return <span className={`giz-tile ${small ? 'giz-tile--sm' : ''} ${subject ? `giz-tile--${subject}` : ''}`} aria-hidden="true"><Icon name={icon ?? subjectIcon(subject)} size={small ? 24 : 26} /></span>;
+}
 const navItems = [ ['/', 'home', 'Início'], ['/simulados', 'book', 'Simulados'], ['/ranking', 'cup', 'Ranking'], ['/eu', 'user', 'Eu'] ];
-export function AppShell({ title, subtitle, children, backHref, flow = false, actions }: { title: string; subtitle?: string; children: ReactNode; backHref?: string; flow?: boolean; actions?: ReactNode }) {
+/** `root` is Início: no breadcrumb, and the brand moves into the phone header. */
+export function AppShell({ title, subtitle, children, backHref, flow = false, root = false, actions }: { title: string; subtitle?: string; children: ReactNode; backHref?: string; flow?: boolean; root?: boolean; actions?: ReactNode }) {
   const pathname = usePathname();
   const track = useGizTrack();
   const brand = TRACK_INFO[track ?? 'kids'].name;
@@ -30,16 +43,16 @@ export function AppShell({ title, subtitle, children, backHref, flow = false, ac
   const Heading = pathname.startsWith('/simulado/') || pathname.startsWith('/quiz/') ? 'h2' : 'h1';
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { heading.current?.focus({ preventScroll: true }); }, [pathname]);
-  return <div className={`giz-app ${flow ? 'giz-app--flow' : ''}`}>
+  return <div className={`giz-app ${flow ? 'giz-app--flow' : ''} ${root ? 'giz-app--root' : ''}`}>
     <a className="skip-link" href="#conteudo">Ir para o conteúdo</a>
     <aside className="giz-sidebar">
       <Link href="/" className="giz-brand" aria-label={`${brand}, início`}><Image unoptimized className="giz-logo-light" src="/giz/brand/giz-logo-lousa.svg" width="84" height="60" alt="Giz" /><Image unoptimized className="giz-logo-dark" src="/giz/brand/giz-logo-papel.svg" width="84" height="60" alt="Giz" /><span>{brand.replace('Giz ', '')}</span></Link>
       <nav aria-label="Principal" className="giz-nav">{navItems.map(([href, icon, label]) => <Link key={href} href={href} aria-current={(href === '/' ? pathname === '/' || ['/pratica', '/quizzes', '/quiz/', '/progresso', '/colecao'].some(route => pathname.startsWith(route)) : pathname.startsWith(href) || (href === '/eu' && pathname === '/historico') || (href === '/simulados' && pathname.startsWith('/simulado/'))) ? 'page' : undefined}><span className="giz-nav-icon"><Icon name={icon} /></span><span className="giz-nav-label">{label}</span></Link>)}</nav>
-      <Link href="/sobre" className="giz-sidebar-about">Conheça o Giz</Link>
+      <div className="giz-sidebar-foot"><Link href="/sobre" target="_blank" rel="noopener" className="giz-sidebar-about"><Icon name="info" size={20} /><span className="giz-sidebar-about-label">Conheça o Giz<span className="sr-only"> (abre em nova aba)</span></span><Icon name="external" size={20} /></Link></div>
     </aside>
     <div className="giz-workspace">
       <header className="giz-page-head">
-        <nav className="giz-breadcrumb" aria-label="Você está em"><Link href="/">{brand}</Link><span aria-hidden="true"> / </span><span>{title}</span></nav>
+        {root ? <p className="giz-head-brand"><Image unoptimized src="/giz/brand/giz-logo-papel.svg" width="51" height="36" alt="Giz" /><span>{brand.replace('Giz ', '')}</span></p> : <nav className="giz-breadcrumb" aria-label="Você está em"><Link href="/">{brand}</Link><span aria-hidden="true"> / </span><span>{title}</span></nav>}
         <div className="giz-page-heading">{backHref && <Link className="icon-button" href={backHref} aria-label="Voltar"><Icon name="back" /></Link>}<div><Heading ref={heading} tabIndex={-1}>{title}</Heading>{subtitle && <p>{subtitle}</p>}</div>{actions && <div className="giz-head-actions">{actions}</div>}</div>
       </header>
       <main id="conteudo" className="giz-content">{children}</main>

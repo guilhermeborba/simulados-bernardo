@@ -17,13 +17,15 @@ const mockCatalog=[
  {id:'technical',title:'Conteúdo técnico',subtitle:null,schoolYear:0,bimester:0,assessment:'AV1',totalQuestions:30,discipline:{id:'tech',name:'Técnico'}},
 ];
 jest.mock('expo-router',()=>({router:{push:(...args:unknown[])=>mockPush(...args),replace:jest.fn()},usePathname:()=>'/simulations'}));
-jest.mock('../../src/session-context',()=>({useSession:()=>({session:{status:'authenticated',generation:1,user:{id:'test-user',name:'Pessoa de teste',role:'STUDENT'}}})}));
+let mockAnswered:Record<string,number>={};
+const mockClient={request:(path:string)=>{const id=decodeURIComponent(path.split('/')[2]);return Promise.resolve(Array.from({length:30},(_,i)=>({id:`q${i}`,answer:i<(mockAnswered[id]??0)?{answer:'A'}:null})));}};
+jest.mock('../../src/session-context',()=>({useSession:()=>({client:mockClient,session:{status:'authenticated',generation:1,user:{id:'test-user',name:'Pessoa de teste',role:'STUDENT'}}})}));
 jest.mock('../../src/data',()=>({useRemote:(path:string)=>({data:path==='/me/attempts'?mockAttempts:path==='/me/pontuacao'?null:path==='/me/turmas'?mockTurmas:mockCatalog,error:null,loading:false,reload:jest.fn()})}));
 jest.mock('../../src/Auth',()=>()=>null);
 jest.mock('../../src/theme',()=>{const source=require('../../src/generated/tokens').tokens;return{tokens:source,useTheme:()=>({colors:Object.fromEntries(Object.entries(source.color.light).map(([key,value]:[string,any])=>[key,value.value])),tokens:source,ready:true,track:mockTrack})};});
 jest.mock('react-native-safe-area-context',()=>{const{View}=require('react-native');return{SafeAreaView:({children,...props}:any)=><View {...props}>{children}</View>};});
 jest.mock('react-native-svg',()=>({SvgXml:()=>null}));
-afterEach(()=>{cleanup();mockTrack='kids';mockTurmas=[];});
+afterEach(()=>{cleanup();mockTrack='kids';mockTurmas=[];mockAnswered={};});
 test.each([[390,'100%'],[768,'50%'],[1440,`${100/3}%`]])('catalog at %i uses cells %s wide with unrestricted text scaling',async(width,expected)=>{
  const native=require('react-native');
  const dimensions=jest.spyOn(native,'useWindowDimensions').mockReturnValue({width,height:1024,scale:1,fontScale:2});
@@ -50,13 +52,25 @@ test('search intersects chips, reset clears both, and the entire card opens its 
 });
 
 test.each([false,true])('home resumes only available Kids simulations (has Kids attempt: %s)',async(hasKids)=>{
+ mockAnswered={'technical-attempt':5,'kids-attempt':12};
  mockAttempts=[{id:'technical-attempt',simulationId:'technical',status:'IN_PROGRESS',simulation:{title:'Em andamento técnico'}},...(hasKids?[{id:'kids-attempt',simulationId:'geo-av1',status:'IN_PROGRESS',simulation:{title:'Mapas e caminhos'}}]:[])];
  await render(<Home/>);
+ await screen.findByText('Novos para você');
  expect(Boolean(screen.queryByText('Continuar de onde parou'))).toBe(hasKids);
  if(hasKids){
-  await fireEvent.press(screen.getByRole('button',{name:'Continuar'}));
+  expect(screen.getByText('12 de 30')).toBeTruthy();
+  await fireEvent.press(screen.getByRole('button',{name:'Continuar simulado'}));
   expect(mockPush).toHaveBeenLastCalledWith({pathname:'/simulation/[id]',params:{id:'geo-av1',attempt:'kids-attempt'}});
  }
+});
+test('an attempt without answers is not resumed and its simulation stays new',async()=>{
+ mockAnswered={'kids-attempt':0};
+ mockAttempts=[{id:'kids-attempt',simulationId:'geo-av1',status:'IN_PROGRESS',simulation:{title:'Mapas e caminhos'}}];
+ await render(<Home/>);
+ const card=await screen.findByRole('button',{name:'Geografia, 1º bimestre, AV1, 30 questões, novo'});
+ expect(screen.queryByText('Continuar de onde parou')).toBeNull();
+ await fireEvent.press(card);
+ expect(mockPush).toHaveBeenLastCalledWith({pathname:'/detail/[id]',params:{id:'geo-av1'}});
 });
 
 test('Giz Escola lists only Fundamental II and Médio, with year chips by série',async()=>{

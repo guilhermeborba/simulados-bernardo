@@ -93,6 +93,41 @@ export const tokens = {
       },
       "head-muted": {
         "value": "#B9C6C8"
+      },
+      "geo-bg": {
+        "value": "#D3EFE8",
+        "uso": "Tile de Geografia; ícone em geo-ink"
+      },
+      "geo-ink": {
+        "value": "#0D4A3E"
+      },
+      "his-bg": {
+        "value": "#FFF1C2",
+        "uso": "Tile de História; ícone em his-ink"
+      },
+      "his-ink": {
+        "value": "#6B4B00"
+      },
+      "mat-bg": {
+        "value": "#FFE9DF",
+        "uso": "Tile de Matemática; ícone em mat-ink"
+      },
+      "mat-ink": {
+        "value": "#A63A20"
+      },
+      "por-bg": {
+        "value": "#E1EAFC",
+        "uso": "Tile de Português; ícone em por-ink"
+      },
+      "por-ink": {
+        "value": "#1F4DB0"
+      },
+      "cie-bg": {
+        "value": "#E7E0CF",
+        "uso": "Tile de Ciências; ícone em cie-ink"
+      },
+      "cie-ink": {
+        "value": "#1B2A2F"
       }
     },
     "dark": {
@@ -162,6 +197,36 @@ export const tokens = {
       },
       "head-muted": {
         "value": "#B9C6C8"
+      },
+      "geo-bg": {
+        "value": "#16403A"
+      },
+      "geo-ink": {
+        "value": "#BFEDE2"
+      },
+      "his-bg": {
+        "value": "#4A4018"
+      },
+      "his-ink": {
+        "value": "#FFE08A"
+      },
+      "mat-bg": {
+        "value": "#3A2E2B"
+      },
+      "mat-ink": {
+        "value": "#FFB59E"
+      },
+      "por-bg": {
+        "value": "#1E2E52"
+      },
+      "por-ink": {
+        "value": "#A9C2FA"
+      },
+      "cie-bg": {
+        "value": "#2E4046"
+      },
+      "cie-ink": {
+        "value": "#F7F3EA"
       }
     },
     "trilha": {
@@ -398,7 +463,17 @@ export const tokens = {
     "coming": 680,
     "illustration": 240,
     "logo": 120,
-    "logo-mobile": 96
+    "logo-mobile": 96,
+    "logo-head": 36,
+    "head-top": 44,
+    "head-bottom": 64,
+    "tile": 48,
+    "tile-sm": 40,
+    "tile-radius": 14,
+    "action-dot": 36,
+    "simulation-card": 168,
+    "simulation-row": 80,
+    "link-card": 72
   },
   "border": {
     "thin": 1,
