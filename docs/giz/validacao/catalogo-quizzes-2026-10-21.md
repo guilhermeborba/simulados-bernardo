@@ -46,4 +46,21 @@ O procedimento é uma operação explícita do responsável. Não foi executado 
 - `npm run seed:quizzes:dry-run`: 45 quizzes / 213 perguntas, 15 públicos, todos aprovados; três quizzes / 15 perguntas no 3º ano.
 - API: `npm run prisma:generate` e `npm run build` aprovados com fontes equivalentes à `main` após api#239.
 - Web: `npm run typecheck && npm run lint && npm test && npm run build` aprovados, com 62 testes.
-- Reprodução de visibilidade com publicação em PostgreSQL descartável: em andamento; os resultados serão registrados ao concluir.
+
+A reprodução usou os arquivos reais do checkout, PostgreSQL novo criado pelo runner de prévia, API em loopback e web local. O aluno da prévia estava vinculado à turma local Bernardo; os 65 simulados incluem os conteúdos autorizados para esse vínculo e não são uma promessa de contagem para outra conta.
+
+| Consulta/estado | Importação padrão | Após publicação explícita |
+|---|---:|---:|
+| Quizzes publicados no catálogo inteiro | 0 | 45 |
+| Quizzes do 3º ano | 0 | 3 |
+| Simulados do 3º ano autorizados ao aluno da prévia | 65 | 65 |
+
+Playwright reproduziu a seleção Fundamental I / 3º ano em desktop e celular: antes da publicação mostrou o mesmo estado vazio da captura; depois exibiu **A viagem de uma gota**, **O desafio dos grupos** e **Uma mensagem para descobrir**. A API confirmou três quizzes em cada um dos 15 públicos. A repetição do importador preservou os 45 IDs/versões e publicou zero registros adicionais.
+
+![Quizzes do 3º ano na validação local após publicação](quizzes-3ano-publicados-local.png)
+
+A imagem é da validação local com banco descartável. Não demonstra que o catálogo tenha sido publicado no ambiente real e não encerra o aceite visual da E13.
+
+O PostgreSQL, a API, a web e as credenciais temporárias foram removidos/encerrados pelo runner ao fim; a ausência do container e das portas locais foi conferida. Nenhum banco existente foi usado. O fluxo padrão pode ser conferido com `npm run preview:mobile:catalog -- --check`; o modo publicado, com `npm run preview:mobile:catalog -- --check --publish-reviewed`, conforme o [guia da prévia](https://github.com/guilhermeborba/simulados-bernardo-api/blob/main/docs/preview-mobile-catalogo-e-voz.md).
+
+**Resultado:** não foi reproduzido defeito de filtro para a seleção da captura com quizzes publicados. A falta de importação/publicação explica esse mesmo estado no ambiente descartável. Resta ao responsável conferir o estado no ambiente publicado e executar a ativação quando necessária; se os quizzes já estiverem publicados, o próximo diagnóstico deve usar a resposta do endpoint e as referências ativas desse ambiente.
