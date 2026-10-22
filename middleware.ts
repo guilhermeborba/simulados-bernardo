@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { REFRESH_TOKEN_COOKIE } from '@/lib/serverCookies';
 
-const PROTECTED_PREFIXES = ['/simulado/', '/historico', '/quiz/', '/quizzes', '/colecao', '/progresso', '/acompanhamento'];
+// Início and the catalog only make sense signed in: without a session they go straight to Entrar / Criar conta.
+const PROTECTED_PATHS = ['/'];
+const PROTECTED_PREFIXES = ['/simulados', '/simulado/', '/historico', '/quiz/', '/quizzes', '/colecao', '/progresso', '/acompanhamento'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isProtected = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  const isProtected = PROTECTED_PATHS.includes(pathname) || PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
   if (!isProtected) {
     return NextResponse.next();
@@ -23,5 +25,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/simulado/:path*', '/historico', '/quiz/:path*', '/quizzes/:path*', '/colecao/:path*', '/progresso/:path*', '/acompanhamento/:path*'],
+  matcher: ['/', '/simulados/:path*', '/simulado/:path*', '/historico', '/quiz/:path*', '/quizzes/:path*', '/colecao/:path*', '/progresso/:path*', '/acompanhamento/:path*'],
 };
