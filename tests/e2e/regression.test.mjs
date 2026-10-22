@@ -47,18 +47,26 @@ let questions;
 
 // The flows are intentionally sequential, matching the user's lifecycle.
 describe('Regressão HTTP web com API e PostgreSQL reais', { concurrency: false }, () => {
-  test('middleware protege histórico e simulado; fontes locais e páginas compiladas respondem', async () => {
+  test('middleware protege início, catálogo, histórico e simulado; fontes locais e páginas compiladas respondem', async () => {
     const response = await fetch(`${baseUrl}/historico`, { redirect: 'manual' });
     assert.equal(response.status, 307);
     assert.equal(new URL(response.headers.get('location')).pathname, '/login');
     const sim = await fetch(`${baseUrl}/simulado/${fixture.publicSimulation}`, { redirect: 'manual' });
     assert.equal(sim.status, 307);
+    // Without a session, Início and the catalog go straight to Entrar / Criar conta and come back afterwards.
+    for (const path of ['/', '/simulados?d=geografia', `/simulados/${fixture.publicSimulation}`]) {
+      const redirect = await fetch(`${baseUrl}${path}`, { redirect: 'manual' });
+      assert.equal(redirect.status, 307, path);
+      const location = new URL(redirect.headers.get('location'));
+      assert.equal(location.pathname, '/login', path);
+      assert.equal(location.searchParams.get('returnTo'), path);
+    }
     for (const path of ['/login', '/registro', '/convite']) {
       const response = await fetch(`${baseUrl}${path}`);
       assert.equal(response.status, 200);
       assert.ok((await response.text()).includes('<html'));
     }
-    const home = await fetch(baseUrl);
+    const home = await fetch(`${baseUrl}/login`);
     const html = await home.text();
     const fonts = [...html.matchAll(/href="([^\"]+\.woff2)"/g)].map((match) => match[1]);
     assert.ok(fonts.length >= 2, 'Root fonts are preloaded locally');

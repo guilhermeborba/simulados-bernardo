@@ -97,7 +97,7 @@ lib/
   trilha.ts                     # sistema de trilhas + localStorage
   tier.ts                       # faixa visual por ano escolar
 
-middleware.ts                   # protege /simulado/* e /historico
+middleware.ts                   # protege /, /simulados, /simulado/*, /historico e a Prática
 ```
 
 ## Padrões de código
@@ -141,7 +141,7 @@ const { user, isLoading, login, logout } = useAuth();
 
 ### Middleware de proteção
 
-`middleware.ts` redireciona para `/login?returnTo=<path>` quando o cookie `sb_refresh_token` está ausente nas rotas `/simulado/*` e `/historico`. Usa o refresh token (não o access) porque ele é de longa duração — se expirou, o auto-refresh resolve na próxima chamada autenticada.
+`middleware.ts` redireciona para `/login?returnTo=<path>` quando o cookie `sb_refresh_token` está ausente na Início (`/`), no catálogo (`/simulados`, incluindo o detalhe), em `/simulado/*`, `/historico` e nas rotas da Prática. Se o cookie existe mas a sessão expirou, o `DataGate` (`components/giz/DiscoveryCards.tsx`) faz o mesmo redirecionamento no cliente. Usa o refresh token (não o access) porque ele é de longa duração — se expirou, o auto-refresh resolve na próxima chamada autenticada.
 
 ## Trilhas de estudo
 
