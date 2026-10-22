@@ -61,6 +61,10 @@ export const gizTokens = {
         "nome": "Pinho",
         "uso": "Acerto: só ícone, borda e preenchimento. Nunca texto pequeno (4,1:1)"
       },
+      "on-ok": {
+        "value": "#FFFFFF",
+        "uso": "Visto branco sobre ok (selos de escolha feita)"
+      },
       "ok-ink": {
         "value": "#0D4A3E",
         "uso": "Texto sobre ok-bg"
@@ -170,6 +174,9 @@ export const gizTokens = {
       },
       "ok": {
         "value": "#1E8C77"
+      },
+      "on-ok": {
+        "value": "#FFFFFF"
       },
       "ok-ink": {
         "value": "#BFEDE2"
@@ -473,7 +480,21 @@ export const gizTokens = {
     "action-dot": 36,
     "simulation-card": 168,
     "simulation-row": 80,
-    "link-card": 72
+    "link-card": 72,
+    "head-bottom-search": 56,
+    "search-overlap": 28,
+    "step-number": 32,
+    "check-badge": 26,
+    "check-badge-sm": 22,
+    "subject-card": 104,
+    "subject-card-phone": 80,
+    "tile-phone": 44,
+    "tile-lg": 72,
+    "year-gap": 6,
+    "hover-lift": 2,
+    "chip-remove": 28,
+    "progress-thin": 6,
+    "sheet-handle": 40
   },
   "border": {
     "thin": 1,

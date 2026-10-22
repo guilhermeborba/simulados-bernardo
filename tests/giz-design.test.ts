@@ -17,3 +17,6 @@ test('discipline icons meet 3:1 over their tile in light and dark', () => {
     assert.ok(contrast(gizTokens.color[mode][`${subject}-ink`].value,gizTokens.color[mode][`${subject}-bg`].value)>=3,`${mode}: ${subject}-ink over ${subject}-bg`);
   }
 });
+test('the white check of a chosen step meets 3:1 over ok in light and dark', () => {
+  for (const mode of ['light','dark'] as const) assert.ok(contrast(gizTokens.color[mode]['on-ok'].value,gizTokens.color[mode].ok.value)>=3,`${mode}: on-ok over ok`);
+});
