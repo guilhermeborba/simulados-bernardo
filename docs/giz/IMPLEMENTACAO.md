@@ -120,6 +120,10 @@ npm run mobile:start
 
 O runner nativo possui integração de estado/cache por usuário e tentativa em `mobile/src/simulation/`, com resultado, revisão e journal de dois checkpoints para preservar a última gravação íntegra. Executar o bundle Expo ou exportar JavaScript não equivale a testar um binário Android/iOS em aparelho.
 
+## Temas editoriais — pacote de três lotes (22/10/2026)
+
+História, Geografia e Arte/7º ano receberam 720 temas em 24 simulados, com vocabulários fechados e preservação dos campos anteriores. História (api#251) e Geografia (api#252) já foram integradas; Arte (api#253) aguarda revisão. A composição dos três lotes foi validada sem conflitos: 7.709/23.444 questões com tema e 257/780 simulados completos. A E04 segue parcial. Cobertura, verificações, issues de revisão pedagógica e próximos lotes estão no [registro do pacote](validacao/temas-7ano-historia-geografia-arte-2026-10-22.md).
+
 ## Evidências de validação e aceite pendente
 
 Validação registrada nesta implementação:
