@@ -2,12 +2,34 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { ApiMyAttempt, ApiMinhaPontuacao, ApiSimulation, ApiTurma, getAvailableSimulations, getMinhaPontuacao, getMyAttempts, getMyTurmas } from '@/lib/apiClient';
+import { ApiMyAttempt, ApiMinhaPontuacao, ApiSimulation, ApiTurma, getAttemptQuestions, getAvailableSimulations, getMinhaPontuacao, getMyAttempts, getMyTurmas } from '@/lib/apiClient';
 import { periodLabel, saveTrack, schoolYearLabel, trackOfSchoolYear, trackOfTurmas, useGizTrack } from '@/lib/gizTrack';
 import { bloquearTrocaDeTrilha } from '@/lib/trilha';
+export { isFinished } from '@/lib/gizCatalog';
 type CatalogState = { simulations: ApiSimulation[]; attempts: ApiMyAttempt[]; score: ApiMinhaPontuacao | null; turmas: ApiTurma[] };
 const emptyData: CatalogState = { simulations: [], attempts: [], score: null, turmas: [] };
-export function isFinished(attempt: ApiMyAttempt) { return attempt.finishedAt !== null || ['COMPLETED', 'FINISHED'].includes(attempt.status); }
+/** Answers saved in each unfinished attempt (-1 when unreadable); `null` while loading. An attempt without answers is still new. */
+export function useAnsweredCounts(ids: string[]) {
+  const key = ids.join(',');
+  const [counts, setCounts] = useState<{ key: string; value: Record<string, number> }>();
+  useEffect(() => {
+    if (!key) return;
+    let active = true;
+    Promise.all(key.split(',').map(id => getAttemptQuestions(id).then(qs => [id, qs.filter(q => q.answer !== null && q.answer !== undefined).length] as const, () => [id, -1] as const))).then(entries => { if (active) setCounts({ key, value: Object.fromEntries(entries) }); });
+    return () => { active = false; };
+  }, [key]);
+  return !key ? {} : counts?.key === key ? counts.value : null;
+}
+const CATALOG_QUERY_KEY = 'giz:catalog:query';
+export function rememberCatalogQuery(query: string) {
+  try { sessionStorage.setItem(CATALOG_QUERY_KEY, query); } catch { /* Storage can be unavailable. */ }
+}
+/** Back to the catalog with the choices the child left there. */
+export function useCatalogHref() {
+  const [href, setHref] = useState('/simulados');
+  useEffect(() => { try { const query = sessionStorage.getItem(CATALOG_QUERY_KEY); if (query) setHref(`/simulados?${query}`); } catch { /* Keep the plain catalog. */ } }, []);
+  return href;
+}
 export function simulationSubtitle(simulation: ApiSimulation) { return [schoolYearLabel(simulation.schoolYear), periodLabel(simulation.bimester, simulation.assessment), `${simulation.totalQuestions} questões`].filter(Boolean).join(' · '); }
 export function useCatalog() {
   const { user, isLoading: sessionLoading } = useAuth();

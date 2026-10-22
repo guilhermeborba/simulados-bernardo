@@ -13,6 +13,7 @@
   --hl-bg: #FFF1C2;
   --info: #2F66DB;
   --ok: #1E8C77;
+  --on-ok: #FFFFFF;
   --ok-ink: #0D4A3E;
   --ok-bg: #D3EFE8;
   --err: #C8452A;
@@ -96,6 +97,20 @@
   --size-simulation-card: 168px;
   --size-simulation-row: 80px;
   --size-link-card: 72px;
+  --size-head-bottom-search: 56px;
+  --size-search-overlap: 28px;
+  --size-step-number: 32px;
+  --size-check-badge: 26px;
+  --size-check-badge-sm: 22px;
+  --size-subject-card: 104px;
+  --size-subject-card-phone: 80px;
+  --size-tile-phone: 44px;
+  --size-tile-lg: 72px;
+  --size-year-gap: 6px;
+  --size-hover-lift: 2px;
+  --size-chip-remove: 28px;
+  --size-progress-thin: 6px;
+  --size-sheet-handle: 40px;
   --border-thin: 1px; --border: 2px; --focus-ring: 3px; --overlay: rgb(13 21 24 / .55);
   --motion-fast: 120ms ease-out; --motion-standard: 250ms ease-out;
   --font-d: var(--font-fredoka), Nunito, system-ui, sans-serif; --font-b: var(--font-nunito), system-ui, sans-serif;
@@ -121,6 +136,7 @@
   --hl-bg: #4A4018;
   --info: #8FB0F7;
   --ok: #1E8C77;
+  --on-ok: #FFFFFF;
   --ok-ink: #BFEDE2;
   --ok-bg: #16403A;
   --err: #FF9A78;
@@ -156,6 +172,7 @@
   --hl-bg: #4A4018;
   --info: #8FB0F7;
   --ok: #1E8C77;
+  --on-ok: #FFFFFF;
   --ok-ink: #BFEDE2;
   --ok-bg: #16403A;
   --err: #FF9A78;

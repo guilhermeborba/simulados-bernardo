@@ -1,0 +1,138 @@
+/* Simulados: search, four steps (subject, year, bimester, assessment), summary with chips and a paged grid.
+   Phone: subjects scroll in a row and steps 2-4 open in a sheet; tablet stacks the steps; the 3-column row needs about 900 px of panel. */
+.catalog{display:flex;flex-direction:column;gap:var(--s-5)}
+.catalog-search{display:flex;align-items:center;gap:var(--s-3);height:var(--size-touch);padding:0 var(--s-5);border:var(--border) solid var(--line);border-radius:var(--r-full);background:var(--surface);color:var(--muted);box-shadow:var(--e2);cursor:text;transition:border-color var(--motion-fast),box-shadow var(--motion-fast)}
+/* The border turns --info and a 1 px halo completes the 3 px focus ring. */
+.catalog-search:focus-within{border-color:var(--info);box-shadow:0 0 0 var(--border-thin) var(--info)}
+.catalog-search input{flex:1;min-width:0;height:100%;border:0;background:transparent;color:var(--ink);font-size:var(--text-body);font-weight:600;outline:none}
+.catalog-search input::placeholder{color:var(--muted)}
+
+/* Steps */
+.catalog-steps{display:flex;flex-direction:column;gap:var(--s-4);container-type:inline-size}
+.catalog-step-head{display:flex;align-items:center;gap:var(--s-3);margin-bottom:var(--s-3)}
+.catalog-step-head h2{font-size:var(--text-h3);line-height:var(--text-h3-line)}
+.catalog-step-head p{margin-left:auto;font-size:var(--text-body-sm);line-height:var(--text-body-sm-line);color:var(--muted);text-align:right}
+.catalog-step-num{display:grid;place-items:center;flex:none;width:var(--size-step-number);height:var(--size-step-number);border-radius:var(--r-full);background:var(--ink);color:var(--surface);font-family:var(--font-d);font-size:var(--text-body);font-weight:600}
+.catalog-step-num--done{background:var(--ok);color:var(--on-ok)}
+.catalog-check{position:absolute;top:calc(-1 * var(--s-2));right:calc(-1 * var(--s-2));display:grid;place-items:center;width:var(--size-check-badge);height:var(--size-check-badge);border:var(--border) solid var(--surface);border-radius:var(--r-full);background:var(--ok);color:var(--on-ok)}
+.catalog-steps > div:first-child .catalog-step-head{display:none}
+.catalog-steps-row{display:none}
+/* Step 1: on the phone a row that scrolls inside itself, reaching the screen edges. */
+.catalog-subjects{display:flex;gap:var(--s-3);margin:0 calc(-1 * var(--s-4));padding:var(--s-2) var(--s-4);overflow-x:auto;scrollbar-width:none}
+.catalog-subjects::-webkit-scrollbar{display:none}
+.catalog-subject{position:relative;display:flex;flex:none;flex-direction:column;align-items:center;justify-content:center;gap:var(--s-2);width:var(--size-subject-card-phone);padding:var(--s-2) var(--s-1);border:var(--border) solid var(--line);border-radius:var(--r-lg);background:var(--surface);color:var(--ink);font-family:var(--font-d);font-size:var(--text-caption);font-weight:600;line-height:var(--text-caption-line);text-align:center;hyphens:auto;overflow-wrap:anywhere;transition:transform var(--motion-fast),border-color var(--motion-fast)}
+.catalog-subject .giz-tile{width:var(--size-tile-phone);height:var(--size-tile-phone)}
+.catalog-subject .catalog-check{top:calc(-1 * var(--s-1));right:calc(-1 * var(--s-1));width:var(--size-check-badge-sm);height:var(--size-check-badge-sm);border-color:var(--bg)}
+.catalog-subject:hover{border-color:var(--ink);transform:translateY(calc(-1 * var(--size-hover-lift)))}
+.catalog-subject[aria-pressed=true]{border-color:var(--ink);box-shadow:var(--e2)}
+.catalog-subject--all[aria-pressed=true],.catalog-subject--other[aria-pressed=true]{background:var(--soft)}
+.catalog-subject--geo[aria-pressed=true]{background:var(--geo-bg)}
+.catalog-subject--his[aria-pressed=true]{background:var(--his-bg)}
+.catalog-subject--mat[aria-pressed=true]{background:var(--mat-bg)}
+.catalog-subject--por[aria-pressed=true]{background:var(--por-bg)}
+.catalog-subject--cie[aria-pressed=true]{background:var(--cie-bg)}
+/* Step 2: year circles; infantil keeps its words in a pill. */
+.catalog-years{display:flex;flex-wrap:wrap;gap:var(--size-year-gap)}
+.catalog-year{display:grid;place-items:center;min-width:var(--size-chip);height:var(--size-chip);padding:0 var(--s-3);border:var(--border) solid var(--line);border-radius:var(--r-full);background:var(--surface);color:var(--ink);font-family:var(--font-d);font-size:var(--text-body);font-weight:600;white-space:nowrap}
+.catalog-year:hover{border-color:var(--ink)}
+.catalog-year[aria-pressed=true]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+/* Step 3: stones on a dotted path between their centers. */
+.catalog-trail{position:relative;display:flex;justify-content:space-between;max-width:var(--size-modal);padding-top:var(--s-1)}
+.catalog-trail::before{content:'';position:absolute;left:calc(var(--size-touch) / 2);right:calc(var(--size-touch) / 2);top:calc(var(--s-1) + var(--size-touch) / 2 - var(--border));border-top:calc(var(--border) + var(--border-thin)) dotted var(--line)}
+.catalog-stone-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:var(--s-1)}
+.catalog-stone{position:relative;display:grid;place-items:center;width:var(--size-touch);height:var(--size-touch);border:var(--border) solid var(--line);border-radius:var(--r-full);background:var(--surface);color:var(--ink);font-family:var(--font-d);font-size:var(--text-h2);font-weight:700}
+.catalog-stone:hover{border-color:var(--ink)}
+.catalog-stone[aria-pressed=true]{background:var(--primary);color:var(--on-primary);border-color:var(--ink)}
+.catalog-stone-wrap small{font-size:var(--text-caption);font-weight:700;line-height:var(--text-caption-line);color:var(--muted)}
+/* Step 4 */
+.catalog-assessments{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s-3);max-width:var(--size-modal)}
+.catalog-assessment{position:relative;display:flex;align-items:center;gap:var(--s-2);min-height:var(--size-option);padding:var(--s-2) var(--s-3);border:var(--border) solid var(--line);border-radius:var(--r-md);background:var(--surface);color:var(--ink);text-align:left}
+.catalog-assessment:hover{border-color:var(--ink)}
+.catalog-assessment .giz-icon{color:var(--muted)}
+.catalog-assessment strong{display:block;font-family:var(--font-d);font-size:var(--text-h3);font-weight:600;line-height:var(--text-h3-line)}
+.catalog-assessment small{display:block;font-size:var(--text-caption);line-height:var(--text-caption-line);color:var(--muted)}
+.catalog-assessment[aria-pressed=true]{background:var(--sel-bg);border-color:var(--ink)}
+.catalog-assessment[aria-pressed=true] .giz-icon{color:var(--mat-ink)}
+/* Phone: "Ano, bimestre e avaliação" with a Coral counter, opening the sheet. */
+.catalog-sheet-button{align-self:flex-start;gap:var(--s-2);padding:0 var(--s-5)}
+.catalog-sheet-count{display:grid;place-items:center;min-width:var(--s-6);height:var(--s-6);padding:0 var(--s-1);border-radius:var(--r-full);background:var(--primary);color:var(--on-primary);font-family:var(--font-b);font-size:var(--text-caption);font-weight:800}
+.catalog-sheet-foot{display:flex;flex-direction:column;gap:var(--s-2)}
+.catalog-sheet-foot .btn{width:100%}
+.giz-modal--sheet .catalog-step-head{margin-bottom:var(--s-3)}
+
+/* Summary */
+.catalog-summary{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-2) var(--s-3)}
+.catalog-count{margin-right:var(--s-1);font-family:var(--font-d);font-size:var(--text-h3);font-weight:600;line-height:var(--text-h2-line)}
+/* On the phone the chips take their own line under the count and "Limpar". */
+.catalog-chips{display:flex;flex-wrap:wrap;gap:var(--s-2);order:1;flex-basis:100%;min-width:0}
+.catalog-chip{display:inline-flex;align-items:center;gap:var(--s-1);min-height:var(--size-chip);padding:0 var(--s-2) 0 var(--s-4);border:var(--border) solid var(--ink);border-radius:var(--r-full);background:var(--sel-bg);color:var(--ink);font-size:var(--text-body-sm);font-weight:700;white-space:nowrap}
+.catalog-chip-x{display:grid;place-items:center;width:var(--size-chip-remove);height:var(--size-chip-remove);border-radius:var(--r-full);transition:background-color var(--motion-fast),color var(--motion-fast)}
+.catalog-chip:hover .catalog-chip-x{background:var(--ink);color:var(--surface)}
+.catalog-clear{gap:var(--s-2);padding:0 var(--s-6) 0 var(--s-5)}
+.catalog-summary .catalog-clear{margin-left:auto}
+.catalog-clear-short{display:none}
+.catalog-clear--compact .catalog-clear-long{display:none}
+.catalog-clear--compact .catalog-clear-short{display:inline}
+
+/* Results: rows on the phone, cards from 600 px. */
+.catalog-results{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s-3)}
+.catalog-skeleton{min-height:var(--size-simulation-row);border-radius:var(--r-lg);background:var(--soft)}
+.catalog-card{display:flex;align-items:center;gap:var(--s-3);min-height:var(--size-simulation-row);padding:var(--s-3) var(--s-3) var(--s-3) var(--s-4);border:var(--border-thin) solid var(--line);border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--e1);color:var(--ink);text-decoration:none;transition:border-color var(--motion-fast),box-shadow var(--motion-fast)}
+.catalog-card:hover{border-color:var(--ink);box-shadow:var(--e2)}
+.catalog-card:hover .giz-action-dot{background:var(--primary);color:var(--on-primary)}
+.catalog-card-main{display:flex;flex:1;align-items:center;gap:var(--s-3);min-width:0}
+.catalog-card-text{display:flex;flex:1;flex-direction:column;align-items:flex-start;min-width:0}
+.catalog-card-title{max-width:100%;font-family:var(--font-d);font-size:var(--text-h3);font-weight:600;line-height:var(--text-h3-line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catalog-card-meta{font-size:var(--text-body-sm);line-height:var(--text-body-sm-line);color:var(--muted)}
+.catalog-card-text .giz-badge{margin-top:var(--s-1)}
+.catalog-card-status,.catalog-card-progress,.catalog-card-foot .giz-badge{display:none}
+.catalog-card-progress{height:var(--size-progress-thin);margin-top:calc(-1 * var(--s-2));border-radius:var(--r-full);background:var(--soft);overflow:hidden}
+.catalog-card-progress span{display:block;height:100%;background:var(--hl)}
+.catalog-card-foot{display:flex;flex:none;align-items:center;justify-content:space-between;gap:var(--s-3)}
+.catalog-more{display:flex;justify-content:center}
+.catalog-more .btn{padding:0 var(--s-6)}
+
+/* States and "Monte seu simulado" (not a link: it is not ready). */
+.catalog-empty{display:flex;flex-direction:column;align-items:center;gap:var(--s-3);padding:var(--s-10) var(--s-4);border:var(--border-thin) solid var(--line);border-radius:var(--r-lg);background:var(--surface);text-align:center}
+.catalog-empty h2{font-size:var(--text-h2);line-height:var(--text-h2-line)}
+.catalog-empty p{font-size:var(--text-body-sm);line-height:var(--text-body-sm-line);color:var(--muted)}
+.catalog-empty-tile{width:var(--size-tile-lg);height:var(--size-tile-lg);border-radius:var(--r-lg)}
+.catalog-soon{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-3) var(--s-4);padding:var(--s-4);border:var(--border) dashed var(--line);border-radius:var(--r-lg);color:var(--muted)}
+.catalog-soon>div{flex:1;min-width:0}
+.catalog-soon h2{font-size:var(--text-h3);line-height:var(--text-h3-line);color:var(--ink)}
+.catalog-soon p{font-size:var(--text-body-sm);line-height:var(--text-body-sm-line)}
+
+@media(min-width:600px){
+.catalog{gap:var(--s-6)}
+.catalog-search{box-shadow:none}
+.catalog-steps{gap:var(--s-6);padding:var(--s-6);border:var(--border-thin) solid var(--line);border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--e1)}
+.catalog-steps > div:first-child .catalog-step-head{display:flex}
+.catalog-steps-row{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s-6);padding-top:var(--s-6);border-top:var(--border-thin) solid var(--line)}
+.catalog-sheet-button{display:none}
+.catalog-subjects{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0;padding:0;overflow:visible}
+.catalog-subject{width:auto;min-height:var(--size-subject-card);padding:var(--s-3) var(--s-2);font-size:var(--text-body);line-height:var(--text-body-sm-line)}
+.catalog-subject .giz-tile{width:var(--size-tile);height:var(--size-tile)}
+.catalog-subject .catalog-check{top:calc(-1 * var(--s-2));right:calc(-1 * var(--s-2));width:var(--size-check-badge);height:var(--size-check-badge);border-color:var(--surface)}
+.catalog-count{font-size:var(--text-h2)}
+.catalog-chips{flex:1;order:0;flex-basis:auto}
+.catalog-clear-short{display:none}
+.catalog-clear--compact .catalog-clear-long{display:inline}
+.catalog-clear--compact .catalog-clear-short{display:none}
+.catalog-results{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s-4)}
+.catalog-skeleton{min-height:var(--size-simulation-card)}
+.catalog-card{flex-direction:column;align-items:stretch;gap:var(--s-4);min-height:var(--size-simulation-card);padding:var(--s-5)}
+.catalog-card-main{flex:none;align-items:flex-start}
+.catalog-card-text>.giz-badge{display:none}
+.catalog-card-status{display:block}
+.catalog-card-progress{display:block}
+.catalog-card-foot{margin-top:auto}
+.catalog-card-foot .giz-badge{display:inline-flex}
+.catalog-soon{flex-wrap:nowrap;padding:var(--s-5) var(--s-6)}
+}
+/* Six subject cards in a row need about 720 px of panel; the three steps side by side, about 900 px. */
+@container (min-width:720px){.catalog-subjects{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@container (min-width:900px){
+.catalog-steps-row{grid-template-columns:.9fr 1.1fr 1.1fr;gap:var(--s-8)}
+.catalog-steps-row .catalog-trail,.catalog-steps-row .catalog-assessments{max-width:none}
+}
+@media(min-width:1024px){.catalog-results{grid-template-columns:repeat(3,minmax(0,1fr))}}

@@ -1,22 +1,16 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import Auth from '../src/Auth';
 import { useSession } from '../src/session-context';
 import { useTheme, tokens } from '../src/theme';
 import { periodLabel, schoolYearLabel, subjectOf, trackOfSchoolYear, trackOfTurmas, type GizSubject } from '../src/core/track';
-import { useRemote, type ApiSimulation, type ApiMyAttempt, type ApiMinhaPontuacao, type ApiQuestion, type ApiTurma } from '../src/data';
+import { STATE_BADGE, simulationStatus, type SimulationState } from '../src/core/catalog';
+import { useAnsweredCounts } from '../src/answered';
+import { useRemote, type ApiSimulation, type ApiMyAttempt, type ApiMinhaPontuacao, type ApiTurma } from '../src/data';
 import { ActionDot, ActionRow, Badge, Button, Card, Copy, Empty, Heading, Loading, Progress, Screen, SecondaryLink, SubjectTile, Tuca, styles } from '../src/ui';
 const s=tokens.space;
-type CardState='new'|'progress'|'done';
-const STATE_BADGE={new:['new','Novo'],progress:['soft','Em andamento'],done:['ok','Concluído']} as const;
 const byRecent=(a:ApiMyAttempt,b:ApiMyAttempt)=>new Date(b.finishedAt||b.createdAt).getTime()-new Date(a.finishedAt||a.createdAt).getTime();
-/** Answers saved in each unfinished attempt (-1 when unreadable). An attempt without answers is still new. */
-function useAnswered(ids:string[]){
- const{client,session}=useSession();const key=ids.join(',');const[state,setState]=useState<{key:string;value:Record<string,number>}|null>(null);
- useEffect(()=>{if(!key)return;let active=true;void Promise.all(key.split(',').map(id=>client.request<ApiQuestion[]>(`/attempts/${encodeURIComponent(id)}/questions`).then(qs=>[id,qs.filter(q=>q.answer!==null&&q.answer!==undefined).length] as const,()=>[id,-1] as const))).then(entries=>{if(active)setState({key,value:Object.fromEntries(entries)});});return()=>{active=false;};},[client,key,session.generation]);
- return !key?{}:state?.key===key?state.value:null;
-}
 export default function Home(){
  const{session}=useSession();const{track,ready,selectTrack}=useTheme();const active=session.status==='authenticated';const student=active&&session.user?.role==='STUDENT';
  const sims=useRemote<ApiSimulation[]>(student?'/simulations/available':null);const attempts=useRemote<ApiMyAttempt[]>(student?'/me/attempts':null);const score=useRemote<ApiMinhaPontuacao>(student?'/me/pontuacao':null);const turmas=useRemote<ApiTurma[]>(student?'/me/turmas':null);const inTurma=Boolean(turmas.data?.length);
@@ -25,13 +19,13 @@ export default function Home(){
  const available=(sims.data?.filter(item=>trackOfSchoolYear(item.schoolYear)===track)||[]).sort((a,b)=>Number(fromTurma(b))-Number(fromTurma(a)));
  const kidsIds=new Set(available.map(item=>item.id));
  const unfinished=(attempts.data||[]).filter(item=>item.status==='IN_PROGRESS'&&kidsIds.has(item.simulationId)).sort(byRecent).slice(0,10);
- const answered=useAnswered(unfinished.map(item=>item.id));
+ const answered=useAnsweredCounts(unfinished.map(item=>item.id));
  if(session.status==='restoring'||session.status==='signing-in'||!ready)return <Screen title="Giz Kids" publicScreen><Loading/></Screen>;
  if(!active)return <Auth/>;
  const continuation=answered&&unfinished.find(item=>answered[item.id]!==0);
  const continuationSim=continuation?available.find(item=>item.id===continuation.simulationId):undefined;
  const latest=(attempts.data||[]).filter(item=>item.status==='FINISHED'||item.finishedAt).sort(byRecent)[0];
- const stateOf=(sim:ApiSimulation):CardState=>{const attempt=attempts.data?.find(item=>item.simulationId===sim.id);return !attempt||answered?.[attempt.id]===0?'new':attempt.status==='IN_PROGRESS'?'progress':'done';};
+ const stateOf=(sim:ApiSimulation)=>simulationStatus(sim.id,attempts.data||[],answered||{}).state;
  const shown=[...available].sort((a,b)=>Number(stateOf(a)!=='new')-Number(stateOf(b)!=='new')).slice(0,3);
  const sharedYear=new Set(shown.map(item=>item.schoolYear)).size===1?shown[0].schoolYear:null;
  const note=[sharedYear===null?null:schoolYearLabel(sharedYear),shown.length&&shown.every(fromTurma)?'Da sua turma':null].filter(Boolean).join(' · ');
@@ -59,7 +53,7 @@ function Summary({subject,icon,title,action,onPress,children}:{subject:GizSubjec
  return <View style={[local.summary,{backgroundColor:c.surface,borderColor:c.line}]}><View style={local.summaryBody}><SubjectTile subject={subject} icon={icon} small/><Heading level={3}>{title}</Heading>{children}</View><ActionRow title={action} onPress={onPress}/></View>;
 }
 /** The whole row is one target, read as "Geografia, 1º bimestre, AV2, 30 questões, novo". */
-function SimulationRow({simulation,state,showYear}:{simulation:ApiSimulation;state:CardState;showYear:boolean}){
+function SimulationRow({simulation,state,showYear}:{simulation:ApiSimulation;state:SimulationState;showYear:boolean}){
  const{colors:c}=useTheme();const[tone,label]=STATE_BADGE[state];
  const meta=[showYear?schoolYearLabel(simulation.schoolYear):null,periodLabel(simulation.bimester,simulation.assessment)].filter(Boolean).join(' · ');
  const name=[simulation.discipline.name,...meta.split(' · ').filter(Boolean),`${simulation.totalQuestions} questões`,label.toLocaleLowerCase('pt-BR')].join(', ');

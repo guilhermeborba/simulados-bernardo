@@ -133,6 +133,8 @@ export interface ApiMyAttempt {
   score: string | null;
   maxScore: string;
   percentage: string | null;
+  /** Questions answered right, filled when the attempt is finished. */
+  correctCount?: number;
   createdAt: string;
   finishedAt: string | null;
   simulation: {

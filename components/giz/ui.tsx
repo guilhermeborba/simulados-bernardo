@@ -19,7 +19,7 @@ export function Button({ variant = 'primary', className = '', ...props }: Button
   return <button {...props} className={`btn ${variant === 'primary' ? '' : `btn--${variant}`} ${className}`} />;
 }
 export function Badge({ children, tone = 'soft' }: { children: ReactNode; tone?: 'new' | 'ok' | 'soft' | 'soon' | 'error' }) {
-  return <span className={`giz-badge giz-badge--${tone}`}>{tone === 'ok' && <Icon name="check" size={20} />}{children}</span>;
+  return <span className={`giz-badge giz-badge--${tone}`}>{tone === 'ok' && <Icon name="check" size={14} />}{children}</span>;
 }
 /** Secondary level: "see more" between blocks of a screen, outlined with a chevron. */
 export function SecondaryLink({ href, children }: { href: string; children: ReactNode }) {
@@ -34,8 +34,8 @@ export function SubjectTile({ subject, icon, small = false }: { subject: GizSubj
   return <span className={`giz-tile ${small ? 'giz-tile--sm' : ''} ${subject ? `giz-tile--${subject}` : ''}`} aria-hidden="true"><Icon name={icon ?? subjectIcon(subject)} size={small ? 24 : 26} /></span>;
 }
 const navItems = [ ['/', 'home', 'Início'], ['/simulados', 'book', 'Simulados'], ['/ranking', 'cup', 'Ranking'], ['/eu', 'user', 'Eu'] ];
-/** `root` is Início: no breadcrumb, and the brand moves into the phone header. */
-export function AppShell({ title, subtitle, children, backHref, flow = false, root = false, actions }: { title: string; subtitle?: string; children: ReactNode; backHref?: string; flow?: boolean; root?: boolean; actions?: ReactNode }) {
+/** `root` is Início: no breadcrumb, and the brand moves into the phone header. `topLevel` menu screens drop the breadcrumb too, and their first block rises over the phone header. */
+export function AppShell({ title, subtitle, children, backHref, flow = false, root = false, topLevel = false, actions }: { title: string; subtitle?: string; children: ReactNode; backHref?: string; flow?: boolean; root?: boolean; topLevel?: boolean; actions?: ReactNode }) {
   const pathname = usePathname();
   const track = useGizTrack();
   const brand = TRACK_INFO[track ?? 'kids'].name;
@@ -43,7 +43,7 @@ export function AppShell({ title, subtitle, children, backHref, flow = false, ro
   const Heading = pathname.startsWith('/simulado/') || pathname.startsWith('/quiz/') ? 'h2' : 'h1';
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { heading.current?.focus({ preventScroll: true }); }, [pathname]);
-  return <div className={`giz-app ${flow ? 'giz-app--flow' : ''} ${root ? 'giz-app--root' : ''}`}>
+  return <div className={`giz-app ${flow ? 'giz-app--flow' : ''} ${root ? 'giz-app--root' : ''} ${topLevel ? 'giz-app--top' : ''}`}>
     <a className="skip-link" href="#conteudo">Ir para o conteúdo</a>
     <aside className="giz-sidebar">
       <Link href="/" className="giz-brand" aria-label={`${brand}, início`}><Image unoptimized className="giz-logo-light" src="/giz/brand/giz-logo-lousa.svg" width="84" height="60" alt="Giz" /><Image unoptimized className="giz-logo-dark" src="/giz/brand/giz-logo-papel.svg" width="84" height="60" alt="Giz" /><span>{brand.replace('Giz ', '')}</span></Link>
@@ -52,7 +52,7 @@ export function AppShell({ title, subtitle, children, backHref, flow = false, ro
     </aside>
     <div className="giz-workspace">
       <header className="giz-page-head">
-        {root ? <p className="giz-head-brand"><Image unoptimized src="/giz/brand/giz-logo-papel.svg" width="51" height="36" alt="Giz" /><span>{brand.replace('Giz ', '')}</span></p> : <nav className="giz-breadcrumb" aria-label="Você está em"><Link href="/">{brand}</Link><span aria-hidden="true"> / </span><span>{title}</span></nav>}
+        {root ? <p className="giz-head-brand"><Image unoptimized src="/giz/brand/giz-logo-papel.svg" width="51" height="36" alt="Giz" /><span>{brand.replace('Giz ', '')}</span></p> : !topLevel && <nav className="giz-breadcrumb" aria-label="Você está em"><Link href="/">{brand}</Link><span aria-hidden="true"> / </span><span>{title}</span></nav>}
         <div className="giz-page-heading">{backHref && <Link className="icon-button" href={backHref} aria-label="Voltar"><Icon name="back" /></Link>}<div><Heading ref={heading} tabIndex={-1}>{title}</Heading>{subtitle && <p>{subtitle}</p>}</div>{actions && <div className="giz-head-actions">{actions}</div>}</div>
       </header>
       <main id="conteudo" className="giz-content">{children}</main>
@@ -70,7 +70,8 @@ export function ScreenState({ kind, title, message, action }: { kind: 'loading' 
   if (kind === 'loading') return <div className="giz-loading" role="status" aria-label="Carregando"><span className="sr-only">Carregando…</span><div className="giz-skeleton" /><div className="giz-skeleton" /><div className="giz-skeleton" /></div>;
   return <section className="card giz-state" role={kind === 'error' ? 'alert' : 'status'}><Tuca pose={kind === 'empty' ? 'lupa' : 'respira-fundo'} size={140} priority /><h2>{title || (kind === 'offline' ? 'Sem conexão' : kind === 'error' ? 'Vamos tentar de novo?' : 'Nada por aqui ainda')}</h2>{message && <p>{message}</p>}{action}</section>;
 }
-export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+/** `sheet` slides up from the bottom with a grab handle and starts focus on its title. */
+export function Modal({ title, onClose, children, sheet = false }: { title: string; onClose: () => void; children: ReactNode; sheet?: boolean }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   useEffect(() => {
@@ -80,7 +81,7 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
     el?.querySelector<HTMLElement>('[data-autofocus], button, a, input')?.focus();
     return () => { el?.close(); previouslyFocused?.focus(); };
   }, []);
-  return <dialog className="giz-modal" ref={dialog} aria-labelledby={titleId} onCancel={event => { event.preventDefault(); onClose(); }} onClick={event => { if (event.target === event.currentTarget) onClose(); }}><div className="stack"><h2 id={titleId}>{title}</h2>{children}</div></dialog>;
+  return <dialog className={`giz-modal ${sheet ? 'giz-modal--sheet' : ''}`} ref={dialog} aria-labelledby={titleId} onCancel={event => { event.preventDefault(); onClose(); }} onClick={event => { if (event.target === event.currentTarget) onClose(); }}><div className="stack">{sheet && <span className="giz-sheet-handle" aria-hidden="true" />}<h2 id={titleId} tabIndex={sheet ? -1 : undefined} data-autofocus={sheet || undefined}>{title}</h2>{children}</div></dialog>;
 }
 export function Toast({ children, onDismiss }: { children: ReactNode; onDismiss: () => void }) {
   useEffect(() => { const timeout = setTimeout(onDismiss, 4000); return () => clearTimeout(timeout); }, [onDismiss]);

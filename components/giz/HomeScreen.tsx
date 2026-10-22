@@ -1,28 +1,14 @@
 'use client';
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ActionRow, AppShell, Badge, Button, Icon, Progress, ScreenState, SecondaryLink, SubjectTile, Tuca } from './ui';
-import { isFinished, useCatalog, useRequireTrack } from './useCatalog';
-import { ApiMyAttempt, ApiSimulation, getAttemptQuestions } from '@/lib/apiClient';
+import { isFinished, useAnsweredCounts, useCatalog, useRequireTrack } from './useCatalog';
+import { ApiMyAttempt, ApiSimulation } from '@/lib/apiClient';
 import { TRACK_INFO, periodLabel, schoolYearLabel, subjectOf } from '@/lib/gizTrack';
+import { STATE_BADGE, simulationStatus, type SimulationState } from '@/lib/gizCatalog';
 import { DataGate, OfflineNotice } from './DiscoveryCards';
 import './discovery.css';
 import './home.css';
-type CardState = 'new' | 'progress' | 'done';
-const STATE_BADGE = { new: ['new', 'Novo'], progress: ['soft', 'Em andamento'], done: ['ok', 'Concluído'] } as const;
 const byRecent = (a: ApiMyAttempt, b: ApiMyAttempt) => new Date(b.finishedAt || b.createdAt).getTime() - new Date(a.finishedAt || a.createdAt).getTime();
-/** Answers saved in each unfinished attempt (-1 when unreadable). An attempt without answers is still new. */
-function useAnsweredCounts(ids: string[]) {
-  const key = ids.join(',');
-  const [counts, setCounts] = useState<{ key: string; value: Record<string, number> }>();
-  useEffect(() => {
-    if (!key) return;
-    let active = true;
-    Promise.all(key.split(',').map(id => getAttemptQuestions(id).then(qs => [id, qs.filter(q => q.answer !== null && q.answer !== undefined).length] as const, () => [id, -1] as const))).then(entries => { if (active) setCounts({ key, value: Object.fromEntries(entries) }); });
-    return () => { active = false; };
-  }, [key]);
-  return !key ? {} : counts?.key === key ? counts.value : null;
-}
 export default function HomeScreen() {
   const catalog = useCatalog();
   useRequireTrack(catalog);
@@ -33,10 +19,7 @@ export default function HomeScreen() {
   const resume = answered && unfinished.find(a => answered[a.id] !== 0);
   const latest = catalog.attempts.filter(isFinished).sort(byRecent)[0];
   const firstName = catalog.user?.name.trim().split(/\s+/)[0];
-  const stateOf = (simulation: ApiSimulation): CardState => {
-    const attempt = catalog.attempts.find(a => a.simulationId === simulation.id);
-    return !attempt || answered?.[attempt.id] === 0 ? 'new' : isFinished(attempt) ? 'done' : 'progress';
-  };
+  const stateOf = (simulation: ApiSimulation) => simulationStatus(simulation.id, catalog.attempts, answered ?? {}).state;
   const shown = [...catalog.simulations].sort((a, b) => Number(stateOf(a) !== 'new') - Number(stateOf(b) !== 'new')).slice(0, 6);
   const years = new Set(shown.map(s => s.schoolYear));
   const sharedYear = years.size === 1 ? shown[0].schoolYear : null;
@@ -65,7 +48,7 @@ function ResumeCard({ attempt, simulation, answered }: { attempt: ApiMyAttempt; 
   return <section className="card home-resume"><div className="home-resume-text"><span className="simulation-eyebrow">Continuar de onde parou</span><h2>{simulation.discipline.name}</h2><p className="home-meta">{[schoolYearLabel(simulation.schoolYear), periodLabel(simulation.bimester, simulation.assessment)].filter(Boolean).join(' · ')}</p>{answered > 0 && <Progress value={answered} max={simulation.totalQuestions} />}</div><Link className="btn" href={`/simulado/${encodeURIComponent(attempt.simulationId)}?attemptId=${encodeURIComponent(attempt.id)}`}>Continuar simulado <Icon name="arrow-right" /></Link></section>;
 }
 /** The whole card is one link, read as "Geografia, 1º bimestre, AV2, 30 questões, novo". */
-function SimulationLink({ simulation, state, showYear }: { simulation: ApiSimulation; state: CardState; showYear: boolean }) {
+function SimulationLink({ simulation, state, showYear }: { simulation: ApiSimulation; state: SimulationState; showYear: boolean }) {
   const [tone, label] = STATE_BADGE[state];
   const meta = [showYear ? schoolYearLabel(simulation.schoolYear) : null, periodLabel(simulation.bimester, simulation.assessment)].filter(Boolean).join(' · ');
   const name = [simulation.discipline.name, ...meta.split(' · ').filter(Boolean), `${simulation.totalQuestions} questões`, label.toLocaleLowerCase('pt-BR')].join(', ');

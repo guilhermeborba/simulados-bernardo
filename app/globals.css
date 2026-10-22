@@ -86,6 +86,12 @@ fieldset{min-width:0}
 .giz-head-brand img{width:auto;height:var(--size-logo-head)}
 .giz-app--root .giz-page-head{padding:max(var(--size-head-top),env(safe-area-inset-top,0px)) max(var(--s-4),env(safe-area-inset-right,0px)) var(--size-head-bottom) max(var(--s-4),env(safe-area-inset-left,0px))}
 .giz-app--root .giz-page-heading p{font-size:var(--text-body-sm);line-height:var(--text-body-sm-line)}
+/* Menu screens without breadcrumb: shorter phone header, and the first block (a search) rises 28 px over it. */
+@media(max-width:599px){
+.giz-app--top .giz-page-head{padding:max(var(--size-head-top),env(safe-area-inset-top,0px)) max(var(--s-4),env(safe-area-inset-right,0px)) var(--size-head-bottom-search) max(var(--s-4),env(safe-area-inset-left,0px))}
+.giz-app--top .giz-page-heading p{font-size:var(--text-body-sm);line-height:var(--text-body-sm-line)}
+.giz-app--top .giz-content{margin-top:calc(-1 * var(--size-search-overlap))}
+}
 .giz-head-actions{margin-left:auto}
 .giz-content{position:relative;margin:calc(-1 * var(--s-10)) auto 0;padding:0 max(var(--s-4),env(safe-area-inset-left,0px)) var(--s-8);width:100%;max-width:var(--size-content)}
 .giz-app--flow .giz-sidebar{display:none}
@@ -105,6 +111,12 @@ fieldset{min-width:0}
 .giz-feedback--fun{background:var(--ok-bg);color:var(--ok-ink)}
 .giz-modal{position:fixed;inset:auto 0 0;margin:0;width:100%;max-width:none;max-height:90dvh;overflow:auto;padding:var(--s-6) var(--s-4) calc(var(--s-6) + env(safe-area-inset-bottom,0px));border:0;border-radius:var(--r-xl) var(--r-xl) 0 0;background:var(--surface);color:var(--ink);box-shadow:var(--e-sheet)}
 .giz-modal::backdrop{background:var(--overlay)}
+/* Bottom sheet: phone only (screens close it from 600 px), scrolling inside up to 92% of the screen. */
+.giz-modal--sheet{max-height:92dvh;padding:var(--s-2) var(--s-4) calc(var(--s-5) + env(safe-area-inset-bottom,0px));animation:giz-sheet-up var(--motion-standard)}
+.giz-modal--sheet>.stack{gap:var(--s-5)}
+.giz-modal--sheet h2:focus{outline:none}
+.giz-sheet-handle{display:block;width:var(--size-sheet-handle);height:var(--s-1);margin:0 auto;border-radius:var(--r-full);background:var(--line)}
+@keyframes giz-sheet-up{from{transform:translateY(var(--s-10));opacity:0}to{transform:none;opacity:1}}
 .giz-toast{position:fixed;z-index:50;bottom:calc(var(--size-nav) + var(--s-6));left:var(--s-4);right:var(--s-4);margin:auto;max-width:var(--size-modal);padding:var(--s-3) var(--s-4);background:var(--head);color:var(--head-ink);box-shadow:var(--e3);border-radius:var(--r-md);display:flex;gap:var(--s-3)}
 /* Compatibility for the existing invitation flow. */
 :root{--paper:var(--surface);--cream:var(--bg);--grass-deep:var(--ok-ink);--bubble-deep:var(--err);--ink-soft:var(--muted);--radius-sm:var(--r-sm);--radius-md:var(--r-md);--radius-lg:var(--r-lg);--radius-xl:var(--r-xl);--radius-pill:var(--r-full);--shadow-1:var(--e1);--shadow-2:var(--e2);--shadow-3:var(--e3)}
@@ -163,6 +175,6 @@ h1[tabindex="-1"]:focus{outline:none}
 .giz-breadcrumb a{display:inline-flex;align-items:center;min-height:var(--size-touch);min-width:var(--size-touch)}
 .giz-nav a{min-width:0}
 .giz-nav-label{max-width:100%;overflow-wrap:anywhere}
-.giz-content .card.stack>a:not(.btn),.discovery-section-title>a{display:inline-flex;align-items:center;min-width:var(--size-touch);min-height:var(--size-touch)}
+.giz-content .card.stack>a:not(.btn){display:inline-flex;align-items:center;min-width:var(--size-touch);min-height:var(--size-touch)}
 
 @media(min-width:600px) and (max-width:1023px){.giz-sidebar,.giz-app--flow .giz-sidebar{padding-inline:calc((var(--size-sidebar-tablet) - var(--size-touch) - var(--border-thin)) / 2)}}
