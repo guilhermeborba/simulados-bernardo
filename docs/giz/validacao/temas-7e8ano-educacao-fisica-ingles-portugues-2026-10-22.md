@@ -35,6 +35,12 @@ Os rótulos preservam o reconhecimento de modalidades, provas, capacidades, equi
 
 Estas issues permanecem abertas para correção própria. Cobertura de temas e testes técnicos aprovados não certificam a correção pedagógica dos campos anteriores. A E04 proíbe mudar enunciados, alternativas e gabaritos durante a classificação.
 
+## CI remoto
+
+Os três PRs da API tiveram CI aprovado. No [job mobile do registro web #124](https://github.com/guilhermeborba/simulados-bernardo/actions/runs/39829403622/job/120001232560), `test:ui` teve 45 testes aprovados e um reprovado: o callback de foco de `mobile/app/simulations.tsx:66` executou após encerrar o ambiente Jest do catálogo e a suíte seguinte encontrou `findNodeHandle` indisponível. O código já estava na base anterior; este pacote muda somente documentação no web. Reprodução e correção foram registradas separadamente na [issue #125](https://github.com/guilhermeborba/simulados-bernardo/issues/125).
+
+A execução parou antes da integração TEXT. O workflow ainda fixa a API antiga, mas a falha de UI observada é distinta da pendência `fix/ci-api-ref`. Os resultados locais web acima permanecem aprovados; não incluem testes de UI Expo.
+
 ## Cobertura e próximos lotes
 
 Na composição dos três lotes (integração dos PRs restantes ainda pendente): **8.429/23.444 questões com tema e 281/780 simulados completos**. O 7º ano chega a **1.920/1.920 em 64/64**; o 8º ano começa com **240/1.920 em 8/64**.

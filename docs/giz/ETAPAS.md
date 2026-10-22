@@ -57,8 +57,9 @@ Situação registrada em 22/10/2026. A situação ao vivo está sempre nas issue
 | Correção editorial · Regras e conceitos de Educação Física do 7º ano | [#120](https://github.com/guilhermeborba/simulados-bernardo/issues/120) | API (conteúdo) | — | backlog | ⏳ revisão de handebol, atletismo, bets e preparação; conteúdo preservado na E04 |
 | Correção editorial · Gabaritos e contextos de Inglês do 7º ano | [#121](https://github.com/guilhermeborba/simulados-bernardo/issues/121) | API (conteúdo) | — | backlog | ⏳ sete divergências de letras, variantes e lacunas; conteúdo preservado na E04 |
 | Correção editorial · Figuras e orações em Português do 8º ano | [#122](https://github.com/guilhermeborba/simulados-bernardo/issues/122) | API (conteúdo) | — | backlog | ⏳ revisão dos exemplos de antítese/ironia e das relações entre orações; conteúdo preservado na E04 |
+| Correção técnica · Temporizador de foco do catálogo mobile | [#125](https://github.com/guilhermeborba/simulados-bernardo/issues/125) | Expo / testes | — | backlog | ⏳ callback de foco após encerrar o ambiente Jest; job mobile falha na UI antes da integração API; reprodução e correção separadas |
 
-**CI da `main`:** falha desde #52 porque o workflow fixava uma API antiga e dois testes contradiziam o contrato. A correção está pronta na branch local `fix/ci-api-ref`, mas o push de `.github/workflows/` exige o escopo `workflow` no token do GitHub. Enquanto não for mergeada, os PRs mostram o job mobile vermelho por esse motivo.
+**CI da `main`:** a referência antiga da API e dois testes contraditórios continuam com correção na branch local `fix/ci-api-ref`; enviar `.github/workflows/` exige escopo `workflow`. Há também a falha de UI mobile [#125](https://github.com/guilhermeborba/simulados-bernardo/issues/125): o temporizador de foco do catálogo executa após encerrar o ambiente Jest. No [job do PR #124](https://github.com/guilhermeborba/simulados-bernardo/actions/runs/39829403622/job/120001232560), essa falha ocorreu antes da integração TEXT, portanto são pendências distintas.
 
 Todas as issues vivem no repositório `simulados-bernardo`, inclusive as etapas de API.
 

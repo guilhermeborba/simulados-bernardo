@@ -126,6 +126,8 @@ História, Geografia e Arte/7º ano foram integradas em api#251–253: [registro
 
 A composição dos três novos lotes passou sem conflitos: 8.429/23.444 questões com tema e 281/780 simulados completos. Nos arquivos validados, o 7º ano fica integralmente classificado (1.920/1.920 em 64/64), e Português inicia o 8º (240/1.920 em 8/64). A E04 segue parcial; testes, cobertura por ano, revisões pedagógicas separadas e próximos três lotes estão no [registro atual](validacao/temas-7e8ano-educacao-fisica-ingles-portugues-2026-10-22.md).
 
+A conferência do CI também identificou a falha de temporizador de foco do catálogo mobile na [issue #125](https://github.com/guilhermeborba/simulados-bernardo/issues/125), separada da referência antiga da API. O job parou nos testes de UI; nenhum código mobile foi alterado neste pacote.
+
 ## Evidências de validação e aceite pendente
 
 Validação registrada nesta implementação:
