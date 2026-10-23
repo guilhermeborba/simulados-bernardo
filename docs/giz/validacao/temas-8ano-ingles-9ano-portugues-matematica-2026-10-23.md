@@ -2,6 +2,8 @@
 
 Quinto pacote de três lotes, em 23/10/2026. Merges api#260–262 confirmados na main `169308b7ef033ddf2bba2c5d9b9b54aac7738f81`. O registro web#132 permanecia aberto e foi atualizado com este pacote, preservando o relatório anterior.
 
+Atualização de continuidade (23/10/2026): api#263–265 e web#132 foram mergeados. As contagens abaixo são históricas; a posição atual está no [sexto pacote](temas-9ano-ciencias-historia-geografia-2026-10-23.md).
+
 ## O que estamos fazendo
 
 Estamos classificando as questões existentes com temas editoriais para o Giz. Cada lote é uma disciplina/ano: leitura individual dos enunciados e alternativas, mapa manual por ID, vocabulário fechado e adição somente de `theme`. Não há classificação automática por palavras-chave. Conteúdo novo em produção depende de merge e seed manual pelo responsável.
