@@ -48,7 +48,8 @@ async function login(page: Page, email: string) {
   await page.getByLabel('E-mail', { exact: true }).fill(email);
   await page.getByLabel('Senha', { exact: true }).fill(password);
   await page.getByRole('button', { name: /Entrar$/ }).click();
-  await expect(page).toHaveURL(/\/trilha$/);
+  // An account with a saved faixa goes straight to its track's Início; without one, Início sends it to /trilha.
+  await expect(page).toHaveURL(/\/(trilha)?$/);
 }
 async function confirm(page: Page, keyboard = false) {
   const blue = page.getByRole('radio', { name: 'Azul de teste', exact: true });
