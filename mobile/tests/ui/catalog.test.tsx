@@ -1,7 +1,7 @@
 /// <reference types="jest" />
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import Simulations from '../../app/simulations';
 import Home from '../../app/index';
 let mockAttempts: any[] = [];
@@ -54,6 +54,29 @@ test('search and steps combine, the sheet counts its choices, clearing resets bo
  await fireEvent.press(screen.getByRole('button',{name:'Limpar escolhas'}));
  expect(screen.getByLabelText('Buscar simulado').props.value).toBe('');
  expect(screen.getAllByTestId('simulation-grid-cell')).toHaveLength(3);
+});
+test('closing the sheet returns focus to its button, and leaving the screen first cancels that focus',async()=>{
+ jest.useFakeTimers();
+ const native=require('react-native');
+ const focus=jest.spyOn(native,'findNodeHandle').mockReturnValue(null);
+ const elapse=async(ms:number)=>{await act(()=>{jest.advanceTimersByTime(ms);});};
+ try {
+  await render(<Simulations/>);
+  await elapse(200);
+  await fireEvent.press(screen.getByRole('button',{name:'Ano, bimestre e avaliação'}));
+  await elapse(200);
+  focus.mockClear();
+  await fireEvent.press(screen.getByRole('button',{name:'Ver 3 simulados'}));
+  await elapse(200);
+  expect(focus).toHaveBeenCalledTimes(1);
+  await fireEvent.press(screen.getByRole('button',{name:'Ano, bimestre e avaliação'}));
+  await elapse(200);
+  await fireEvent.press(screen.getByRole('button',{name:'Ver 3 simulados'}));
+  focus.mockClear();
+  await screen.unmount();
+  await elapse(500);
+  expect(focus).not.toHaveBeenCalled();
+ } finally { focus.mockRestore(); jest.useRealTimers(); }
 });
 test('a subject is chosen and removed by touching it again, and the chip removes it too',async()=>{
  await render(<Simulations/>);
