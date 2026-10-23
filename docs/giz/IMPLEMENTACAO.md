@@ -120,13 +120,13 @@ npm run mobile:start
 
 O runner nativo possui integração de estado/cache por usuário e tentativa em `mobile/src/simulation/`, com resultado, revisão e journal de dois checkpoints para preservar a última gravação íntegra. Executar o bundle Expo ou exportar JavaScript não equivale a testar um binário Android/iOS em aparelho.
 
-## Temas editoriais — pacotes de três lotes (22/10/2026)
+## Temas editoriais — pacotes de três lotes (23/10/2026)
 
-Os pacotes anteriores foram integrados até api#256/web#124: 3º–7º anos completos, Português inicia o 8º, total de 8.429/23.444 questões com tema e 281/780 simulados completos. O [registro anterior](validacao/temas-7e8ano-educacao-fisica-ingles-portugues-2026-10-22.md) mantém as evidências da segunda rodada.
+Os pacotes anteriores foram integrados até api#259/web#129: 3º–7º anos completos e quatro disciplinas do 8º, com 9.149/23.444 questões com tema e 305/780 simulados completos. O [registro anterior](validacao/temas-8ano-matematica-ciencias-historia-2026-10-22.md) mantém as evidências da terceira rodada.
 
-O pacote atual classifica Matemática, Ciências e História/8º ano em api#257–259, com mais 720 temas/24 simulados, aguardando revisão. A composição validada leva o 8º a 960/1.920 questões em 32/64 simulados; total 9.149/23.444 e 305/780. Testes, composição validada, cobertura por público e a lista do trabalho restante estão no [registro atual](validacao/temas-8ano-matematica-ciencias-historia-2026-10-22.md). E04 permanece parcial; próximo trio: Geografia, Arte e Educação Física/8º.
+O pacote atual classifica Geografia, Arte e Educação Física/8º em api#260–262, com mais 720 temas/24 simulados, aguardando revisão. Composição sem conflitos, validada: 9.869/23.444 e 329/780; 8º ano 1.680/1.920 em 56/64, faltando apenas Inglês. Testes, cobertura e trabalho restante no [registro atual](validacao/temas-8ano-geografia-arte-educacao-fisica-2026-10-23.md). Próximo trio: Inglês/8º, Português/9º e Matemática/9º; E04 segue parcial.
 
-As issues #126–128 registram revisão pedagógica separada, sem correção dos campos anteriores neste pacote. A falha de temporizador de foco do catálogo mobile [#125](https://github.com/guilhermeborba/simulados-bernardo/issues/125) continua distinta da referência antiga da API no workflow. Nenhum código mobile foi alterado.
+As issues #130/#131 registram revisões editoriais separadas, sem correção dos campos anteriores. No CI do registro anterior, a UI mobile passou (46 testes), mas a integração TEXT falhou contra a API antiga fixada; a falha de temporizador #125 é distinta e continua aberta. Nenhum código Expo ou workflow foi alterado neste pacote.
 
 ## Evidências de validação e aceite pendente
 

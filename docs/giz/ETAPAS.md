@@ -11,14 +11,14 @@ O que já foi implementado está em [IMPLEMENTACAO.md](IMPLEMENTACAO.md).
 
 ## Etapas
 
-Situação registrada em 22/10/2026. A situação ao vivo está sempre nas issues.
+Situação registrada em 23/10/2026. A situação ao vivo está sempre nas issues.
 
 | Etapa | Issue | Repositório | Depende de | Onda | Situação |
 |---|---|---|---|---|---|
 | E01 · Trilhas por público no catálogo | [#53](https://github.com/guilhermeborba/simulados-bernardo/issues/53) | web + Expo | decisão | 1 | ✅ mergeada e publicada (#64) |
 | E02 · Convite de turma direto aos simulados | [#54](https://github.com/guilhermeborba/simulados-bernardo/issues/54) | web + Expo | E01 | 1 | ✅ mergeada (#65) |
 | E03 · API: importar `theme` pelo seed | [#55](https://github.com/guilhermeborba/simulados-bernardo/issues/55) | API | api#222 | 1 | ✅ mergeada (api#224) |
-| E04 · Temas editoriais nas questões | [#56](https://github.com/guilhermeborba/simulados-bernardo/issues/56) | API (conteúdo) | E03 | 2 — divisível em lotes | 🟡 3º–7º anos e Português/8º integrados (api#225–256); Matemática ([api#257](https://github.com/guilhermeborba/simulados-bernardo-api/pull/257)), Ciências ([api#258](https://github.com/guilhermeborba/simulados-bernardo-api/pull/258)) e História/8º ([api#259](https://github.com/guilhermeborba/simulados-bernardo-api/pull/259)) classificados, aguardam revisão; [registro do pacote](validacao/temas-8ano-matematica-ciencias-historia-2026-10-22.md); próximos: Geografia, Arte e Educação Física/8º |
+| E04 · Temas editoriais nas questões | [#56](https://github.com/guilhermeborba/simulados-bernardo/issues/56) | API (conteúdo) | E03 | 2 — divisível em lotes | 🟡 3º–7º e Português/Matemática/Ciências/História do 8º integrados (api#225–259); Geografia ([api#260](https://github.com/guilhermeborba/simulados-bernardo-api/pull/260)), Arte ([api#261](https://github.com/guilhermeborba/simulados-bernardo-api/pull/261)) e Educação Física/8º ([api#262](https://github.com/guilhermeborba/simulados-bernardo-api/pull/262)) classificados, aguardam revisão; [composição validada](validacao/temas-8ano-geografia-arte-educacao-fisica-2026-10-23.md) leva o 8º a 56/64; próximos: Inglês/8º, Português/9º e Matemática/9º |
 | E05 · Prática dentro do Giz | [#57](https://github.com/guilhermeborba/simulados-bernardo/issues/57) | web + Expo | decisão (b), E02 | 2 | ✅ mergeada (#68) |
 | E06 · Validar app Giz no Android | [#58](https://github.com/guilhermeborba/simulados-bernardo/issues/58) | Expo | — | 2 | ⏳ livre (ideal após E05) |
 | E07 · Aceite web e acessibilidade | [#59](https://github.com/guilhermeborba/simulados-bernardo/issues/59) | web | — | 2 | 🟡 PR #69 mergeado; verificações automatizadas aprovadas e roteiro assistivo humano pendente |
@@ -60,8 +60,10 @@ Situação registrada em 22/10/2026. A situação ao vivo está sempre nas issue
 | Correção editorial · Ambiguidades e conceitos de Matemática do 8º ano | [#126](https://github.com/guilhermeborba/simulados-bernardo/issues/126) | API (conteúdo) | — | backlog | ⏳ alternativas simultaneamente válidas e condições/definições; conteúdo preservado na E04 |
 | Correção editorial · Gabarito e comando de Ciências do 8º ano | [#127](https://github.com/guilhermeborba/simulados-bernardo/issues/127) | API (conteúdo) | — | backlog | ⏳ revisão da letra em B4/AV2, ID 16, e do comando do ID 1; conteúdo preservado na E04 |
 | Correção editorial · Cronologia e ambiguidades de História do 8º ano | [#128](https://github.com/guilhermeborba/simulados-bernardo/issues/128) | API (conteúdo) | — | backlog | ⏳ maioridade/coroação, governo regencial, cronologia, campanha russa e ajuda aos colonos; campos anteriores preservados |
+| Correção editorial · Gabaritos e conceitos de Geografia do 8º ano | [#130](https://github.com/guilhermeborba/simulados-bernardo/issues/130) | API (conteúdo) | — | backlog | ⏳ letras, alternativas e conceitos demográficos/urbanos; conteúdo preservado na E04 |
+| Correção editorial · Regras e preparação em Educação Física do 8º ano | [#131](https://github.com/guilhermeborba/simulados-bernardo/issues/131) | API (conteúdo) | — | backlog | ⏳ handebol, impedimento, toques e preparação; conteúdo preservado na E04 |
 
-**CI da `main`:** a referência antiga da API e dois testes contraditórios continuam com correção na branch local `fix/ci-api-ref`; enviar `.github/workflows/` exige escopo `workflow`. Há também a falha de UI mobile [#125](https://github.com/guilhermeborba/simulados-bernardo/issues/125): o temporizador de foco do catálogo executa após encerrar o ambiente Jest. No [job do PR #124](https://github.com/guilhermeborba/simulados-bernardo/actions/runs/39829403622/job/120001232560), essa falha ocorreu antes da integração TEXT, portanto são pendências distintas.
+**CI da main:** referência antiga da API e dois testes contraditórios continuam com correção local em fix/ci-api-ref; envio de workflows exige escopo workflow. No [job mobile do PR #129](https://github.com/guilhermeborba/simulados-bernardo/actions/runs/39881157848/job/120178588981), 46 testes de UI passaram, mas a integração TEXT falhou (undefined em vez de TEXT, 12/13 casos aprovados); job web/HTTP/browser aprovado. A falha anterior de temporizador [#125](https://github.com/guilhermeborba/simulados-bernardo/issues/125) continua aberta e é uma pendência distinta; passar uma execução da UI não comprova sua correção.
 
 Todas as issues vivem no repositório `simulados-bernardo`, inclusive as etapas de API.
 
