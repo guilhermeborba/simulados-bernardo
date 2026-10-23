@@ -61,10 +61,16 @@ export default function Simulations() {
     update({ year: value === defaultYear ? null : value, ...(value > 0 ? {} : { bimester: null, assessment: null }), ...(steps.discipline && next.length && !next.some(item => item.slug === steps.discipline) ? { discipline: null } : {}) });
   };
   const clear = () => { setSteps(NO_STEPS); setSearch(''); };
-  const closeSheet = () => {
-    setSheetOpen(false);
-    setTimeout(() => { const id = findNodeHandle(opener.current); if (id) AccessibilityInfo.setAccessibilityFocus(id); }, 100);
-  };
+  const closeSheet = () => setSheetOpen(false);
+  // Closing the sheet sends focus back to the button that opened it; leaving the screen first cancels it.
+  const sheetWasOpen = useRef(false);
+  useEffect(() => {
+    if (sheetOpen) { sheetWasOpen.current = true; return; }
+    if (!sheetWasOpen.current) return;
+    sheetWasOpen.current = false;
+    const task = setTimeout(() => { const id = opener.current && findNodeHandle(opener.current); if (id) AccessibilityInfo.setAccessibilityFocus(id); }, 100);
+    return () => clearTimeout(task);
+  }, [sheetOpen]);
   const yearEmpty = !hasContent(year);
   const count = yearEmpty ? 0 : results.length;
   const countText = `${count} ${count === 1 ? 'simulado' : 'simulados'}`;
