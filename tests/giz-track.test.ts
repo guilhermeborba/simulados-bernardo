@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { compareSchoolYears, periodLabel, resolveStoredTrack, trackOfTurmas, schoolYearLabel, subjectIcon, subjectOf, trackOfSchoolYear, TRACK_INFO } from '../lib/gizTrack';
+import { compareSchoolYears, followFaixa, periodLabel, readTrack, resolveStoredTrack, saveTrack, trackOfTurmas, schoolYearLabel, subjectIcon, subjectOf, trackOfSchoolYear, TRACK_INFO } from '../lib/gizTrack';
 import * as mobile from '../mobile/src/core/track';
 
 test('web and Expo classify and label every school year the same way', () => {
@@ -58,6 +58,30 @@ test('subjects come from the structured discipline, with accents and long names'
   assert.equal(subjectIcon('geo'), 'geografia');
   assert.equal(subjectIcon(null), 'book');
   assert.equal(mobile.subjectIcon('cie'), subjectIcon('cie'));
+});
+
+test('a saved faixa moves the app to its track once, and a track chosen later stays until the faixa changes', () => {
+  const store = new Map<string, string>();
+  const global = globalThis as { window?: unknown };
+  const previous = global.window;
+  global.window = { localStorage: { getItem: (key: string) => store.get(key) ?? null, setItem: (key: string, value: string) => { store.set(key, String(value)); }, removeItem: (key: string) => { store.delete(key); } }, dispatchEvent: () => true };
+  try {
+    saveTrack('kids');
+    followFaixa('bia', 7);
+    assert.equal(readTrack(), 'escola', '7º ano belongs to Giz Escola');
+    saveTrack('kids');
+    followFaixa('bia', 7);
+    assert.equal(readTrack(), 'kids', 'choosing Kids in /trilha afterwards is kept');
+    followFaixa('bia', 11);
+    assert.equal(readTrack(), 'escola', 'a new faixa applies again');
+    saveTrack('kids');
+    followFaixa('leo', 11);
+    assert.equal(readTrack(), 'escola', 'each account has its own faixa');
+    followFaixa('leo', null);
+    assert.equal(readTrack(), 'escola', '"Usar ano do cadastro" leaves the track alone');
+  } finally {
+    global.window = previous;
+  }
 });
 
 test('a turma decides the track of its members', () => {

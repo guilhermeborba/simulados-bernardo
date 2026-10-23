@@ -95,6 +95,23 @@ export function saveTrack(track: GizTrack) {
   window.dispatchEvent(new Event(TRACK_EVENT));
 }
 
+/**
+ * The year saved as the account's faixa (learning preferences) moves the app to its track once per faixa:
+ * a track chosen later, in /trilha, still wins until the faixa changes again.
+ */
+export function followFaixa(userId: string, schoolYear: number | null) {
+  if (typeof window === 'undefined' || schoolYear === null) return;
+  const key = `giz:track:faixa:${userId}`;
+  try {
+    if (window.localStorage.getItem(key) === String(schoolYear)) return;
+    window.localStorage.setItem(key, String(schoolYear));
+  } catch {
+    // Restricted storage: the faixa still applies on this page.
+  }
+  const track = trackOfSchoolYear(schoolYear);
+  if (readTrack() !== track) saveTrack(track);
+}
+
 function subscribe(onChange: () => void) {
   window.addEventListener(TRACK_EVENT, onChange);
   window.addEventListener('storage', onChange);

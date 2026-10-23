@@ -1,19 +1,18 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { bloquearTrocaDeTrilha } from '@/lib/trilha';
 import { saveTrack, trackOfTurmas } from '@/lib/gizTrack';
 import { getMyTurmas } from '@/lib/apiClient';
-import { isOffline, passwordError, safeReturnTo } from '@/lib/gizAccountApi';
+import { goAfterSignIn, isOffline, passwordError, safeReturnTo } from '@/lib/gizAccountApi';
 import { AuthField, AuthLayout, FormError } from '@/components/giz/AuthLayout';
 import { Button } from '@/components/giz/ui';
 
 interface RegisterFormProps { inviteToken?: string; }
 
 export default function RegisterForm({ inviteToken }: RegisterFormProps = {}) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { register } = useAuth();
   const returnTo = safeReturnTo(searchParams.get('returnTo'));
@@ -48,7 +47,7 @@ export default function RegisterForm({ inviteToken }: RegisterFormProps = {}) {
         saveTrack(trackOfTurmas(turmas) ?? 'kids');
         bloquearTrocaDeTrilha();
       }
-      router.push(token ? '/simulados' : (returnTo || '/trilha'));
+      goAfterSignIn(token ? '/simulados' : (returnTo || '/trilha'));
     } catch (err) {
       setError(isOffline() || err instanceof TypeError ? 'Não foi possível conectar. Verifique sua conexão e tente de novo.' : err instanceof Error ? err.message : 'Não foi possível criar a conta. Tente de novo.');
     } finally { setIsSubmitting(false); }
