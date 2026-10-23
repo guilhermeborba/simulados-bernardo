@@ -120,9 +120,13 @@ npm run mobile:start
 
 O runner nativo possui integração de estado/cache por usuário e tentativa em `mobile/src/simulation/`, com resultado, revisão e journal de dois checkpoints para preservar a última gravação íntegra. Executar o bundle Expo ou exportar JavaScript não equivale a testar um binário Android/iOS em aparelho.
 
-## Temas editoriais — pacote de três lotes (22/10/2026)
+## Temas editoriais — pacotes de três lotes (22/10/2026)
 
-História, Geografia e Arte/7º ano receberam 720 temas em 24 simulados, com vocabulários fechados e preservação dos campos anteriores. História (api#251) e Geografia (api#252) já foram integradas; Arte (api#253) aguarda revisão. A composição dos três lotes foi validada sem conflitos: 7.709/23.444 questões com tema e 257/780 simulados completos. A E04 segue parcial. Cobertura, verificações, issues de revisão pedagógica e próximos lotes estão no [registro do pacote](validacao/temas-7ano-historia-geografia-arte-2026-10-22.md).
+História, Geografia e Arte/7º ano foram integradas em api#251–253: [registro do pacote anterior](validacao/temas-7ano-historia-geografia-arte-2026-10-22.md). O pacote seguinte classifica Educação Física/7º, Inglês/7º e Português/8º, somando mais 720 temas em 24 simulados. Educação Física (api#254) já foi mergeada; Inglês (api#255) e Português (api#256) aguardam revisão.
+
+A composição dos três novos lotes passou sem conflitos: 8.429/23.444 questões com tema e 281/780 simulados completos. Nos arquivos validados, o 7º ano fica integralmente classificado (1.920/1.920 em 64/64), e Português inicia o 8º (240/1.920 em 8/64). A E04 segue parcial; testes, cobertura por ano, revisões pedagógicas separadas e próximos três lotes estão no [registro atual](validacao/temas-7e8ano-educacao-fisica-ingles-portugues-2026-10-22.md).
+
+A conferência do CI também identificou a falha de temporizador de foco do catálogo mobile na [issue #125](https://github.com/guilhermeborba/simulados-bernardo/issues/125), separada da referência antiga da API. O job parou nos testes de UI; nenhum código mobile foi alterado neste pacote.
 
 ## Evidências de validação e aceite pendente
 
