@@ -122,11 +122,11 @@ O runner nativo possui integração de estado/cache por usuário e tentativa em 
 
 ## Temas editoriais — pacotes de três lotes (22/10/2026)
 
-História, Geografia e Arte/7º ano foram integradas em api#251–253: [registro do pacote anterior](validacao/temas-7ano-historia-geografia-arte-2026-10-22.md). O pacote seguinte classifica Educação Física/7º, Inglês/7º e Português/8º, somando mais 720 temas em 24 simulados. Educação Física (api#254) já foi mergeada; Inglês (api#255) e Português (api#256) aguardam revisão.
+Os pacotes anteriores foram integrados até api#256/web#124: 3º–7º anos completos, Português inicia o 8º, total de 8.429/23.444 questões com tema e 281/780 simulados completos. O [registro anterior](validacao/temas-7e8ano-educacao-fisica-ingles-portugues-2026-10-22.md) mantém as evidências da segunda rodada.
 
-A composição dos três novos lotes passou sem conflitos: 8.429/23.444 questões com tema e 281/780 simulados completos. Nos arquivos validados, o 7º ano fica integralmente classificado (1.920/1.920 em 64/64), e Português inicia o 8º (240/1.920 em 8/64). A E04 segue parcial; testes, cobertura por ano, revisões pedagógicas separadas e próximos três lotes estão no [registro atual](validacao/temas-7e8ano-educacao-fisica-ingles-portugues-2026-10-22.md).
+O pacote atual classifica Matemática, Ciências e História/8º ano em api#257–259, com mais 720 temas/24 simulados, aguardando revisão. A composição validada leva o 8º a 960/1.920 questões em 32/64 simulados; total 9.149/23.444 e 305/780. Testes, composição validada, cobertura por público e a lista do trabalho restante estão no [registro atual](validacao/temas-8ano-matematica-ciencias-historia-2026-10-22.md). E04 permanece parcial; próximo trio: Geografia, Arte e Educação Física/8º.
 
-A conferência do CI também identificou a falha de temporizador de foco do catálogo mobile na [issue #125](https://github.com/guilhermeborba/simulados-bernardo/issues/125), separada da referência antiga da API. O job parou nos testes de UI; nenhum código mobile foi alterado neste pacote.
+As issues #126–128 registram revisão pedagógica separada, sem correção dos campos anteriores neste pacote. A falha de temporizador de foco do catálogo mobile [#125](https://github.com/guilhermeborba/simulados-bernardo/issues/125) continua distinta da referência antiga da API no workflow. Nenhum código mobile foi alterado.
 
 ## Evidências de validação e aceite pendente
 
