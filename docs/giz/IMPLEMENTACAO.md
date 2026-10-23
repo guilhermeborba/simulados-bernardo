@@ -122,11 +122,11 @@ O runner nativo possui integração de estado/cache por usuário e tentativa em 
 
 ## Temas editoriais — pacotes de três lotes (23/10/2026)
 
-Os pacotes anteriores foram integrados até api#259/web#129: 3º–7º anos completos e quatro disciplinas do 8º, com 9.149/23.444 questões com tema e 305/780 simulados completos. O [registro anterior](validacao/temas-8ano-matematica-ciencias-historia-2026-10-22.md) mantém as evidências da terceira rodada.
+Os lotes anteriores estão integrados até api#262: 3º–7º completos e sete disciplinas do 8º, com 9.869/23.444 questões com tema e 329/780 simulados completos. O [registro do quarto pacote](validacao/temas-8ano-geografia-arte-educacao-fisica-2026-10-23.md) mantém suas evidências; os três PRs API foram mergeados. O PR web#132, ainda aberto no início desta rodada, reúne o registro anterior e o atual.
 
-O pacote atual classifica Geografia, Arte e Educação Física/8º em api#260–262, com mais 720 temas/24 simulados, aguardando revisão. Composição sem conflitos, validada: 9.869/23.444 e 329/780; 8º ano 1.680/1.920 em 56/64, faltando apenas Inglês. Testes, cobertura e trabalho restante no [registro atual](validacao/temas-8ano-geografia-arte-educacao-fisica-2026-10-23.md). Próximo trio: Inglês/8º, Português/9º e Matemática/9º; E04 segue parcial.
+O pacote atual classifica Inglês/8º, Português/9º e Matemática/9º em api#263–265, com mais 720 temas/24 simulados, aguardando revisão. Composição sem conflitos validada: 10.589/23.444 e 353/780; **8º completo (1.920/1.920 em 64/64)**, 9º ano 480/1.920 em 16/64. Testes, cobertura por público e trabalho restante no [registro atual](validacao/temas-8ano-ingles-9ano-portugues-matematica-2026-10-23.md). Próximo trio: Ciências, História e Geografia/9º; E04 segue parcial.
 
-As issues #130/#131 registram revisões editoriais separadas, sem correção dos campos anteriores. No CI do registro anterior, a UI mobile passou (46 testes), mas a integração TEXT falhou contra a API antiga fixada; a falha de temporizador #125 é distinta e continua aberta. Nenhum código Expo ou workflow foi alterado neste pacote.
+As issues #133–135 registram revisões editoriais separadas; os campos anteriores foram preservados. No CI do #132 antes desta atualização, a UI mobile passou (46 testes), mas a integração TEXT falhou contra a API antiga fixada; a falha de temporizador #125 é distinta e continua aberta. Nenhum código Expo ou workflow alterado neste pacote. Merge, deploy e seed em produção ficam com o responsável.
 
 ## Evidências de validação e aceite pendente
 

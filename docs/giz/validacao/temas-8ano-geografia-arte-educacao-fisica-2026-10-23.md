@@ -2,6 +2,8 @@
 
 Quarto pacote de três lotes, iniciado em 22/10 e concluído em 23/10/2026. Merges api#257–259 e web#129 confirmados antes do início.
 
+Atualização de continuidade (23/10/2026): api#260–262 foram mergeados. As contagens abaixo são as evidências históricas deste pacote; a cobertura e os próximos passos atuais estão no [quinto pacote](temas-8ano-ingles-9ano-portugues-matematica-2026-10-23.md).
+
 ## Entregas
 
 | Lote | Arquivos | Questões com tema | Vocabulário | PR |
