@@ -51,6 +51,15 @@ export function safeReturnTo(value: string | null): string | null {
   return value && value.startsWith('/') && !value.startsWith('//') && !/[\\\u0000-\u001f\u007f]/.test(value) ? value : null;
 }
 
+/**
+ * Leaves the sign-in or sign-up screen with a full page load. While signed out, the router prefetched
+ * protected routes such as "/" (the logo's link) and cached the middleware's redirect to /login; a client
+ * navigation right after the cookies arrive would replay that redirect, while a new page starts clean.
+ */
+export function goAfterSignIn(destination: string) {
+  window.location.assign(safeReturnTo(destination) ?? '/');
+}
+
 export function isOffline(): boolean {
   return typeof navigator !== 'undefined' && !navigator.onLine;
 }

@@ -1,15 +1,14 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { isOffline, safeReturnTo } from '@/lib/gizAccountApi';
+import { goAfterSignIn, isOffline, safeReturnTo } from '@/lib/gizAccountApi';
 import { AuthField, AuthLayout, FormError } from '@/components/giz/AuthLayout';
 import { Button } from '@/components/giz/ui';
 
 export default function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { login, user } = useAuth();
   const [completed, setCompleted] = useState(false);
@@ -24,8 +23,8 @@ export default function LoginForm() {
   useEffect(() => {
     if (!completed || !user) return;
     const destination = returnTo || (['GUARDIAN', 'TEACHER', 'ADMIN'].includes(user.role) ? '/acompanhamento' : '/');
-    router.push(destination);
-  }, [completed, user, returnTo, router]);
+    goAfterSignIn(destination);
+  }, [completed, user, returnTo]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();

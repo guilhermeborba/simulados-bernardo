@@ -5,7 +5,8 @@ import { AppShell, Badge, Button, Icon, Modal, SubjectTile } from './ui';
 import { isFinished, rememberCatalogQuery, useAnsweredCounts, useCatalog, useRequireTrack } from './useCatalog';
 import { DataGate, OfflineNotice } from './DiscoveryCards';
 import { ApiSimulation } from '@/lib/apiClient';
-import { periodLabel, schoolYearLabel, subjectOf } from '@/lib/gizTrack';
+import { periodLabel, schoolYearLabel, subjectOf, trackOfSchoolYear } from '@/lib/gizTrack';
+import { useLearningPreferences } from '@/contexts/LearningPreferencesContext';
 import { gizTokens } from '@/lib/gizTokens.generated';
 import { ASSESSMENTS, BIMESTERS, CATALOG_PAGE, STATE_BADGE, availableYearsText, catalogChips, catalogQuery, catalogSubjects, catalogYears, defaultCatalogYear, hasChoices, matchesChoice, parseCatalogParams, sheetChoiceCount, simulationStatus, sortCatalog, statusText, yearShortLabel, yearWithArticle, type CatalogChoice, type CatalogParams, type CatalogSubject, type SimulationStatus } from '@/lib/gizCatalog';
 import './discovery.css';
@@ -33,7 +34,10 @@ export default function CatalogScreen() {
   const [page, setPage] = useState({ key: '', limit: CATALOG_PAGE });
   const track = catalog.track ?? 'kids';
   const sims = catalog.simulations;
-  const profileYear = catalog.turmas.find(turma => typeof turma.schoolYear === 'number')?.schoolYear ?? null;
+  // The faixa saved in the account comes first, then the turma's year; a year from another track does not count.
+  const { preferences, isLoading: preferencesLoading } = useLearningPreferences();
+  const turmaYear = catalog.turmas.find(turma => typeof turma.schoolYear === 'number')?.schoolYear ?? null;
+  const profileYear = [preferences.schoolYear, turmaYear].find((value): value is number => value !== null && trackOfSchoolYear(value) === track) ?? null;
   const defaultYear = defaultCatalogYear(track, sims, profileYear);
   const current = steps ?? NO_STEPS;
   const year = current.year ?? defaultYear;
@@ -53,7 +57,7 @@ export default function CatalogScreen() {
   const limit = page.key === filterKey ? page.limit : CATALOG_PAGE;
   const more = Math.min(CATALOG_PAGE, results.length - limit);
   // Without a track the page is about to move to /trilha (useRequireTrack): keep the skeleton.
-  const ready = steps !== null && !catalog.loading && catalog.track !== null && answered !== null;
+  const ready = steps !== null && !catalog.loading && !preferencesLoading && catalog.track !== null && answered !== null;
   const address = catalogQuery(choice, defaultYear);
   useEffect(() => {
     if (!ready) return;

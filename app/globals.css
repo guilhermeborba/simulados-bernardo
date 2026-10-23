@@ -136,8 +136,9 @@ fieldset{min-width:0}
 .giz-sidebar-about:hover{background:var(--soft);color:var(--ink)}
 .giz-sidebar-about-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 .giz-sidebar-about>.giz-icon:last-child{display:none}
-.giz-breadcrumb{display:flex;gap:var(--s-2);font-size:var(--text-body-sm);margin-bottom:var(--s-6);color:var(--muted)}
-.giz-content{margin:0 auto;padding:0 var(--s-6) var(--s-8)}
+/* Breadcrumb, heading and content share one column: centered text in a row as tall as the link's touch target. */
+.giz-breadcrumb{display:flex;align-items:center;gap:var(--s-2);max-width:var(--size-content);margin:0 auto var(--s-6);font-size:var(--text-body-sm);color:var(--muted)}
+.giz-content{margin:0 auto;padding:0 var(--s-6) var(--s-8);max-width:calc(var(--size-content) + 2 * var(--s-6))}
 .giz-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .giz-modal{inset:0;margin:auto;height:fit-content;width:calc(100% - var(--s-8));max-width:var(--size-modal);padding:var(--s-8);border-radius:var(--r-xl)}
 }
@@ -151,7 +152,7 @@ fieldset{min-width:0}
 .giz-sidebar-about-label{position:static;width:auto;height:auto;clip:auto}
 .giz-sidebar-about>.giz-icon:last-child{display:inline-block;margin-left:auto}
 .giz-workspace{margin-left:var(--size-sidebar)}
-.giz-page-head,.giz-app--root .giz-page-head{padding:var(--s-6) var(--s-8)}.giz-content{padding-inline:var(--s-8)}
+.giz-page-head,.giz-app--root .giz-page-head{padding:var(--s-6) var(--s-8)}.giz-content{padding-inline:var(--s-8);max-width:calc(var(--size-content) + 2 * var(--s-8))}
 .giz-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 .giz-split{grid-template-columns:minmax(0,1fr) var(--size-aside);align-items:start}
 }
