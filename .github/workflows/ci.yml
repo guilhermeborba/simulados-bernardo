@@ -49,7 +49,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: guilhermeborba/simulados-bernardo-api
-          ref: e0b19669723de7d67c778fcc08a3f300b0003fa1
+          ref: 9bfe3b362bd1e1d9c8d961035bf8b5becd5b9b57
           path: api
           persist-credentials: false
       - name: Setup Node
@@ -117,7 +117,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: guilhermeborba/simulados-bernardo-api
-          ref: e0b19669723de7d67c778fcc08a3f300b0003fa1
+          ref: 9bfe3b362bd1e1d9c8d961035bf8b5becd5b9b57
           path: api
           persist-credentials: false
       - name: Setup Node

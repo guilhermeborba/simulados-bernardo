@@ -41,7 +41,7 @@ Os totais abaixo são os da validação final do lote 10; os números nas seçõ
 | API: unitários | 688 testes em 39 suítes passaram |
 | API: integração real Nest/PostgreSQL | 395 casos em 21 suítes passaram |
 
-O workflow web fixa o commit compatível da API `e0b19669723de7d67c778fcc08a3f300b0003fa1`. Consulte o [guia de CI e regressão](docs/guia-ci-regressao.md) para os comandos, isolamento do banco e limites. Emulação mobile e axe não comprovam funcionamento em aparelhos Android/iOS físicos, Safari, leitores de tela ou usabilidade com pessoas.
+O workflow web fixa o commit compatível da API `9bfe3b362bd1e1d9c8d961035bf8b5becd5b9b57` (main da API em 19/10/2026, com o feedback imediato do Giz). Ao mudar o contrato da API, atualize esse commit no mesmo PR que depende dele. Consulte o [guia de CI e regressão](docs/guia-ci-regressao.md) para os comandos, isolamento do banco e limites. Emulação mobile e axe não comprovam funcionamento em aparelhos Android/iOS físicos, Safari, leitores de tela ou usabilidade com pessoas.
 
 ## Pendências de ativação e revisão
 
