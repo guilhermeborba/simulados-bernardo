@@ -11,14 +11,14 @@ O que já foi implementado está em [IMPLEMENTACAO.md](IMPLEMENTACAO.md).
 
 ## Etapas
 
-Situação registrada em 23/10/2026. A situação ao vivo está sempre nas issues.
+Situação registrada em 31/10/2026. A situação ao vivo está sempre nas issues.
 
 | Etapa | Issue | Repositório | Depende de | Onda | Situação |
 |---|---|---|---|---|---|
 | E01 · Trilhas por público no catálogo | [#53](https://github.com/guilhermeborba/simulados-bernardo/issues/53) | web + Expo | decisão | 1 | ✅ mergeada e publicada (#64) |
 | E02 · Convite de turma direto aos simulados | [#54](https://github.com/guilhermeborba/simulados-bernardo/issues/54) | web + Expo | E01 | 1 | ✅ mergeada (#65) |
 | E03 · API: importar `theme` pelo seed | [#55](https://github.com/guilhermeborba/simulados-bernardo/issues/55) | API | api#222 | 1 | ✅ mergeada (api#224) |
-| E04 · Temas editoriais nas questões | [#56](https://github.com/guilhermeborba/simulados-bernardo/issues/56) | API (conteúdo) | E03 | 2 — divisível em lotes | 🟡 3º–8º completos e Português/Matemática do 9º integrados até api#265; Ciências ([api#266](https://github.com/guilhermeborba/simulados-bernardo-api/pull/266)), História ([api#267](https://github.com/guilhermeborba/simulados-bernardo-api/pull/267)) e Geografia/9º ([api#268](https://github.com/guilhermeborba/simulados-bernardo-api/pull/268)) classificados, aguardam revisão; [composição validada](validacao/temas-9ano-ciencias-historia-geografia-2026-10-23.md): 9º em 40/64; próximos: Arte, Educação Física e Inglês/9º |
+| E04 · Temas editoriais nas questões | [#56](https://github.com/guilhermeborba/simulados-bernardo/issues/56) | API (conteúdo) | E03 | 2 — divisível em lotes | 🟡 3º–8º completos; Arte ([api#270](https://github.com/guilhermeborba/simulados-bernardo-api/pull/270)), Educação Física ([api#271](https://github.com/guilhermeborba/simulados-bernardo-api/pull/271)) e Inglês/9º ([api#272](https://github.com/guilhermeborba/simulados-bernardo-api/pull/272)) classificados, aguardam revisão; [composição sobre main após api#269](validacao/temas-9ano-arte-educacao-fisica-ingles-2026-10-31.md) completa o 9º em 64/64 e alcança 12.059/23.474; próximos: Português, Matemática e Biologia/1ª série EM, conferindo antes novas entradas da turma |
 | E05 · Prática dentro do Giz | [#57](https://github.com/guilhermeborba/simulados-bernardo/issues/57) | web + Expo | decisão (b), E02 | 2 | ✅ mergeada (#68) |
 | E06 · Validar app Giz no Android | [#58](https://github.com/guilhermeborba/simulados-bernardo/issues/58) | Expo | — | 2 | ⏳ livre (ideal após E05) |
 | E07 · Aceite web e acessibilidade | [#59](https://github.com/guilhermeborba/simulados-bernardo/issues/59) | web | — | 2 | 🟡 PR #69 mergeado; verificações automatizadas aprovadas e roteiro assistivo humano pendente |
@@ -70,7 +70,11 @@ Situação registrada em 23/10/2026. A situação ao vivo está sempre nas issue
 | Correção editorial · Critérios e polaridade em Geografia do 9º ano | [#139](https://github.com/guilhermeborba/simulados-bernardo/issues/139) | API (conteúdo) | — | backlog | ⏳ população/território e coerência entre disciplinas; conteúdo preservado na E04 |
 | Correção técnica · Subprocesso do seed em teste de integração | [#140](https://github.com/guilhermeborba/simulados-bernardo/issues/140) | API / testes | — | backlog | ⏳ diagnosticar status null no teste de colisão local; CI aprovado, sem alteração de testes/timeouts na E04 |
 
-**CI da main:** verde nos dois jobs desde 23/10/2026 ([execução do merge do #144](https://github.com/guilhermeborba/simulados-bernardo/actions?query=branch%3Amain+workflow%3A%22Web+CI%22)). O #144 passou a fixar a API em `9bfe3b3` (com `classificationMode`), o que resolveu a integração TEXT do job mobile; o #143 resolveu o temporizador de foco (#125) que derrubava os testes de UI de vez em quando; o #142 alinhou a troca de conta dos testes de navegador à regra da faixa (#137). Ao mudar o contrato da API, atualize o commit fixado em `.github/workflows/ci.yml` no mesmo PR; enviar alterações em `.github/workflows/` exige o escopo `workflow` no token do `gh` usado no WSL.
+| Correção editorial · Letras de Arte do 9º ano | [#147](https://github.com/guilhermeborba/simulados-bernardo/issues/147) | API (conteúdo) | — | backlog | ⏳ quatro divergências de letras; campos anteriores preservados na E04 |
+| Correção editorial · História, regras e gabaritos de Educação Física do 9º ano | [#148](https://github.com/guilhermeborba/simulados-bernardo/issues/148) | API (conteúdo) | — | backlog | ⏳ origem paralímpica, Bolt, saque, Hillsborough, Rebeca, legislação e curadoria; conteúdo preservado |
+| Correção editorial · Respostas múltiplas e contextos de Inglês do 9º ano | [#149](https://github.com/guilhermeborba/simulados-bernardo/issues/149) | API (conteúdo) | — | backlog | ⏳ discurso indireto, preposições, derivação, colocações e actually; conteúdo preservado |
+
+**CI da main:** verde nos dois jobs na [execução do merge do #146 em 31/10/2026](https://github.com/guilhermeborba/simulados-bernardo/actions/runs/41249784028). O #144 passou a fixar a API em `9bfe3b3` (com `classificationMode`), o que resolveu a integração TEXT do job mobile; o #143 resolveu o temporizador de foco (#125) que derrubava os testes de UI de vez em quando; o #142 alinhou a troca de conta dos testes de navegador à regra da faixa (#137). Ao mudar o contrato da API, atualize o commit fixado em `.github/workflows/ci.yml` no mesmo PR; enviar alterações em `.github/workflows/` exige o escopo `workflow` no token do `gh` usado no WSL.
 
 Todas as issues vivem no repositório `simulados-bernardo`, inclusive as etapas de API.
 

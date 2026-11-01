@@ -1,5 +1,7 @@
 # E04 — Ciências, História e Geografia do 9º ano
 
+> Continuidade em 31/10/2026: api#266–268 e web#141 foram integrados. O [sétimo pacote](temas-9ano-arte-educacao-fisica-ingles-2026-10-31.md) registra a composição que completa os temas do 9º ano e o estado atual do CI; as pendências antigas de foco e API/TEXT abaixo foram corrigidas em #143/#144. Este documento preserva as evidências históricas de 23/10.
+
 Sexto pacote de três lotes, em 23/10/2026. Base API `398d0ea8e94da2b788510dab92ff2dcc39f2609c`, com api#263–265 mergeados. O registro web#132 foi mergeado durante a rodada; este pacote tem novo registro a partir da main web `5d8eed7`.
 
 ## Entregas e validação
