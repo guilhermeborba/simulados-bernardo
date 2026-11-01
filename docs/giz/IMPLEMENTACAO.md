@@ -121,13 +121,14 @@ npm run mobile:start
 
 O runner nativo possui integração de estado/cache por usuário e tentativa em `mobile/src/simulation/`, com resultado, revisão e journal de dois checkpoints para preservar a última gravação íntegra. Executar o bundle Expo ou exportar JavaScript não equivale a testar um binário Android/iOS em aparelho.
 
-## Temas editoriais — pacotes de três lotes (23/10/2026)
+## Temas editoriais — pacotes de três lotes (31/10/2026)
 
-Os lotes anteriores estão integrados até api#265 e web#132: 3º–8º completos, Português e Matemática/9º, com 10.589/23.444 questões com tema e 353/780 simulados completos. O [quinto pacote](validacao/temas-8ano-ingles-9ano-portugues-matematica-2026-10-23.md) mantém suas evidências.
+Os lotes anteriores estão integrados até api#268 e web#141: 3º–8º completos e cinco disciplinas do 9º, com **11.309/23.444 questões com tema e 377/780 simulados completos**. O [sexto pacote](validacao/temas-9ano-ciencias-historia-geografia-2026-10-23.md) mantém suas evidências históricas.
 
-O sexto pacote classifica Ciências, História e Geografia/9º em api#266–268, com mais 720 temas/24 simulados, aguardando revisão. Composição sem conflitos validada: **11.309/23.444 questões com tema e 377/780 simulados completos; 9º ano 1.200/1.920 em 40/64**. Testes, cobertura por público e pendências no [registro atual](validacao/temas-9ano-ciencias-historia-geografia-2026-10-23.md). Próximo trio: Arte, Educação Física e Inglês/9º; E04 segue parcial.
+O sétimo pacote classifica Arte, Educação Física e Inglês/9º em api#270, api#271 e api#272, com mais 720 temas/24 simulados, aguardando revisão. A api#269 foi integrada durante a rodada, com 30 questões já tematizadas da turma Bernardo. Composição sem conflitos sobre essa main: **12.059/23.474 questões com tema e 402/781 simulados completos; 9º ano completo em 1.920/1.920 e 64/64**. Testes, cobertura por público e pendências no [registro atual](validacao/temas-9ano-arte-educacao-fisica-ingles-2026-10-31.md). Próximo trio do Médio: Português, Matemática e Biologia/1ª série; conferir antes novas entradas da turma. A E04 global segue parcial.
 
-As issues #136, #138 e #139 registram revisões editoriais próprias; os campos anteriores foram preservados. O CI do #132 passou em web/HTTP/browser e nos 46 testes de UI mobile; a integração TEXT falhou contra a API antiga fixada. A falha de temporizador #125 é distinta e continua aberta. Nenhum código Expo ou workflow alterado. Merge, deploy e seed em produção ficam com o responsável.
+As issues #147, #148 e #149 registram revisões editoriais próprias; os campos anteriores foram preservados. Cada branch passou em 713 unitários e 418 integrações; a primeira execução local de Arte teve timeout de inicialização e passou na repetição sem mudar testes ou limites. A main web passou no CI após #146; #142–144 já corrigiram as pendências anteriores de testes de conta, foco mobile e referência da API/TEXT. Nenhum código Expo ou workflow alterado neste pacote. Merge, deploy e seed em produção ficam com o responsável.
+
 
 ## Evidências de validação e aceite pendente
 
